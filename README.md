@@ -1,6 +1,6 @@
 # tech-verification-blog
 
-English technology verification blog powered by [Pelican](https://docs.getpelican.com/) and the Flex theme, targeting Azure Static Web Apps. The repository is ready for Python 3.12, Markdown authoring, responsive design, syntax highlighting, and automated deployments.
+English technology verification blog powered by [Pelican](https://docs.getpelican.com/) with a Microsoft Security Blog inspired custom theme (`themes/my-blog-template`). The repository is ready for Python 3.12, Markdown authoring, responsive design, syntax highlighting, and automated deployments to Azure Static Web Apps.
 
 ## Requirements
 - Python 3.12
@@ -18,23 +18,56 @@ English technology verification blog powered by [Pelican](https://docs.getpelica
    ```pwsh
    pip install -r requirements.txt
    ```
-4. Fetch the Flex theme (navy, responsive, dark-mode friendly):
+4. (Optional) Fetch Pelican community themes for reference:
    ```pwsh
    git clone --recursive https://github.com/getpelican/pelican-themes themes
    ```
-   The site loads the theme from `themes/Flex`.
+   The site already includes a purpose-built Microsoft Security style theme under `themes/my-blog-template`.
 5. (Optional) Install the Static Web Apps CLI for local Azure parity:
    ```pwsh
    npm install -g @azure/static-web-apps-cli
    ```
 
 ## Local Development
-- Generate the site: `make html`
-- Auto-regenerating dev server (port 8000 by default): `make devserver`
-- Clean artifacts: `make clean`
-- Production-ready build: `make publish`
+The quickest way to edit code, preview on localhost, and restart cleanly is to split build and serve into two terminals.
 
-After running `make devserver`, visit <http://localhost:8000>. Flex automatically adapts to light/dark mode, and `codehilite` + `pygments` provide syntax highlighting suited for verification write-ups.
+1. **Clean stale artifacts (optional but recommended after large edits):**
+   ```pwsh
+   rm -Recurse -Force output,cache,pelican.pid -ErrorAction SilentlyContinue
+   ```
+2. **Terminal A – continuous build with auto reload:**
+   ```pwsh
+   pelican content --autoreload -o output -s pelicanconf.py
+   ```
+   This watches `content/`, `themes/my-blog-template/`, and configuration files. Whenever you fix or tweak code, the output folder is rebuilt automatically.
+3. **Terminal B – lightweight HTTP server:**
+   ```pwsh
+   pelican --listen
+   ```
+   Browse to <http://localhost:8000> to see the latest build using the Microsoft Security themed layout.
+4. **Refresh after edits:** once Terminal A logs `Done`, reload the browser to view the updates.
+5. **Stop (kill) running processes before restarting or switching branches:**
+   ```pwsh
+   # Stop whoever currently owns port 8000 (usually pelican --listen)
+   Get-NetTCPConnection -LocalPort 8000 | ForEach-Object { Stop-Process -Id $_.OwningProcess }
+   # Stop background pelican builders if they are still running
+   Get-Process -Name pelican -ErrorAction SilentlyContinue | Stop-Process -Force
+   ```
+
+Shortcut commands remain available when you just need one-off builds:
+- サイト生成 (make html 相当):
+  ```pwsh
+  pelican content -o output -s pelicanconf.py
+  ```
+- 本番ビルド (make publish 相当):
+  ```pwsh
+  pelican content -o output -s publishconf.py
+  ```
+
+### Theme toggle
+- The Microsoft Security inspired theme ships with a light/dark toggle in the header.
+- The toggle honors the OS preference first, then whatever the visitor last selected (saved in `localStorage`).
+- Customize defaults by setting `THEME_DEFAULT_MODE = 'dark'` (or `'light'`) inside `pelicanconf.py`.
 
 ## Azure Static Web Apps Deployment
 GitHub Actions handles builds via `.github/workflows/azure-static-web-apps.yml`:
@@ -56,7 +89,7 @@ GitHub Actions handles builds via `.github/workflows/azure-static-web-apps.yml`:
 | Path | Purpose |
 | --- | --- |
 | `requirements.txt` | Pin Python packages (Pelican, Markdown, Pygments, Typogrify, Rich) for reproducible builds. |
-| `pelicanconf.py` | Dev settings: author/site metadata, Flex theme selection, Markdown extensions, syntax highlight, URL rules. |
+| `pelicanconf.py` | Dev settings: author/site metadata, Microsoft Security inspired theme selection, Markdown extensions, syntax highlight, URL rules. |
 | `publishconf.py` | Production overrides such as feeds, `SITEURL`, and cleaned output folder. |
 | `Makefile` | Convenience commands (`make html`, `make devserver`, `make publish`, etc.). |
 | `.gitignore` | Excludes virtual environments, Pelican output, caches, and editor metadata. |

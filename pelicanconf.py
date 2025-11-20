@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent.resolve()
+
 AUTHOR = "Taku Sewo"
 SITENAME = "Cloud Diaries: Azure Edition"
 SITEURL = ""
@@ -10,10 +14,10 @@ TIMEZONE = "Asia/Tokyo"
 DEFAULT_LANG = "en"
 
 # Theme settings
-THEME = "themes/Flex"
-FLEX_THEME_COLOR = "#0a1f44"  # Deep navy tone for modern aesthetic
-FLEX_USE_TRANSPARENT_HEADER = True
-FLEX_COLOR_SCHEME = "auto"  # Enables light/dark mode toggle
+THEME = str(BASE_DIR / "themes" / "my-blog-template")
+HERO_INTRO = "Defend proactively with intelligence-driven Azure guidance."
+FOOTER_TEXT = "Insights and resources to help you secure your cloud estate."
+COPYRIGHT_YEAR = "2025"
 
 # Content paths
 ARTICLE_URL = "posts/{slug}/"
