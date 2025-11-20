@@ -1,0 +1,6 @@
+pelican==4.9.1
+Markdown>=3.5
+beautifulsoup4>=4.12
+typogrify>=2.0.7
+pygments>=2.16
+rich>=13.7
