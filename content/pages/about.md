@@ -1,5 +1,6 @@
 Title: About
 Slug: about
+Lang: en-us
 
 ## Why This Blog Exists
 I spend most of my days validating Azure workloads, and I needed a dedicated space to capture the experiments, benchmarking notes, and lessons learned along the way. Every article here is part lab notebook, part field report.
