@@ -1,13 +1,21 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 BASE_DIR = Path(__file__).parent.resolve()
 
 AUTHOR = "Taku Sewo"
-SITENAME = "Cloud Diaries: Azure Edition"
+SITENAME = "Gull Cloud Note"
+SITESUBTITLE = ""
 SITEURL = ""
+
+# Remote image hosting (Azure Blob Storage)
+BLOB_IMAGE_BASE = "https://strtaksewoblog.blob.core.windows.net/blogimage"
+BLOB_IMAGE_SAS = (
+    "sp=racw&st=2025-11-25T13:05:21Z&se=2026-08-30T21:20:21Z&spr=https&sv=2024-11-04&sr=c&sig=dyMJcL0mFEguUjPsp9IGa%2BwEoZ8z7ty1ErKOCpxM6xg%3D"
+)
 
 PATH = "content"
 ARTICLE_PATHS = [
@@ -29,8 +37,8 @@ LANGUAGE_SWITCHER = (
 )
 I18N_SUBSITES = {
     "ja-jp": {
-        "SITENAME": "カモメとクラウドブログ",
-        "SITESUBTITLE": "Azureの実験ノート",
+        "SITENAME": "カモメのクラウドノート",
+        "SITESUBTITLE": "",
         "LOCALE": "ja_JP",
         "LANGUAGE_SWITCHER": LANGUAGE_SWITCHER,
         "SITEURL": "/ja-jp",
@@ -51,11 +59,10 @@ I18N_SUBSITES = {
         "AUTHORS_SAVE_AS": "authors.html",
     }
 }
-
 # Theme settings
 THEME = str(BASE_DIR / "themes" / "my-blog-template")
 HERO_INTRO = "Defend proactively with intelligence-driven Azure guidance."
-FOOTER_TEXT = "Insights and resources to help you secure your cloud estate."
+FOOTER_TEXT = "Insights and resources to help you secure your cloud estate. Drafted with GitHub Copilot assistance."
 COPYRIGHT_YEAR = "2025"
 
 # Content paths
@@ -108,6 +115,27 @@ EXTRA_PATH_METADATA: dict[str, dict[str, str]] = {
     "extra/root-index.html": {"path": "index.html"},
 }
 
+# Utilities
+def resolve_blob(html: str) -> str:
+    """
+    Replace Markdown-emitted /blob/... image sources with SAS-protected blob URLs.
+    Leaves content unchanged if base or SAS are missing.
+    """
+    if not html:
+        return html
+    base = (BLOB_IMAGE_BASE or "").rstrip("/")
+    sas = (BLOB_IMAGE_SAS or "").lstrip("?")
+    if not base:
+        return html
+    def _repl(match: re.Match) -> str:
+        path = match.group(1)
+        suffix = f"?{sas}" if sas else ""
+        return f'src="{base}/{path}{suffix}"'
+    return re.sub(r'src="/blob/([^"]+)"', _repl, html)
+
+JINJA_FILTERS = {
+    "resolve_blob": resolve_blob,
+}
 # Markdown and syntax highlighting
 MARKDOWN = {
     "extension_configs": {
