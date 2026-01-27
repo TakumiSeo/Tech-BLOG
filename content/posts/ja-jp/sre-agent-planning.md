@@ -45,21 +45,21 @@ Azure SRE Agent は、運用に関する監視・トラブルシューティン�
 - チャット UI の言語制約（英語のみ）があるので、社内展開時は運用手順・プロンプトを英語で標準化する設計が必要です。[1-3]
 - エージェント作成時に Application Insights / Log Analytics / Managed Identity が自動作成されるため、運用データや権限の“置き場”が増える点を理解しておく必要があります。[1-4]
 
-### 可視化（Mermaid: 会話→診断→変更の流れ）
+### 会話→診断→変更の流れ
 
 ```mermaid
 flowchart LR
-  U[Operator] --> Chat[Portal chat]
-  Chat --> Agent[Azure SRE Agent]
-  Agent --> Read[Read: diagnostics]
-  Agent --> Plan[Write: execution plan]
-  Plan --> Consent{Consent?}
-  Consent -->|Approve| Act[Take action]
-  Consent -->|Deny| Stop[Stop]
+  U["Operator"] --> Chat["Portal chat"]
+  Chat --> Agent["Azure SRE Agent"]
+  Agent --> Read["Read: diagnostics"]
+  Agent --> Plan["Write: execution plan"]
+  Plan --> Consent{"Consent?"}
+  Consent -->|Yes| Act["Take action"]
+  Consent -->|No| Stop["Stop"]
 
-  Agent --> AI[Application Insights]
-  Agent --> LA[Log Analytics workspace]
-  Agent --> MI[Managed Identity]
+  Agent --> AI["Application Insights"]
+  Agent --> LA["Log Analytics workspace"]
+  Agent --> MI["Managed Identity"]
 ```
 
 ### 参考（第1章）
@@ -81,15 +81,15 @@ SRE Agent を作成するには、ユーザー側に `Microsoft.Authorization/ro
 - 権限要件は「SRE Agent リソースの作成」だけでなく、背後で行われる role assignment を通すために重要です。[2-1]
 - `*.azuresre.ai` がブロックされると、Portal 側の体験が破綻するケースがあるため、最初にネットワーク確認を入れるのが現実的です。[2-2]
 
-### 可視化（Mermaid: 作成の前提チェック）
+### 作成の前提チェック
 
 ```mermaid
 flowchart TD
-  S[Start] --> R{Has roleAssignments/write?}
-  R -->|No| FixRBAC[Grant required permissions]
-  R -->|Yes| N{Can reach *.azuresre.ai?}
-  N -->|No| FixNW[Allowlist in firewall]
-  N -->|Yes| OK[Ready to create agent]
+  S["Start"] --> R{"Has roleAssignments/write?"}
+  R -->|No| FixRBAC["Grant required permissions"]
+  R -->|Yes| N{"Can reach *.azuresre.ai?"}
+  N -->|No| FixNW["Allowlist in firewall"]
+  N -->|Yes| OK["Ready to create agent"]
 ```
 
 ### 参考（第2章）
@@ -112,17 +112,17 @@ SRE Agent の権限は、(1) ユーザーが SRE Agent に対して持つロー�
 - エージェント側のスコープが優先されるという「境界」の説明は、権限迂回の懸念に対する答えになります。[3-5]
 
 補足（説明）:
-- セキュリティモデルの要点として「RBAC でユーザー機能を制御」「MI は閲覧者/特権のレベルを持つ」「実行モードは同意の扱いに影響」「特権昇格防止のためエージェントのアクセス許可が優先」と整理されています。[3-7]
+- 私は要点を「RBAC でユーザー機能を制御」「MI は閲覧者/特権のレベルを持つ」「実行モードは同意の扱いに影響」「特権昇格防止のためエージェントのアクセス許可が優先」の4点で説明します。[3-7]
 
-### 可視化（Mermaid: セキュリティモデルの3要素）
+### セキュリティモデルの3要素
 
 ```mermaid
 flowchart LR
-  RBAC[User roles (Admin/Standard/Reader)] -->|controls| UX[What user can do in portal/chat]
-  MI["Agent managed identity<br/>permission level: Reader/Privileged"] -->|enables| ACT[What agent can do in Azure]
-  RM["Run modes<br/>Consent / Credentials"] -->|defines| FLOW[How actions are executed]
+  RBAC["User roles\n(Admin/Standard/Reader)"] --> UX["What user can do\nin portal/chat"]
+  MI["Agent managed identity\npermission level: Reader/Privileged"] --> ACT["What agent can do\nin Azure"]
+  RM["Run modes\nConsent / Credentials"] --> FLOW["How actions are executed"]
 
-  ACT --> BND[Boundary: agent scope/permissions take precedence]
+  ACT --> BND["Boundary:\nagent scope/permissions take precedence"]
   FLOW --> BND
 ```
 
@@ -153,7 +153,7 @@ SRE Agent は「自身の managed identity」を持ち、管理対象の resourc
 - エージェントは「ユーザーの同意」と「適切な RBAC 割り当て」が揃う場合にのみアクションを実行します。[4-6]
 - レビュー モードは明示的同意、インシデント対応計画のコンテキストでは暗黙的同意として扱います。[4-7]
 
-### 可視化（Mermaid: MI と OBO の流れ）
+### MI と OBO の流れ
 
 ```mermaid
 sequenceDiagram
@@ -203,15 +203,15 @@ Autonomous mode は “implicit consent” として扱われますが、無制�
 
 ```mermaid
 flowchart TD
-  A[Agent generates an execution plan] --> B{Consent?}
-  B -- Deny --> Z[Stop: no action]
-  B -- Approve --> C[Agent attempts to take action]
-  C --> D{Has required credentials?}
-  D -- Yes --> E[Execute the plan]
-  D -- No --> F{Grant temporary credentials (OBO)?}
-  F -- Deny --> Z
-  F -- Approve --> E
-  E --> G[End]
+  A["Agent generates an execution plan"] --> B{"Consent?"}
+  B -->|No| Z["Stop (no action)"]
+  B -->|Yes| C["Agent attempts to take action"]
+  C --> D{"Has required credentials?"}
+  D -->|Yes| E["Execute the plan"]
+  D -->|No| F{"Grant temporary credentials (OBO)?"}
+  F -->|No| Z
+  F -->|Yes| E
+  E --> G["End"]
 ```
 
 ### 参考（第5章）
@@ -234,7 +234,7 @@ Scheduled tasks は、monitoring / maintenance / security checks といったワ
 
 スケジュール（自然言語）から cron への変換を支援する “Draft the cron for me” と、指示文を改善する “Polish instructions” を使えます。[6-3][6-4]
 
-### 可視化（Mermaid: 作り方と実行パス）
+### 作り方と実行パス
 
 ```mermaid
 flowchart TD
@@ -288,17 +288,17 @@ Incident response plan は過去インシデントに対して test mode で実�
 Incident management タブには、エージェントが管理するインシデントの一元ビュー（主要メトリック、保留中のインシデントなど）を提供するダッシュボードがあります。[7-13]
 集計された可視化と AI によって生成された根本原因分析を提供し、傾向把握や対応計画の最適化に使えます。[7-14]
 
-### 可視化（Mermaid: インシデント処理の流れ）
+### インシデント処理の流れ
 
 ```mermaid
 flowchart TD
-  A["Alert in platform<br/>Azure Monitor / PagerDuty / ServiceNow"] --> B[Incident management receives alert]
-  B --> C[New chat thread created with initial analysis]
-  C --> D{Execution mode}
-  D -->|Viewer mode| V["Show recommendations<br/>Human intervenes"]
-  D -->|Autonomous mode (within plan context)| AU["Execute remediation<br/>May close incident"]
-  V --> E[Operator approves/acts]
-  AU --> F[Update/close incident in platform]
+  A["Alert in platform\nAzure Monitor / PagerDuty / ServiceNow"] --> B["Incident management receives alert"]
+  B --> C["New chat thread created\nwith initial analysis"]
+  C --> D{"Execution mode"}
+  D -->|Viewer| V["Show recommendations\nHuman intervenes"]
+  D -->|Autonomous| AU["Execute remediation\nMay close incident"]
+  V --> E["Operator approves/acts"]
+  AU --> F["Update/close incident\nin platform"]
   E --> F
 ```
 
@@ -349,7 +349,7 @@ Knowledge Base は `.md` と `.txt` を扱い、1ファイル最大 16MB です�
 
 さらに、1回のアップロード内で合計 100MB の制限があります。[8-10]
 
-### 可視化（Mermaid: メモリ構成と検索）
+### メモリ構成と検索
 
 ```mermaid
 flowchart LR
@@ -422,17 +422,17 @@ Custom MCP server は HTTPS で到達可能なリモートホストが必須で�
 - カスタム MCP 接続では、コネクタが「MCP サーバー エンドポイント」「トランスポート（SSE/HTTP）」「認証メカニズム」を定義します。[9-14]
 - 追加は **[設定] → [コネクタ] → [コネクタの追加] → 種類: MCP サーバー** を選び、名前/接続の種類（SSE/HTTP）/MCP サーバー URL/認証などを入力して検証します。[9-15]
 
-### 可視化（Mermaid: Main agent / Subagent / Tools の関係）
+### Main agent / Subagent / Tools の関係
 
 ```mermaid
 flowchart LR
-  Main[Main Azure SRE Agent] -->|hands off| Sub[Subagent]
-  Sub --> Tools[Tools (Python)]
-  Sub --> Conn[Connectors]
-  Conn --> Outlook[Outlook / Teams (OAuth)]
-  Conn --> Telemetry[Knowledge/Telemetry sources]
-  Conn --> MCP[Custom MCP connector]
-  MCP --> Server["MCP server endpoint<br/>(SSE or HTTP over HTTPS)"]
+  Main["Main Azure SRE Agent"] --> Sub["Subagent"]
+  Sub --> Tools["Tools (Python)"]
+  Sub --> Conn["Connectors"]
+  Conn --> Outlook["Outlook / Teams (OAuth)"]
+  Conn --> Telemetry["Knowledge/Telemetry sources"]
+  Conn --> MCP["Custom MCP connector"]
+  MCP --> Server["MCP server endpoint\nSSE or HTTP over HTTPS"]
 ```
 
 ### 参考（第9章）
@@ -465,7 +465,7 @@ flowchart LR
 - “アプリ（App Service）の症状”から入り、根因が“バックエンド（Cosmos DB）のスループット/パーティション”であることを、Portal のメトリクスで確証していく。
 - その後、Azure SRE Agent（Cosmos DB SRE Agent）に「診断の起点」を作らせ、運用の会話の型を作る。[10A-1]
 
-#### 可視化（Mermaid: 全体像）
+#### 全体像
 
 ```mermaid
 flowchart LR
@@ -521,15 +521,17 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  S[Symptom: App Service slow/timeouts] --> A[Check Cosmos 429 rate]
-  A -->|Low (1-5%) and latency OK| OK[No action required]
-  A -->|High or latency bad| B[Check Normalized RU by PartitionKeyRangeID]
-  B -->|Skewed / hot| HP[Hot partition suspected]
-  B -->|Not skewed| TH[Overall throughput likely insufficient]
-  HP --> FIX1[Fix partitioning strategy (long term)]
-  TH --> FIX2[Increase throughput (RU/s) / reduce RU per op]
-  FIX2 --> META[Also rule out metadata throttling]
-  META --> SYS[Check Insights > System > Metadata Requests By Status Code]
+  S["Symptom:\nApp Service slow/timeouts"] --> A["Check Cosmos 429 rate"]
+  A --> C{"429 low and latency OK?"}
+  C -->|Yes| OK["No action required"]
+  C -->|No| B["Check Normalized RU\nby PartitionKeyRangeID"]
+  B --> D{"Skewed/hot partition?"}
+  D -->|Yes| HP["Hot partition suspected"]
+  D -->|No| TH["Overall throughput\nlikely insufficient"]
+  HP --> FIX1["Fix partitioning strategy\n(long term)"]
+  TH --> FIX2["Increase throughput (RU/s)\nor reduce RU per op"]
+  FIX2 --> META["Also rule out\nmetadata throttling"]
+  META --> SYS["Insights > System\nMetadata Requests By Status Code"]
 ```
 
 補足（事実）:
@@ -592,17 +594,17 @@ flowchart TD
 - `*.azuresre.ai` allowlist は portal unresponsive の対処として挙げられている。[11-1]
 - 権限エラー対処として “Avoid relying solely on group-based role assignments” や “Check Access” が挙げられている。[11-2]
 
-### 可視化（Mermaid: 早見表の判断フロー）
+### 早見表の判断フロー
 
 ```mermaid
 flowchart TD
-  S[Start: Portal / chat issue] --> A{Portal unresponsive?}
-  A -->|Yes| N[Check network allowlist]
-  N --> F[Allowlist *.azuresre.ai]
-  A -->|No| B{403/CORS or cannot chat?}
-  B -->|Yes| P[Check role assignments]
-  P --> Q[Prefer direct assignment; use Check Access]
-  B -->|No| O[Check other causes]
+  S["Start: Portal / chat issue"] --> A{"Portal unresponsive?"}
+  A -->|Yes| N["Check network allowlist"]
+  N --> F["Allowlist *.azuresre.ai"]
+  A -->|No| B{"403/CORS or cannot chat?"}
+  B -->|Yes| P["Check role assignments"]
+  P --> Q["Prefer direct assignment\nUse Check Access"]
+  B -->|No| O["Check other causes"]
 ```
 
 ### 参考（第11章）
