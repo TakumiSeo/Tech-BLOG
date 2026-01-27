@@ -3,11 +3,22 @@ name: Deploy Pelican site to Azure Web App - techblogsewo
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'privateJustPersonal/**'
+      - '**/*.ps1'
+      - '**/*.sh'
+      - '**/*.bat'
+      - '**/*.tmp'
+      - '**/*.log'
   workflow_dispatch:
 
 env:
   AZURE_WEBAPP_NAME: techblogsewo
   SITEURL: https://techblogsewo-hafjhjenhfekcpa3.japaneast-01.azurewebsites.net
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
@@ -23,6 +34,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
 
       - name: Install dependencies
         run: |
