@@ -17,21 +17,21 @@ Summary: SRE Agent の概要資料を作成するための勉強ノート
 
 ## 0. 公式ページ（最小セット）
 
-- Overview: https://learn.microsoft.com/en-us/azure/sre-agent/overview
-- Create and use an agent: https://learn.microsoft.com/en-us/azure/sre-agent/usage
-- Roles and permissions overview: https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview
-- User access roles: https://learn.microsoft.com/en-us/azure/sre-agent/user-access-roles
-- Managed identity: https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity
-- Agent run modes: https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes
-- Scheduled tasks: https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks
-- Incident management: https://learn.microsoft.com/en-us/azure/sre-agent/incident-management
-- Incident response plan: https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan
-- Memory system: https://learn.microsoft.com/en-us/azure/sre-agent/memory-system
-- Subagent builder overview: https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview
-- Connectors: https://learn.microsoft.com/en-us/azure/sre-agent/connectors
-- Custom logic (Python): https://learn.microsoft.com/en-us/azure/sre-agent/custom-logic-python
-- Custom MCP server: https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server
-- FAQ: https://learn.microsoft.com/en-us/azure/sre-agent/faq
+- [Overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview)
+- [Create and use an agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage)
+- [Roles and permissions overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview)
+- [User access roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-access-roles)
+- [Managed identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity)
+- [Agent run modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes)
+- [Scheduled tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks)
+- [Incident management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management)
+- [Incident response plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan)
+- [Memory system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system)
+- [Subagent builder overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview)
+- [Connectors](https://learn.microsoft.com/en-us/azure/sre-agent/connectors)
+- [Custom logic (Python)](https://learn.microsoft.com/en-us/azure/sre-agent/custom-logic-python)
+- [Custom MCP server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server)
+- [FAQ](https://learn.microsoft.com/en-us/azure/sre-agent/faq)
 
 ---
 
@@ -45,11 +45,28 @@ Azure SRE Agent は、運用に関する監視・トラブルシューティン�
 - チャット UI の言語制約（英語のみ）があるので、社内展開時は運用手順・プロンプトを英語で標準化する設計が必要です。[1-3]
 - エージェント作成時に Application Insights / Log Analytics / Managed Identity が自動作成されるため、運用データや権限の“置き場”が増える点を理解しておく必要があります。[1-4]
 
+### 可視化（Mermaid: 会話→診断→変更の流れ）
+
+```mermaid
+flowchart LR
+  U[Operator] --> Chat[Portal chat]
+  Chat --> Agent[Azure SRE Agent]
+  Agent --> Read[Read: diagnostics]
+  Agent --> Plan[Write: execution plan]
+  Plan --> Consent{Consent?}
+  Consent -->|Approve| Act[Take action]
+  Consent -->|Deny| Stop[Stop]
+
+  Agent --> AI[Application Insights]
+  Agent --> LA[Log Analytics workspace]
+  Agent --> MI[Managed Identity]
+```
+
 ### 参考（第1章）
-1-1. https://learn.microsoft.com/en-us/azure/sre-agent/overview — “AI-powered monitoring, troubleshooting, and remediation capabilities.”
-1-2. https://learn.microsoft.com/en-us/azure/sre-agent/overview — “any action that an agent takes on your behalf requires your approval.”
-1-3. https://learn.microsoft.com/en-us/azure/sre-agent/overview — “English is the only supported language in the chat interface.”
-1-4. https://learn.microsoft.com/en-us/azure/sre-agent/overview — “Azure Application Insights / Log Analytics workspace / Managed Identity”
+- [1-1] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “AI-powered monitoring, troubleshooting, and remediation capabilities.”
+- [1-2] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “any action that an agent takes on your behalf requires your approval.”
+- [1-3] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “English is the only supported language in the chat interface.”
+- [1-4] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “Azure Application Insights / Log Analytics workspace / Managed Identity”
 
 ---
 
@@ -64,9 +81,20 @@ SRE Agent を作成するには、ユーザー側に `Microsoft.Authorization/ro
 - 権限要件は「SRE Agent リソースの作成」だけでなく、背後で行われる role assignment を通すために重要です。[2-1]
 - `*.azuresre.ai` がブロックされると、Portal 側の体験が破綻するケースがあるため、最初にネットワーク確認を入れるのが現実的です。[2-2]
 
+### 可視化（Mermaid: 作成の前提チェック）
+
+```mermaid
+flowchart TD
+  S[Start] --> R{Has roleAssignments/write?}
+  R -->|No| FixRBAC[Grant required permissions]
+  R -->|Yes| N{Can reach *.azuresre.ai?}
+  N -->|No| FixNW[Allowlist in firewall]
+  N -->|Yes| OK[Ready to create agent]
+```
+
 ### 参考（第2章）
-2-1. https://learn.microsoft.com/en-us/azure/sre-agent/usage — “Make sure that your user account has the `Microsoft.Authorization/roleAssignments/write` permissions”
-2-2. https://learn.microsoft.com/en-us/azure/sre-agent/usage — “Add `*.azuresre.ai` to the allowlist in your firewall settings.”
+- [2-1] [https://learn.microsoft.com/en-us/azure/sre-agent/usage](https://learn.microsoft.com/en-us/azure/sre-agent/usage) — “Make sure that your user account has the `Microsoft.Authorization/roleAssignments/write` permissions”
+- [2-2] [https://learn.microsoft.com/en-us/azure/sre-agent/usage](https://learn.microsoft.com/en-us/azure/sre-agent/usage) — “Add `*.azuresre.ai` to the allowlist in your firewall settings.”
 
 ---
 
@@ -86,14 +114,26 @@ SRE Agent の権限は、(1) ユーザーが SRE Agent に対して持つロー�
 補足（説明）:
 - セキュリティモデルの要点として「RBAC でユーザー機能を制御」「MI は閲覧者/特権のレベルを持つ」「実行モードは同意の扱いに影響」「特権昇格防止のためエージェントのアクセス許可が優先」と整理されています。[3-7]
 
+### 可視化（Mermaid: セキュリティモデルの3要素）
+
+```mermaid
+flowchart LR
+  RBAC[User roles (Admin/Standard/Reader)] -->|controls| UX[What user can do in portal/chat]
+  MI["Agent managed identity<br/>permission level: Reader/Privileged"] -->|enables| ACT[What agent can do in Azure]
+  RM["Run modes<br/>Consent / Credentials"] -->|defines| FLOW[How actions are executed]
+
+  ACT --> BND[Boundary: agent scope/permissions take precedence]
+  FLOW --> BND
+```
+
 ### 参考（第3章）
-3-1. https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview — “consists of three main components”
-3-2. https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview — “Three primary roles (*SRE Agent Admin*, *SRE Agent Standard User*, and *SRE Agent Reader*)”
-3-3. https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview — “either *Reader* or *Privileged* access”
-3-4. https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes — “you can only enable autonomous mode in the context of an incident management plan”
-3-5. https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview — “Agent permissions take precedence … to prevent privilege escalation”
-3-6. https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview#key-concepts — “セキュリティ モデルは、次の 3 つの主要なコンポーネントで構成”
-3-7. https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview#security-model-at-a-glance — “ロールベースのアクセス制御 … アクセス許可レベル … 操作モード … エージェントのアクセス許可 … 優先”
+- [3-1] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “consists of three main components”
+- [3-2] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “Three primary roles (*SRE Agent Admin*, *SRE Agent Standard User*, and *SRE Agent Reader*)”
+- [3-3] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “either *Reader* or *Privileged* access”
+- [3-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “you can only enable autonomous mode in the context of an incident management plan”
+- [3-5] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “Agent permissions take precedence … to prevent privilege escalation”
+- [3-6] [https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview#key-concepts](https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview#key-concepts) — “セキュリティ モデルは、次の 3 つの主要なコンポーネントで構成”
+- [3-7] [https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview#security-model-at-a-glance](https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview#security-model-at-a-glance) — “ロールベースのアクセス制御 … アクセス許可レベル … 操作モード … エージェントのアクセス許可 … 優先”
 
 ---
 
@@ -102,42 +142,62 @@ SRE Agent の権限は、(1) ユーザーが SRE Agent に対して持つロー�
 ### 何のための仕組みか（説明）
 SRE Agent は「自身の managed identity」を持ち、管理対象の resource groups に対して、その identity を使って操作します。[4-1]
 
-ポータル作成時に “Reader / 特権付き（Privileged）” のようなアクセス許可レベルを選べる、と説明されています。[4-5]
+ポータル作成時に “Reader / 特権付き（Privileged）” のアクセス許可レベルを選べます。[4-5]
 
 ### スライド要点（“Reader で始めて大丈夫か” の説明）
-- Permission level が Reader の場合、必要に応じてユーザーに一時的な昇格を要求し、OBO フローで完了させるとされています。[4-2]
+- Permission level が Reader の場合、必要に応じてユーザーに一時的な昇格を要求し、OBO フローで完了させます。[4-2]
 - managed resource group に対して事前に割り当てられるロールとして、Log Analytics Reader / Azure Reader / Monitoring Reader が挙げられています。[4-3]
-- 権限を絞る方法としては「特定権限を剥がす」ではなく「resource group をスコープから外す」ことが説明されています。[4-4]
+- 権限を絞るときは「特定権限を剥がす」ではなく「resource group をスコープから外す」方針で整理します。[4-4]
 
 補足（説明）:
-- エージェントは「ユーザーの同意」と「適切な RBAC 割り当て」が揃う場合にのみアクションを実行するとされています。[4-6]
-- レビュー モード時は明示的同意、インシデント対応計画のコンテキストで自律的に動作する場合は暗黙的同意、と説明されています。[4-7]
+- エージェントは「ユーザーの同意」と「適切な RBAC 割り当て」が揃う場合にのみアクションを実行します。[4-6]
+- レビュー モードは明示的同意、インシデント対応計画のコンテキストでは暗黙的同意として扱います。[4-7]
+
+### 可視化（Mermaid: MI と OBO の流れ）
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant User as Operator
+  participant Agent as Azure SRE Agent
+  participant Entra as Entra ID (OBO)
+  participant Azure as Azure Resource
+
+  User->>Agent: Ask for write action
+  Agent-->>User: Ask for consent
+  User-->>Agent: Approve
+  Agent->>Entra: Request temporary elevation (OBO)
+  Entra-->>Agent: Temporary credentials
+  Agent->>Azure: Execute action via managed identity / delegated creds
+  Azure-->>Agent: Result
+  Agent-->>User: Report outcome
+```
 
 ### 参考（第4章）
-4-1. https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity — “Azure SRE Agent has its own managed identity”
-4-2. https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity — “prompts the user for a temporary elevation using OBO flow”
-4-3. https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity — “preconfigured with the following role assignments”
-4-4. https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity — “You can't directly remove specific permissions … remove the entire resource group from the agent's scope.”
-4-5. https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-permissions — “ポータルからエージェントを作成するときに、次のいずれかのアクセス許可レベルを適用できます”
-4-6. https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-actions — “ユーザーの同意 … 適切な RBAC 割り当てがある場合にのみアクションを実行”
-4-7. https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-actions — “レビュー モード … 明示的な同意 … インシデント対応計画のコンテキスト … 暗黙的な同意”
+- [4-1] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “Azure SRE Agent has its own managed identity”
+- [4-2] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “prompts the user for a temporary elevation using OBO flow”
+- [4-3] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “preconfigured with the following role assignments”
+- [4-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “You can't directly remove specific permissions … remove the entire resource group from the agent's scope.”
+- [4-5] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-permissions](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-permissions) — “ポータルからエージェントを作成するときに、次のいずれかのアクセス許可レベルを適用できます”
+- [4-6] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-actions](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-actions) — “ユーザーの同意 … 適切な RBAC 割り当てがある場合にのみアクションを実行”
+- [4-7] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-actions](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity#agent-actions) — “レビュー モード … 明示的な同意 … インシデント対応計画のコンテキスト … 暗黙的な同意”
 
 ---
 
 ## 5. Run modes（Consent と Credentials の分解）
 
 ### 何が起きているか（説明）
-SRE Agent の write action では、(a) 実行計画に対する同意（Consent）と、(b) 権限が足りない場合の一時的な資格情報アクセス（Credentials）が、別々のリクエストとして整理されています。[5-1]
+SRE Agent の write action では、(a) 実行計画に対する同意（Consent）と、(b) 権限が足りない場合の一時的な資格情報アクセス（Credentials）を分けて扱います。[5-1]
 
-既定ではレビュー モードで動作し、実行プランを生成して同意を待ってからアクションを実行すると説明されています。[5-5]
+既定はレビュー モードで、実行プランを生成して同意を待ってからアクションを実行します。[5-5]
 
-Review mode は、実行計画を生成したうえで consent を待ってから実行すると説明されています。[5-2]
+Review mode は、実行計画を生成したうえで consent を待ってから実行します。[5-2]
 
-また、Credentials の許可が必要になった場合には OBO フローで一時的に資格情報を使い、作業が完了すると revoke されると説明されています。[5-3]
+Credentials の許可が必要になった場合は、OBO フローで一時的に資格情報を使い、作業完了後に revoke されます。[5-3]
 
 Autonomous mode は “implicit consent” として扱われますが、無制限ではなく incident management plan のコンテキストに限定される点が重要です。[5-4]
 
-また、自律モードを「どのコンテキストでも」有効化できるのではなく、スコープを制限して安全な境界内で動作させる意図が明記されています。[5-6]
+また、自律モードを「どのコンテキストでも」有効化できるわけではありません。スコープを制限して安全な境界内で動かします。[5-6]
 
 ### フロー図（Review mode）
 
@@ -155,185 +215,242 @@ flowchart TD
 ```
 
 ### 参考（第5章）
-5-1. https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes — “Consent / Credentials”
-5-2. https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes — “generates an execution plan and waits for your consent”
-5-3. https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes — “Any access to user credentials are revoked once the action is complete.”
-5-4. https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes — “implicit consent”
-5-5. https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode — “既定では … レビュー モード … 実行プランを生成し、同意を待ってからアクションを実行”
-5-6. https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode — “どのコンテキストでも自律的に作業できるのではなく … 制限付きスコープ”
+- [5-1] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “Consent / Credentials”
+- [5-2] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “generates an execution plan and waits for your consent”
+- [5-3] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “Any access to user credentials are revoked once the action is complete.”
+- [5-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “implicit consent”
+- [5-5] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode) — “既定では … レビュー モード … 実行プランを生成し、同意を待ってからアクションを実行”
+- [5-6] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode) — “どのコンテキストでも自律的に作業できるのではなく … 制限付きスコープ”
 
 ---
 
 ## 6. Scheduled tasks
 
 ### 何の機能か（説明）
-Scheduled tasks は、monitoring / maintenance / security checks といったワークフローをスケジュール実行する機能として説明されています。[6-1]
+Scheduled tasks は、monitoring / maintenance / security checks といったワークフローをスケジュール実行する機能です。[6-1]
 
 ### 作成方法（説明）
-作成は UI から行え、チャット中に依頼したり、incident response の一部として自動生成させることもできるとされています。[6-2]
+作成は UI から行えます。チャット中に依頼したり、incident response の一部として自動生成させることもできます。[6-2]
 
-スケジュール（自然言語）から cron への変換を支援する “Draft the cron for me” があり、指示文を改善する “Polish instructions” がある点も明記されています。[6-3][6-4]
+スケジュール（自然言語）から cron への変換を支援する “Draft the cron for me” と、指示文を改善する “Polish instructions” を使えます。[6-3][6-4]
+
+### 可視化（Mermaid: 作り方と実行パス）
+
+```mermaid
+flowchart TD
+  A[Scheduled task] --> B{How to create?}
+  B --> UI[Create manually in UI]
+  B --> Chat[Request during chat]
+  B --> IRP[Generated as part of incident response]
+
+  UI --> Exec[Runs on schedule]
+  Chat --> Exec
+  IRP --> Exec
+
+  Exec --> Out[Monitoring / maintenance / security checks]
+```
 
 ### 参考（第6章）
-6-1. https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks — “automate workflows such as monitoring, maintenance, and security checks”
-6-2. https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks — “create these tasks manually, request them during a chat … allow the agent to generate them autonomously as part of incident response”
-6-3. https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks — “Draft the cron for me”
-6-4. https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks — “Polish instructions”
+- [6-1] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “automate workflows such as monitoring, maintenance, and security checks”
+- [6-2] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “create these tasks manually, request them during a chat … allow the agent to generate them autonomously as part of incident response”
+- [6-3] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “Draft the cron for me”
+- [6-4] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “Polish instructions”
 
 ---
 
 ## 7. Incident management / Incident response plan
 
 ### 何の機能か（説明）
-Incident management は、Azure Monitor alerts / PagerDuty / ServiceNow などの incident management platform からアラートを受け取り、分析・対応する仕組みとして説明されています。[7-1]
+Incident management は、Azure Monitor alerts / PagerDuty / ServiceNow などの incident management platform からアラートを受け取り、分析・対応する仕組みです。[7-1]
 
-Azure Monitor は既定の統合で、最小限のセットアップで使える一方、PagerDuty / ServiceNow などは追加のセットアップが必要とされています。[7-6]
+Azure Monitor は既定の統合で、最小限のセットアップで使えます。一方、PagerDuty / ServiceNow などは追加のセットアップが必要です。[7-6]
 
 補足（説明）:
-- Incident management の設定は、Azure portal でエージェントを開いて **[インシデント プラットフォーム]** タブからアクセスすると説明されています。[7-7]
-- 既定では Azure Monitor アラートがインシデント管理プラットフォームとして構成される、と説明されています。[7-8]
+- Incident management の設定は、Azure portal でエージェントを開いて **[インシデント プラットフォーム]** タブから入ります。[7-7]
+- 既定では Azure Monitor アラートがインシデント管理プラットフォームとして構成されます。[7-8]
 
 ### Incident response plan の位置づけ（説明）
-Incident response plan は、incidents の検知/レビュー/ミティゲーションのやり方を定義するものとして説明され、filters / execution mode / custom instructions をカスタマイズできるとされています。[7-2]
+Incident response plan は、incidents の検知/レビュー/ミティゲーションのやり方を定義します。filters / execution mode / custom instructions をカスタマイズできます。[7-2]
 
 ### 既定値（説明）
-Incident management を有効化した場合の既定として、Azure Monitor alerts と接続し、low priority を全サービス対象にして review mode で処理すると説明されています。[7-3]
+Incident management を有効化した場合の既定として、Azure Monitor alerts と接続し、low priority を全サービス対象にして review mode で処理します。[7-3]
 
 ### テスト（説明）
-Incident response plan は過去インシデントに対して test mode で実行でき、test mode は read-only であると説明されています。[7-4]
+Incident response plan は過去インシデントに対して test mode で実行できます。test mode は read-only です。[7-4]
 
 ### エージェントの応答（説明）
-- インシデントが検出されると、最初の分析を含む新しいスレッドがチャット履歴に作成される、と説明されています。[7-9]
-- 閲覧者モードでは推奨を提示し、人間の介入が必要。自律モードでは構成に応じてインシデントを自動終了したり是正措置を実行でき、管理プラットフォーム側のインシデント更新/終了も行う場合がある、と説明されています。[7-10]
-- 管理プラットフォーム側の構成により、SRE Agent に送るインシデントの種類（例: 低優先度は送るが高優先度は人間が対応）を制御できる、と説明されています。[7-11]
-- インシデント ハンドラーをカスタマイズすることで、(例) 自律性レベル、使えるツール、カスタム手順などを制御できる、と説明されています。[7-12]
+- インシデントが検出されると、最初の分析を含む新しいスレッドがチャット履歴に作成されます。[7-9]
+- 閲覧者モードでは推奨を提示し、人間の介入が必要です。自律モードでは構成に応じてインシデントを自動終了したり是正措置を実行でき、管理プラットフォーム側のインシデント更新/終了も行う場合があります。[7-10]
+- 管理プラットフォーム側の構成により、SRE Agent に送るインシデントの種類（例: 低優先度は送るが高優先度は人間が対応）を制御できます。[7-11]
+- インシデント ハンドラーをカスタマイズすることで、(例) 自律性レベル、使えるツール、カスタム手順などを制御できます。[7-12]
 
 ### ダッシュボード（説明）
-Incident management タブには、エージェントが管理するインシデントの一元ビュー（主要メトリック、保留中のインシデントなど）を提供するダッシュボードがあると説明されています。[7-13]
-また、集計された可視化と AI によって生成された根本原因分析を提供し、傾向把握や対応計画の最適化に役立つと説明されています。[7-14]
+Incident management タブには、エージェントが管理するインシデントの一元ビュー（主要メトリック、保留中のインシデントなど）を提供するダッシュボードがあります。[7-13]
+集計された可視化と AI によって生成された根本原因分析を提供し、傾向把握や対応計画の最適化に使えます。[7-14]
+
+### 可視化（Mermaid: インシデント処理の流れ）
+
+```mermaid
+flowchart TD
+  A["Alert in platform<br/>Azure Monitor / PagerDuty / ServiceNow"] --> B[Incident management receives alert]
+  B --> C[New chat thread created with initial analysis]
+  C --> D{Execution mode}
+  D -->|Viewer mode| V["Show recommendations<br/>Human intervenes"]
+  D -->|Autonomous mode (within plan context)| AU["Execute remediation<br/>May close incident"]
+  V --> E[Operator approves/acts]
+  AU --> F[Update/close incident in platform]
+  E --> F
+```
 
 ### PagerDuty 連携の注意（説明）
-PagerDuty 統合では User API key が必要で、General API key では acknowledge ができないと説明されています。[7-5]
+PagerDuty 統合では User API key が必要です。General API key では acknowledge ができません。[7-5]
 
 ### 参考（第7章）
-7-1. https://learn.microsoft.com/en-us/azure/sre-agent/incident-management — “receives alerts from … Azure Monitor alerts … PagerDuty … ServiceNow”
-7-2. https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan — “Filters … Execution mode … Customize instructions”
-7-3. https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan — “Processes all low priority incidents … Runs in review mode”
-7-4. https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan — “In test mode … always operates in a read-only mode.”
-7-5. https://learn.microsoft.com/en-us/azure/sre-agent/incident-management — “You must use a User API key … General API keys don't allow the agent to acknowledge incidents properly”
-7-6. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration — “Azure Monitor (既定の統合) には最小限のセットアップ … PagerDuty や ServiceNow … 追加のセットアップ”
-7-7. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration — “エージェントを開き、[ インシデント プラットフォーム ] タブ”
-7-8. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration — “既定では、Azure Monitor アラートは … 構成されます”
-7-9. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses — “インシデントが検出されると … 新しいスレッドがチャット履歴に作成”
-7-10. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses — “閲覧者モード … 自律モード … 自動的に終了 … 是正措置 … インシデントを更新または終了”
-7-11. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses — “構成設定を制御することで … インシデントの種類を制御”
-7-12. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses — “インシデント ハンドラーをカスタマイズ … 自律性レベル … 使用できるツール … カスタム手順”
-7-13. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard — “ダッシュボード … すべてのインシデントの一元的なビュー … 主要なメトリック … 保留中のインシデント”
-7-14. https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard — “集計された視覚化と AI によって生成された根本原因分析”
+- [7-1] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management) — “receives alerts from … Azure Monitor alerts … PagerDuty … ServiceNow”
+- [7-2] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan) — “Filters … Execution mode … Customize instructions”
+- [7-3] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan) — “Processes all low priority incidents … Runs in review mode”
+- [7-4] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan) — “In test mode … always operates in a read-only mode.”
+- [7-5] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management) — “You must use a User API key … General API keys don't allow the agent to acknowledge incidents properly”
+- [7-6] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration) — “Azure Monitor (既定の統合) には最小限のセットアップ … PagerDuty や ServiceNow … 追加のセットアップ”
+- [7-7] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration) — “エージェントを開き、[ インシデント プラットフォーム ] タブ”
+- [7-8] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#platform-integration) — “既定では、Azure Monitor アラートは … 構成されます”
+- [7-9] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses) — “インシデントが検出されると … 新しいスレッドがチャット履歴に作成”
+- [7-10] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses) — “閲覧者モード … 自律モード … 自動的に終了 … 是正措置 … インシデントを更新または終了”
+- [7-11] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses) — “構成設定を制御することで … インシデントの種類を制御”
+- [7-12] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses) — “インシデント ハンドラーをカスタマイズ … 自律性レベル … 使用できるツール … カスタム手順”
+- [7-13] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard) — “ダッシュボード … すべてのインシデントの一元的なビュー … 主要なメトリック … 保留中のインシデント”
+- [7-14] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard) — “集計された視覚化と AI によって生成された根本原因分析”
 
 ---
 
 ## 8. Memory system
 
 ### 何の機能か（説明）
-Memory system は、トラブルシューティングを効果的に行うために、runbooks・チーム標準・サービス固有のコンテキストを与える仕組みとして説明されています。[8-1]
+Memory system は、トラブルシューティングを効果的に行うために、runbooks・チーム標準・サービス固有のコンテキストを与える仕組みです。[8-1]
 
 ### 構成（説明）
-Memory system のコンポーネントは User Memories / Knowledge Base / Documentation connector / Session insights の4つであると説明されています。[8-2]
+Memory system のコンポーネントは User Memories / Knowledge Base / Documentation connector / Session insights の4つです。[8-2]
 
 補足（説明）:
-- Session insights はセッションからエージェントが生成するメモリで「自動」と説明されています。[8-7]
+- Session insights はセッションからエージェントが生成するメモリ（自動）です。[8-7]
 
 ### 取り出し方（説明）
-`SearchMemory` は4コンポーネントを横断検索するツールであり、Custom subagents ではツール追加が必要であると説明されています。[8-3]
+`SearchMemory` は4コンポーネントを横断検索するツールです。Custom subagents ではツール追加が必要です。[8-3]
 
-より対象を絞った検索として `SearchNodes` がフィルターをサポートし、`includeNeighbors` を `true` にすると接続されたノード（リソースや関連インシデント等）も返すと説明されています。[8-8]
+より対象を絞った検索として `SearchNodes` がフィルターをサポートし、`includeNeighbors` を `true` にすると接続されたノード（リソースや関連インシデント等）も返します。[8-8]
 
 ### データ投入の注意（説明）
-秘密情報（secrets/credentials/API keys）を保存しないよう明記されています。[8-4]
+秘密情報（secrets/credentials/API keys）は保存しません。[8-4]
 
-また、メモリはチームで共有され、検索用にインデックスが作成される、と説明されています。[8-9]
+メモリはチームで共有され、検索用にインデックスが作成されます。[8-9]
 
 ### Knowledge Base の仕様（説明）
-Knowledge Base は `.md` と `.txt` を扱い、1ファイル最大 16MB と説明されています。[8-5]
+Knowledge Base は `.md` と `.txt` を扱い、1ファイル最大 16MB です。[8-5]
 
-さらに、1回のアップロード内での合計 100MB という制限が記載されています。[8-10]
+さらに、1回のアップロード内で合計 100MB の制限があります。[8-10]
+
+### 可視化（Mermaid: メモリ構成と検索）
+
+```mermaid
+flowchart LR
+  SM[SearchMemory] --> UM[User Memories]
+  SM --> KB[Knowledge Base]
+  SM --> DC[Documentation connector]
+  SM --> SI[Session insights]
+
+  SN["SearchNodes<br/>filters / includeNeighbors"] --> Graph[Graph of connected nodes]
+  Graph --> UM
+  Graph --> SI
+```
 
 ### User memories の操作（説明）
-User memories は `#remember` / `#forget` / `#retrieve` のチャットコマンドを使うと説明されています。[8-6]
+User memories は `#remember` / `#forget` / `#retrieve` のチャットコマンドを使います。[8-6]
 
-`#remember` は将来の会話のために fact/standard/context を保存し、`#forget` は保存済みメモリを検索して削除し、`#retrieve` はエージェントの推論をトリガーせずに検索・表示すると説明されています。[8-11]
+`#remember` は将来の会話のために fact/standard/context を保存し、`#forget` は保存済みメモリを検索して削除し、`#retrieve` はエージェントの推論をトリガーせずに検索・表示します。[8-11]
 
 ### Session insights（説明）
-セッション分析情報は、各セッションから「症状、解決手順、根本原因、落とし穴」をキャプチャして検索可能なメモリになり、関連する過去の分析情報が今後のセッションで自動的に取得される、と説明されています。[8-12]
+セッション分析情報は、各セッションから「症状、解決手順、根本原因、落とし穴」をキャプチャして検索可能なメモリになり、関連する過去の分析情報が今後のセッションで自動的に取得されます。[8-12]
 
-分析情報は「会話が完了した後に定期的に（約30分ごと）自動生成」されるか、「チャット フッターで[セッション分析情報の生成]を選ぶと約30秒でオンデマンド生成」と説明されています。[8-13]
+分析情報は「会話完了後に定期的に（約30分ごと）自動生成」されるか、「チャット フッターで[セッション分析情報の生成]を選ぶと約30秒でオンデマンド生成」されます。[8-13]
 
 ### 参考（第8章）
-8-1. https://learn.microsoft.com/en-us/azure/sre-agent/memory-system — “gives agents the knowledge they need to troubleshoot effectively”
-8-2. https://learn.microsoft.com/en-us/azure/sre-agent/memory-system — “consists of four complementary components”
-8-3. https://learn.microsoft.com/en-us/azure/sre-agent/memory-system — “SearchMemory tool retrieves all memory components … Custom subagents: Add SearchMemory”
-8-4. https://learn.microsoft.com/en-us/azure/sre-agent/memory-system — “Don't store secrets, credentials, API keys”
-8-5. https://learn.microsoft.com/en-us/azure/sre-agent/memory-system — “Upload `.md` or `.txt` files (up to 16 MB each).”
-8-6. https://learn.microsoft.com/en-us/azure/sre-agent/memory-system — “chat commands (`#remember`, `#forget`, `#retrieve`)”
-8-7. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#memory-components — “セッションの分析情報 … セッションからエージェントによって生成されたメモリ … 自動”
-8-8. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#advanced-search-parameters — “`SearchNodes` … フィルターオプション … `includeNeighbors` を `true` … 接続されているノードも返されます”
-8-9. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#tool-configuration — “チームはメモリを共有し、システムによって検索用にインデックスが作成されます”
-8-10. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#supported-file-types-and-limits — “要求ごと … 合計 100 MB”
-8-11. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#chat-commands — “`#remember` … `#forget` … `#retrieve`”
-8-12. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#session-insights — “症状、解決手順、根本原因、および落とし穴をキャプチャ … 検索可能なメモリ … 自動的に取得”
-8-13. https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#when-insights-are-generated — “約 30 分ごと … [セッション分析情報の生成 ] … (約 30 秒)”
+- [8-1] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “gives agents the knowledge they need to troubleshoot effectively”
+- [8-2] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “consists of four complementary components”
+- [8-3] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “SearchMemory tool retrieves all memory components … Custom subagents: Add SearchMemory”
+- [8-4] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “Don't store secrets, credentials, API keys”
+- [8-5] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “Upload `.md` or `.txt` files (up to 16 MB each).”
+- [8-6] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “chat commands (`#remember`, `#forget`, `#retrieve`)”
+- [8-7] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#memory-components](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#memory-components) — “セッションの分析情報 … セッションからエージェントによって生成されたメモリ … 自動”
+- [8-8] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#advanced-search-parameters](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#advanced-search-parameters) — “`SearchNodes` … フィルターオプション … `includeNeighbors` を `true` … 接続されているノードも返されます”
+- [8-9] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#tool-configuration](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#tool-configuration) — “チームはメモリを共有し、システムによって検索用にインデックスが作成されます”
+- [8-10] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#supported-file-types-and-limits](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#supported-file-types-and-limits) — “要求ごと … 合計 100 MB”
+- [8-11] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#chat-commands](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#chat-commands) — “`#remember` … `#forget` … `#retrieve`”
+- [8-12] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#session-insights](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#session-insights) — “症状、解決手順、根本原因、および落とし穴をキャプチャ … 検索可能なメモリ … 自動的に取得”
+- [8-13] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#when-insights-are-generated](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#when-insights-are-generated) — “約 30 分ごと … [セッション分析情報の生成 ] … (約 30 秒)”
 
 ---
 
 ## 9. Subagent builder / Tools / Connectors / Custom MCP
 
 ### Subagent builder（説明）
-Subagent builder は、運用ワークフロー向けに「インテリジェントなサブエージェントを作成・カスタマイズ・管理」する機能として説明されています。[9-1]
+Subagent builder は、運用ワークフロー向けに「インテリジェントなサブエージェントを作成・カスタマイズ・管理」する機能です。[9-1]
 
-サブエージェント ビルダーで作れるものとして、カスタム サブエージェント、データ統合（監視ツール/ナレッジソース接続）、自動トリガー（インシデント対応計画/スケジュールタスク）、アクション（外部サービスとの連携）などが挙げられています。[9-4]
+サブエージェント ビルダーで作れるものとして、カスタム サブエージェント、データ統合（監視ツール/ナレッジソース接続）、自動トリガー（インシデント対応計画/スケジュールタスク）、アクション（外部サービスとの連携）を押さえます。[9-4]
 
-サブエージェント設計の流れとして「目的と運用スコープを定義→データ ソースを接続→システム ツール/MCP 統合を関連付け→カスタム命令→ハンドオフ ルール」という要素が説明されています。[9-5]
+サブエージェント設計は「目的と運用スコープを定義→データ ソースを接続→システム ツール/MCP 統合を関連付け→カスタム命令→ハンドオフ ルール」で整理します。[9-5]
 
-また、インシデント対応計画またはスケジュールされたタスクがサブエージェントをトリガーすると説明されています。[9-6]
+また、インシデント対応計画またはスケジュールされたタスクがサブエージェントをトリガーします。[9-6]
 
 ### Python カスタム ロジック（説明）
-サブエージェント ビルダー上で Python ツールを作成でき、作成手順として **[Builder > Subagent builder]** → **作成 > ツール** → **Python ツール** が示されています。[9-7]
+サブエージェント ビルダー上で Python ツールを作成できます。作成手順は **[Builder > Subagent builder]** → **作成 > ツール** → **Python ツール** です。[9-7]
 
-Python ツールは「タイムアウト 5〜900秒（既定 120）」「`def main` を含む必要がある」「戻り値は JSON にシリアル化（dict/list/プリミティブ/None→null）」などの仕様が説明されています。[9-8][9-9]
+Python ツールは「タイムアウト 5〜900秒（既定 120）」「`def main` を含む必要がある」「戻り値は JSON にシリアル化（dict/list/プリミティブ/None→null）」などの仕様です。[9-8][9-9]
 
-さらに、ツール モード（自動/手動/隠れた）でエージェントがツールを呼ぶ方法を制御でき、Azure リソースへアクセスする必要がある場合は **[ID]** タブでマネージド ID アクセスを構成する、と説明されています。[9-10][9-11]
+さらに、ツール モード（自動/手動/隠れた）でエージェントがツールを呼ぶ方法を制御できます。Azure リソースへアクセスする必要がある場合は **[ID]** タブでマネージド ID アクセスを構成します。[9-10][9-11]
 
 ### Connectors（説明）
-コネクタは SRE Agent の機能を拡張する統合で、通信コネクタ（Outlook/Teams 等）とナレッジ/テレメトリの取り込み（Datadog/Dynatrace/New Relic 等）に加えて、任意の MCP エンドポイントへ接続するカスタム コネクタがあると説明されています。[9-12]
+コネクタは SRE Agent の機能を拡張する統合です。通信コネクタ（Outlook/Teams 等）とナレッジ/テレメトリの取り込み（Datadog/Dynatrace/New Relic 等）に加えて、任意の MCP エンドポイントへ接続するカスタム コネクタがあります。[9-12]
 
-コネクタ設定の手順として **[設定] > [コネクタ]** から種類（Outlook/Teams/カスタム MCP）を選び、Outlook/Teams は OAuth、MCP は URL と資格情報または OAuth トークンを指定する、と説明されています。[9-13]
+コネクタ設定は **[設定] > [コネクタ]** から種類（Outlook/Teams/カスタム MCP）を選びます。Outlook/Teams は OAuth、MCP は URL と資格情報または OAuth トークンを指定します。[9-13]
 
 ### Custom MCP（説明）
-Custom MCP server は HTTPS で到達可能なリモートホストが必須で、SRE Agent 内でローカル実行はできないと説明されています。[9-2]
+Custom MCP server は HTTPS で到達可能なリモートホストが必須です。SRE Agent 内でローカル実行はできません。[9-2]
 
-さらに、MCP のツールは main agent から直接は使えず、サブエージェント経由でのみアクセスできると明記されています。[9-3]
+さらに、MCP のツールは main agent から直接は使えず、サブエージェント経由でのみアクセスできます。[9-3]
 
 補足（説明）:
-- カスタム MCP 接続では、コネクタが「MCP サーバー エンドポイント」「トランスポート（SSE/HTTP）」「認証メカニズム」を定義する、と説明されています。[9-14]
-- 追加手順として **[設定] → [コネクタ] → [コネクタの追加] → 種類: MCP サーバー** を選び、名前/接続の種類（SSE/HTTP）/MCP サーバー URL/認証などを入力して検証する流れが示されています。[9-15]
+- カスタム MCP 接続では、コネクタが「MCP サーバー エンドポイント」「トランスポート（SSE/HTTP）」「認証メカニズム」を定義します。[9-14]
+- 追加は **[設定] → [コネクタ] → [コネクタの追加] → 種類: MCP サーバー** を選び、名前/接続の種類（SSE/HTTP）/MCP サーバー URL/認証などを入力して検証します。[9-15]
+
+### 可視化（Mermaid: Main agent / Subagent / Tools の関係）
+
+```mermaid
+flowchart LR
+  Main[Main Azure SRE Agent] -->|hands off| Sub[Subagent]
+  Sub --> Tools[Tools (Python)]
+  Sub --> Conn[Connectors]
+  Conn --> Outlook[Outlook / Teams (OAuth)]
+  Conn --> Telemetry[Knowledge/Telemetry sources]
+  Conn --> MCP[Custom MCP connector]
+  MCP --> Server["MCP server endpoint<br/>(SSE or HTTP over HTTPS)"]
+```
 
 ### 参考（第9章）
-9-1. https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview — “Incident response plans or scheduled tasks trigger subagents.”
-9-2. https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server — “must host … remotely and make them reachable over HTTPS … doesn't support running MCP servers locally”
-9-3. https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server — “only accessible through subagents and aren't directly accessible to main Azure SRE Agent.”
-9-4. https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#what-you-can-build-with-subagent-builder — “カスタム サブエージェント … データ統合 … 自動トリガー … アクション”
-9-5. https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#work-with-subagent-builder — “主な目的と運用スコープ … データ ソース … システム ツールと MCP 統合 … カスタム命令 … ハンドオフ ルール”
-9-6. https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#work-with-subagent-builder — “インシデント対応計画またはスケジュールされたタスクは、サブエージェントをトリガー”
-9-7. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool — “左側のナビゲーションから [Builder>Subagent builder ] … 作成>ツール … Python ツール”
-9-8. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool — “タイムアウト (秒) | 5 ~ 900 … 既定値は 120 … Python コード … def main 関数を含む必要があります”
-9-9. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#write-the-main-function — “システムは戻り値を JSON に自動的にシリアル化 … 次の種類がサポート”
-9-10. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#configure-tool-mode — “自動 … 手動 … 隠れた”
-9-11. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#set-up-identity — “Azure リソースにアクセスする必要があるツール … [ ID] タブ … マネージド ID アクセスを構成”
-9-12. https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#what-are-connectors — “通信コネクタ … ナレッジ コネクタ … カスタム コネクタ … MCP サーバー エンドポイント”
-9-13. https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#configure-a-connector — “設定 … コネクタ … Outlook と Teams … OAuth … MCP URL と資格情報または OAuth トークン”
-9-14. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#how-custom-mcp-connections-work — “コネクタは次を定義 … エンドポイント … トランスポート … 認証”
-9-15. https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#add-a-custom-mcp-server-connector — “Azure portal … [ 設定] → [コネクタ] … [ コネクタの追加] … MCP サーバー … SSE … HTTP … URL … 認証”
+- [9-1] [https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview) — “Incident response plans or scheduled tasks trigger subagents.”
+- [9-2] [https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server) — “must host … remotely and make them reachable over HTTPS … doesn't support running MCP servers locally”
+- [9-3] [https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server) — “only accessible through subagents and aren't directly accessible to main Azure SRE Agent.”
+- [9-4] [https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#what-you-can-build-with-subagent-builder](https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#what-you-can-build-with-subagent-builder) — “カスタム サブエージェント … データ統合 … 自動トリガー … アクション”
+- [9-5] [https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#work-with-subagent-builder](https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#work-with-subagent-builder) — “主な目的と運用スコープ … データ ソース … システム ツールと MCP 統合 … カスタム命令 … ハンドオフ ルール”
+- [9-6] [https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#work-with-subagent-builder](https://learn.microsoft.com/ja-jp/azure/sre-agent/subagent-builder-overview#work-with-subagent-builder) — “インシデント対応計画またはスケジュールされたタスクは、サブエージェントをトリガー”
+- [9-7] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool) — “左側のナビゲーションから [Builder>Subagent builder ] … 作成>ツール … Python ツール”
+- [9-8] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool) — “タイムアウト (秒) | 5 ~ 900 … 既定値は 120 … Python コード … def main 関数を含む必要があります”
+- [9-9] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#write-the-main-function](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#write-the-main-function) — “システムは戻り値を JSON に自動的にシリアル化 … 次の種類がサポート”
+- [9-10] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#configure-tool-mode](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#configure-tool-mode) — “自動 … 手動 … 隠れた”
+- [9-11] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#set-up-identity](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#set-up-identity) — “Azure リソースにアクセスする必要があるツール … [ ID] タブ … マネージド ID アクセスを構成”
+- [9-12] [https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#what-are-connectors](https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#what-are-connectors) — “通信コネクタ … ナレッジ コネクタ … カスタム コネクタ … MCP サーバー エンドポイント”
+- [9-13] [https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#configure-a-connector](https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#configure-a-connector) — “設定 … コネクタ … Outlook と Teams … OAuth … MCP URL と資格情報または OAuth トークン”
+- [9-14] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#how-custom-mcp-connections-work](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#how-custom-mcp-connections-work) — “コネクタは次を定義 … エンドポイント … トランスポート … 認証”
+- [9-15] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#add-a-custom-mcp-server-connector](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#add-a-custom-mcp-server-connector) — “Azure portal … [ 設定] → [コネクタ] … [ コネクタの追加] … MCP サーバー … SSE … HTTP … URL … 認証”
 
 ---
 
@@ -425,28 +542,28 @@ flowchart TD
 - (提案) チャットの型としては、`My App Service is slow. Check Cosmos throttling/hot partitions.` のように「症状→疑う観点」を明示して投げる。
 
 #### 参考（デモA）
-10A-1. https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent — “AI-powered diagnostic tool … simplify troubleshooting”
-10A-2. https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account — “select **Create**, and then **Azure Cosmos DB for NoSQL**.”
-10A-3. https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account — “select **Review + create** … select **Create** … select **Go to resource**”
-10A-4. https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-a-database-and-container — “select **Data Explorer**”
-10A-5. https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-a-database-and-container — “select the **New Container** option.”
-10A-6. https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-create-container — “Enter a **Partition key** … Select **Autoscale** or **Manual** throughput”
-10A-7. https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service — “search for **App Services** … select **+ Create** > **Web App**.”
-10A-8. https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service — “select **Deployment Center** … **Source** … **Save**”
-10A-9. https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings — “select **Settings** > **Environment variables** … select **Connection strings**.”
-10A-10. https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings — “Connection strings are always encrypted … (encrypted at rest).”
-10A-11. https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings#variable-prefixes — “`DOCDBCONNSTR_` | Connection string to a database in Azure Cosmos DB.”
-10A-12. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large — “A \"Request rate too large\" … indicates that your requests … are being rate limited.”
-10A-13. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#request-rate-is-large — “navigate to **Insights** > **Requests** > **Total Requests by Status Code**.”
-10A-14. https://learn.microsoft.com/en-us/azure/cosmos-db/monitor-normalized-request-units — “if you see between 1-5% of requests with 429s … this is a healthy sign … No action is required.”
-10A-15. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#step-2-determine-if-theres-a-hot-partition — “A hot partition … can lead to 429 responses”
-10A-16. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#step-2-determine-if-theres-a-hot-partition — “navigate to **Insights** > **Throughput** > **Normalized RU Consumption (%) By PartitionKeyRangeID**.”
-10A-17. https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent — “Create an Azure SRE Agent … Add your Azure Cosmos DB resources … Enable the Preview Upgrade Channel”
-10A-18. https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service — “select **Overview** … select **Browse**”
-10A-19. https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings — “select **Add** … select **Apply** … select **Apply** on the **Environment variables** page.”
-10A-20. https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings — “values for connection strings are hidden … select **Show value** … **Show values**.”
-10A-21. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests — “There's a system-reserved RU limit … increasing … RU/s … has no effect”
-10A-22. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests — “Navigate to **Insights** > **System** > **Metadata Requests By Status Code**.”
+- [10A-1] [https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent](https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent) — “AI-powered diagnostic tool … simplify troubleshooting”
+- [10A-2] [https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account](https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account) — “select **Create**, and then **Azure Cosmos DB for NoSQL**.”
+- [10A-3] [https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account](https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account) — “select **Review + create** … select **Create** … select **Go to resource**”
+- [10A-4] [https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-a-database-and-container](https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-a-database-and-container) — “select **Data Explorer**”
+- [10A-5] [https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-a-database-and-container](https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-a-database-and-container) — “select the **New Container** option.”
+- [10A-6] [https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-create-container](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-create-container) — “Enter a **Partition key** … Select **Autoscale** or **Manual** throughput”
+- [10A-7] [https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service](https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service) — “search for **App Services** … select **+ Create** > **Web App**.”
+- [10A-8] [https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service](https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service) — “select **Deployment Center** … **Source** … **Save**”
+- [10A-9] [https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings](https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings) — “select **Settings** > **Environment variables** … select **Connection strings**.”
+- [10A-10] [https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings](https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings) — “Connection strings are always encrypted … (encrypted at rest).”
+- [10A-11] [https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings#variable-prefixes](https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings#variable-prefixes) — “`DOCDBCONNSTR_` | Connection string to a database in Azure Cosmos DB.”
+- [10A-12] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large) — “A \"Request rate too large\" … indicates that your requests … are being rate limited.”
+- [10A-13] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#request-rate-is-large](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#request-rate-is-large) — “navigate to **Insights** > **Requests** > **Total Requests by Status Code**.”
+- [10A-14] [https://learn.microsoft.com/en-us/azure/cosmos-db/monitor-normalized-request-units](https://learn.microsoft.com/en-us/azure/cosmos-db/monitor-normalized-request-units) — “if you see between 1-5% of requests with 429s … this is a healthy sign … No action is required.”
+- [10A-15] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#step-2-determine-if-theres-a-hot-partition](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#step-2-determine-if-theres-a-hot-partition) — “A hot partition … can lead to 429 responses”
+- [10A-16] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#step-2-determine-if-theres-a-hot-partition](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#step-2-determine-if-theres-a-hot-partition) — “navigate to **Insights** > **Throughput** > **Normalized RU Consumption (%) By PartitionKeyRangeID**.”
+- [10A-17] [https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent](https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent) — “Create an Azure SRE Agent … Add your Azure Cosmos DB resources … Enable the Preview Upgrade Channel”
+- [10A-18] [https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service](https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service) — “select **Overview** … select **Browse**”
+- [10A-19] [https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings](https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings) — “select **Add** … select **Apply** … select **Apply** on the **Environment variables** page.”
+- [10A-20] [https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings](https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings) — “values for connection strings are hidden … select **Show value** … **Show values**.”
+- [10A-21] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests) — “There's a system-reserved RU limit … increasing … RU/s … has no effect”
+- [10A-22] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests) — “Navigate to **Insights** > **System** > **Metadata Requests By Status Code**.”
 
 ---
 
@@ -460,8 +577,8 @@ flowchart TD
 - 408 が SLA 違反かどうかで「リトライで耐える」か「サポートへ」が分かれる。[10B-2]
 
 #### 参考（デモB）
-10B-1. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-time-out — “Hot partition key … Use the Normalized RU Consumption metric”
-10B-2. https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-time-out — “The application should handle this scenario and retry … Contact Azure Support”
+- [10B-1] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-time-out](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-time-out) — “Hot partition key … Use the Normalized RU Consumption metric”
+- [10B-2] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-time-out](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-time-out) — “The application should handle this scenario and retry … Contact Azure Support”
 
 ---
 
@@ -475,9 +592,22 @@ flowchart TD
 - `*.azuresre.ai` allowlist は portal unresponsive の対処として挙げられている。[11-1]
 - 権限エラー対処として “Avoid relying solely on group-based role assignments” や “Check Access” が挙げられている。[11-2]
 
+### 可視化（Mermaid: 早見表の判断フロー）
+
+```mermaid
+flowchart TD
+  S[Start: Portal / chat issue] --> A{Portal unresponsive?}
+  A -->|Yes| N[Check network allowlist]
+  N --> F[Allowlist *.azuresre.ai]
+  A -->|No| B{403/CORS or cannot chat?}
+  B -->|Yes| P[Check role assignments]
+  P --> Q[Prefer direct assignment; use Check Access]
+  B -->|No| O[Check other causes]
+```
+
 ### 参考（第11章）
-11-1. https://learn.microsoft.com/en-us/azure/sre-agent/faq — “add `*.azuresre.ai` to the allow list”
-11-2. https://learn.microsoft.com/en-us/azure/sre-agent/faq — “Avoid relying solely on group-based role assignments … Use the Check Access feature”
+- [11-1] [https://learn.microsoft.com/en-us/azure/sre-agent/faq](https://learn.microsoft.com/en-us/azure/sre-agent/faq) — “add `*.azuresre.ai` to the allow list”
+- [11-2] [https://learn.microsoft.com/en-us/azure/sre-agent/faq](https://learn.microsoft.com/en-us/azure/sre-agent/faq) — “Avoid relying solely on group-based role assignments … Use the Check Access feature”
 
 ---
 
@@ -487,8 +617,8 @@ flowchart TD
 - Container Apps を SRE Agent でトラブルシュートする手順がある。[A-2]
 
 ### 参考（付録）
-A-1. https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service — “Troubleshoot an App Service app by using Azure SRE Agent Preview”
-A-2. https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-container-apps — “Troubleshoot a container app by using Azure SRE Agent Preview”
+- [A-1] [https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service](https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-app-service) — “Troubleshoot an App Service app by using Azure SRE Agent Preview”
+- [A-2] [https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-container-apps](https://learn.microsoft.com/en-us/azure/sre-agent/troubleshoot-azure-container-apps) — “Troubleshoot a container app by using Azure SRE Agent Preview”
 
 
 
