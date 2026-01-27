@@ -12,10 +12,9 @@ SITESUBTITLE = ""
 SITEURL = ""
 
 # Remote image hosting (Azure Blob Storage)
-BLOB_IMAGE_BASE = "https://strtaksewoblog.blob.core.windows.net/blogimage"
-BLOB_IMAGE_SAS = (
-    "sp=racw&st=2025-11-25T13:05:21Z&se=2026-08-30T21:20:21Z&spr=https&sv=2024-11-04&sr=c&sig=dyMJcL0mFEguUjPsp9IGa%2BwEoZ8z7ty1ErKOCpxM6xg%3D"
-)
+# Public container endpoint for blog images (no SAS)
+BLOB_IMAGE_BASE = "https://technotesewo.blob.core.windows.net/image"
+BLOB_IMAGE_SAS = ""
 
 PATH = "content"
 ARTICLE_PATHS = [

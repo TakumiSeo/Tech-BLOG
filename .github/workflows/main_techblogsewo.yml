@@ -1,65 +1,53 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - techblogsewo
+name: Deploy Pelican site to Azure Web App - techblogsewo
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: techblogsewo
+  SITEURL: https://techblogsewo-hafjhjenhfekcpa3.japaneast-01.azurewebsites.net
+
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          dotnet-version: '10.x'
+          python-version: "3.12"
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build Pelican site
+        run: |
+          pelican content -o output -s publishconf.py
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+      - name: Create deployment package (zip output)
+        run: |
+          cd output
+          zip -r ../site.zip .
 
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-      
-      - name: Login to Azure
+      - name: Login to Azure (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_303A6669869540CF809F118D2E067233 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6D66F6D729874251A9DF55DA3684D9AA }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7684EB01A25648B6B70D73D083AAB31A }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App (Zip Deploy)
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'techblogsewo'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: Production
+          package: site.zip
