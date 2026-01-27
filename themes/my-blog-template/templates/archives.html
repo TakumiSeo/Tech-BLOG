@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% set current_lang = (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set is_japanese = (current_lang == 'ja-jp') %}
+
+{% block title %}{{ 'Archives' if not is_japanese else 'アーカイブ' }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        <h1>{{ 'Archives' if not is_japanese else 'アーカイブ' }}</h1>
+        <p>{{ 'Browse every post published on' if not is_japanese else '公開済みの記事を時系列で閲覧できます:' }} {{ SITENAME }}.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="archive-list">
+    {% for article in dates %}
+        <article class="archive-row">
+            <time datetime="{{ article.date.isoformat() }}">{{ article.date.strftime('%b %d, %Y') }}</time>
+            <a href="{{ SITEURL }}/{{ article.url }}">{{ article.title }}</a>
+        </article>
+    {% endfor %}
+</section>
+{% endblock %}

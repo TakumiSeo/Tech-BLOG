@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% import "macros/url_helpers.html" as url_helpers %}
+{% set article_lang = article.lang or (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set is_japanese = (article_lang == 'ja-jp') %}
+{% set article_root = article_lang ~ '/' %}
+{% set share_siteurl = SITEURL.rstrip('/') if SITEURL else '' %}
+{% if share_siteurl and share_siteurl.lower().endswith('/' ~ article_lang) %}
+    {% set share_siteurl = share_siteurl[:-(article_lang|length + 1)] %}
+{% endif %}
+{% if share_siteurl %}
+    {% set share_permalink = share_siteurl ~ '/' ~ article.url %}
+{% else %}
+    {% set share_permalink = '/' ~ article.url %}
+{% endif %}
+
+{% block extra_head %}
+    {{ super() }}
+    <!-- lang-debug: {{ article.lang }} | {{ article_lang }} | url={{ article.url }} -->
+{% endblock %}
+
+{% block title %}{{ article.title }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        {% if article.tags %}
+            {% set primary_tag = article.tags[0] %}
+            {% if primary_tag %}<p class="hero-eyebrow">#{{ primary_tag.name }}</p>{% endif %}
+        {% endif %}
+        <h1>{{ article.title }}</h1>
+        <div class="article-meta">
+            <time datetime="{{ article.date.isoformat() }}">{{ article.date.strftime('%B %d, %Y') }}</time>
+            {% if article.author %}<span>by {{ article.author }}</span>{% endif %}
+            {% if article.tags %}
+                <span>
+                    {{ article.tags | map(attribute='name') | join(', ') }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<article class="article-detail" lang="{{ article_lang }}">
+    {% set rendered_body = article.content|resolve_blob %}
+    <div class="article-body">
+        {{ rendered_body | safe }}
+    </div>
+    <footer class="article-footer">
+        {% if article.tags %}
+        <div class="tag-list">
+            <span>{{ 'Tags:' if not is_japanese else 'タグ:' }}</span>
+            {% for tag in article.tags %}
+                <a class="pill" href="{{ url_helpers.lang_url(tag.url, article_lang, article_root) }}" hreflang="{{ article_lang }}">{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="share-links">
+            <span>{{ 'Share:' if not is_japanese else '共有:' }}</span>
+            <a href="https://twitter.com/intent/tweet?url={{ share_permalink | urlencode }}&text={{ article.title | urlencode }}" target="_blank" rel="noopener">X</a>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ share_permalink | urlencode }}&title={{ article.title | urlencode }}" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+        <nav class="article-nav" aria-label="Article navigation">
+            {% if article.prev_article %}
+                <a class="button ghost" href="{{ url_helpers.lang_url(article.prev_article.url, article_lang, article_root) }}" hreflang="{{ article.prev_article.lang or article_lang }}">&larr; {{ article.prev_article.title }}</a>
+            {% endif %}
+            {% if article.next_article %}
+                <a class="button" href="{{ url_helpers.lang_url(article.next_article.url, article_lang, article_root) }}" hreflang="{{ article.next_article.lang or article_lang }}">{{ article.next_article.title }} &rarr;</a>
+            {% endif %}
+        </nav>
+    </footer>
+</article>
+{% endblock %}

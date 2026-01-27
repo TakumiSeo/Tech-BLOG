@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% set current_lang = (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set is_japanese = (current_lang == 'ja-jp') %}
+
+{% block title %}{{ 'Articles' if not is_japanese else '記事一覧' }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        <h1>{{ 'Articles' if not is_japanese else '記事一覧' }}</h1>
+        <p>{{ 'Scan every post in latest-first order, then zoom in by tag.' if not is_japanese else '最新順で記事を確認し、タグで絞り込めます。' }}</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+{% set ordered_articles = articles | sort(attribute='date', reverse=True) %}
+{% set tag_pairs = tags | list %}
+
+<section class="section-shell">
+    <div class="section-header">
+        <div class="section-title-group">
+            <h2>{{ 'Latest articles' if not is_japanese else '最新の記事' }}</h2>
+            <p>{{ 'Use the pills to focus on a specific topic stream.' if not is_japanese else 'タグを使って興味のあるテーマだけを表示できます。' }}</p>
+        </div>
+    </div>
+    {% if tag_pairs %}
+    <div class="filter-toolbar single-filter">
+        <div class="filter-block">
+            <span class="filter-label">{{ 'Tag' if not is_japanese else 'タグ' }}</span>
+            <div class="filter-dropdown" data-filter-dropdown="tag">
+                <button class="filter-dropdown__trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="filter-dropdown__label">{{ 'All tags' if not is_japanese else 'すべてのタグ' }}</span>
+                    <span class="filter-dropdown__caret" aria-hidden="true"></span>
+                </button>
+                <ul class="filter-dropdown__menu" role="listbox" hidden>
+                    <li>
+                        <button type="button" role="option" aria-selected="true" data-tag="all">{{ 'All tags' if not is_japanese else 'すべてのタグ' }}</button>
+                    </li>
+                    {% for tag, tag_articles in tag_pairs %}
+                    <li>
+                        <button type="button" role="option" aria-selected="false" data-tag="{{ tag.slug }}">{{ tag.name }} ({{ tag_articles|length }})</button>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="article-grid latest-grid" id="category-grid">
+        {% for article in ordered_articles %}
+            {% include "partials/post-card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+(function () {
+    var grid = document.getElementById('category-grid');
+    var dropdown = document.querySelector('[data-filter-dropdown="tag"]');
+    if (!grid || !dropdown) {
+        return;
+    }
+
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.post-card'));
+    var trigger = dropdown.querySelector('.filter-dropdown__trigger');
+    var menu = dropdown.querySelector('.filter-dropdown__menu');
+    var label = trigger ? trigger.querySelector('.filter-dropdown__label') : null;
+    var options = menu ? Array.prototype.slice.call(menu.querySelectorAll('[data-tag]')) : [];
+    var activeTag = 'all';
+    var isOpen = false;
+
+    if (!cards.length || !trigger || !menu || !options.length) {
+        return;
+    }
+
+    function setDropdownState(open) {
+        isOpen = open;
+        trigger.setAttribute('aria-expanded', String(open));
+        menu.hidden = !open;
+        dropdown.classList.toggle('is-open', open);
+    }
+
+    function closeDropdown() {
+        setDropdownState(false);
+    }
+
+    function updateLabel(text) {
+        if (label) {
+            label.textContent = text;
+        }
+    }
+
+    function applyFilter() {
+        cards.forEach(function (card) {
+            var tagString = card.getAttribute('data-tags') || '';
+            var tagList = tagString ? tagString.split(/\s+/).filter(Boolean) : [];
+            var matchesTag = activeTag === 'all' || tagList.indexOf(activeTag) !== -1;
+            card.hidden = !matchesTag;
+        });
+    }
+
+    trigger.addEventListener('click', function (event) {
+        event.stopPropagation();
+        setDropdownState(!isOpen);
+    });
+
+    options.forEach(function (option) {
+        option.addEventListener('click', function () {
+            var next = option.getAttribute('data-tag') || 'all';
+            activeTag = next;
+            options.forEach(function (btn) {
+                btn.setAttribute('aria-selected', String(btn === option));
+            });
+            updateLabel(option.textContent.trim());
+            closeDropdown();
+            applyFilter();
+        });
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!isOpen) {
+            return;
+        }
+        if (!dropdown.contains(event.target)) {
+            closeDropdown();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && isOpen) {
+            closeDropdown();
+            trigger.focus();
+        }
+    });
+})();
+</script>
+{% endblock %}

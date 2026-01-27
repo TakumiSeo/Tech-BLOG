@@ -1,0 +1,20 @@
+{% import "macros/url_helpers.html" as url_helpers %}
+{% set tag_slugs = article.tags | map(attribute='slug') | join(' ') if article.tags else '' %}
+{% set card_lang = article.lang or (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set card_root = card_lang ~ '/' %}
+{% set read_more_label = 'Continue reading' if card_lang == 'en-us' else '続きを読む' %}
+<article class="post-card" data-tags="{{ tag_slugs }}" lang="{{ card_lang }}">
+    <div class="post-card__meta">
+        <time datetime="{{ article.date.isoformat() }}">{{ article.date.strftime('%b %d, %Y') }}</time>
+        {% if article.tags %}
+            <div class="post-card__tags" aria-label="Tags">
+                {% for tag in article.tags %}
+                    <a class="pill" href="{{ url_helpers.lang_url(tag.url, card_lang, card_root) }}" hreflang="{{ card_lang }}">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <h3><a href="{{ url_helpers.lang_url(article.url, card_lang, card_root) }}" hreflang="{{ card_lang }}">{{ article.title }}</a></h3>
+    <p>{{ article.summary|striptags|truncate(220, True, '…') if article.summary else article.content|striptags|truncate(220, True, '…') }}</p>
+    <a class="text-link" href="{{ url_helpers.lang_url(article.url, card_lang, card_root) }}" hreflang="{{ card_lang }}">{{ read_more_label }}</a>
+</article>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tag }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        <h1>#{{ tag }}</h1>
+        <p>Posts tagged with {{ tag }}.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="section-shell tag-page">
+    <div class="article-grid">
+        {% for article in articles %}
+            {% include "partials/post-card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

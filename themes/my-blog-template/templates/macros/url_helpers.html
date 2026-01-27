@@ -1,0 +1,13 @@
+{# Jinja macros to keep links within the active language #}
+{% macro lang_url(url, current_lang, localized_root) -%}
+    {%- if not url -%}
+        {{ '' }}
+    {%- else -%}
+        {%- set normalized = url.lstrip('/') -%}
+        {%- if normalized.startswith(current_lang ~ '/') -%}
+            {{ '/' ~ normalized }}
+        {%- else -%}
+            {{ '/' ~ localized_root ~ normalized }}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% set page_lang = page.lang or (lang if lang is defined and lang else DEFAULT_LANG) %}
+
+{% block title %}{{ page.title }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        <h1>{{ page.title }}</h1>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<article class="article-detail" lang="{{ page_lang }}">
+    {% set rendered_body = page.content|resolve_blob %}
+    <div class="article-body">
+        {{ rendered_body | safe }}
+    </div>
+</article>
+{% endblock %}

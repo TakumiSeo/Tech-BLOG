@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% set current_lang = (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set is_japanese = (current_lang == 'ja-jp') %}
+
+{% block title %}{{ 'Tags' if not is_japanese else 'タグ' }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        <h1>{{ 'Tags' if not is_japanese else 'タグ' }}</h1>
+        <p>{{ 'Browse posts by topic keyword.' if not is_japanese else 'テーマごとの記事を一覧できます。' }}</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="tax-list">
+    {% for tag, articles in tags %}
+        <a class="tax-card" href="{{ SITEURL }}/{{ tag.url }}">
+            <h3>{{ tag }}</h3>
+            <p>{{ articles|length }} {{ 'posts' if not is_japanese else '件' }}</p>
+        </a>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,768 @@
+{% import "macros/url_helpers.html" as url_helpers %}
+{% set __detected_lang = DEFAULT_LANG %}
+{% if lang is defined and lang %}
+    {% set __detected_lang = lang %}
+{% elif article is defined and article.lang %}
+    {% set __detected_lang = article.lang %}
+{% elif page is defined and page.lang %}
+    {% set __detected_lang = page.lang %}
+{% elif category is defined and category.lang %}
+    {% set __detected_lang = category.lang %}
+{% elif tag is defined and tag.lang %}
+    {% set __detected_lang = tag.lang %}
+{% endif %}
+{% set current_lang = __detected_lang|lower %}
+{% set localized_root = localized_root if localized_root is defined else (current_lang ~ '/') %}
+{% set language_switcher_items = LANGUAGE_SWITCHER if LANGUAGE_SWITCHER else [] %}
+{% set siteurl_value = SITEURL if SITEURL else '' %}
+{% if siteurl_value and not siteurl_value.startswith('http') and not siteurl_value.startswith('/') %}
+    {% set siteurl_value = '' %}
+{% endif %}
+{% set asset_root = '' %}
+{% if siteurl_value and siteurl_value.startswith('http') %}
+    {% set asset_root = siteurl_value %}
+{% endif %}
+{% set blob_image_base = BLOB_IMAGE_BASE if BLOB_IMAGE_BASE is defined else '' %}
+{% set blob_image_sas = BLOB_IMAGE_SAS if BLOB_IMAGE_SAS is defined else '' %}
+{% if active_url is not defined %}
+    {% set active_url = none %}
+{% endif %}
+{% if article is defined and article %}
+    {% set active_url = article.url %}
+{% elif page is defined and page %}
+    {% set active_url = page.url %}
+{% elif category is defined and category %}
+    {% set active_url = category.url %}
+{% elif tag is defined and tag %}
+    {% set active_url = tag.url %}
+{% elif author is defined and author %}
+    {% set active_url = author.url %}
+{% elif articles_page is defined and articles_page %}
+    {% set active_url = articles_page.url %}
+{% endif %}
+{% if not active_url and output_file is defined and output_file %}
+    {% set active_url = output_file %}
+{% endif %}
+{% if not active_url %}
+    {% set active_url = current_lang ~ '/index.html' %}
+{% endif %}
+{% set relative_to_lang = active_url %}
+{% if relative_to_lang.startswith(current_lang ~ '/') %}
+    {% set relative_to_lang = relative_to_lang[(current_lang|length + 1):] %}
+{% endif %}
+{% if relative_to_lang == 'index.html' %}
+    {% set relative_to_lang = '' %}
+{% endif %}
+<!-- CURRENT_LANG: {{ current_lang }}, __detected={{ __detected_lang }}, lang={{ lang if lang is defined else 'none' }}, localized_root={{ localized_root }} -->
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" data-theme="{{ THEME_DEFAULT_MODE | default('light') }}">
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{{ SITENAME }}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {% if SITEDESCRIPTION %}<meta name="description" content="{{ SITEDESCRIPTION }}" />{% endif %}
+    <!-- debug-lang: lang={{ lang if lang is defined else 'none' }}, article={{ article.lang if article is defined else 'n/a' }}, page={{ page.lang if page is defined else 'n/a' }} -->
+    <link rel="stylesheet" href="{{ asset_root }}/theme/css/security.css" />
+    {% if FEED_ALL_ATOM %}<link rel="alternate" type="application/atom+xml" title="{{ SITENAME }} Full Atom Feed" href="{{ SITEURL }}/{{ FEED_ALL_ATOM }}" />{% endif %}
+    {% if FEED_ALL_RSS %}<link rel="alternate" type="application/rss+xml" title="{{ SITENAME }} Full RSS Feed" href="{{ SITEURL }}/{{ FEED_ALL_RSS }}" />{% endif %}
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="ms-header" role="banner">
+        <div class="wrapper header-inner">
+            <div class="brand-group">
+                <a class="brand" href="/{{ localized_root }}">
+                    <img
+                        src="{{ asset_root }}/images/icon/kamomecloud.png"
+                        alt="Kamome Cloud logo"
+                        class="brand-icon"
+                        width="40"
+                        height="40"
+                        loading="lazy"
+                        decoding="async"
+                    />
+                    <span class="brand-text">{{ SITENAME }}</span>
+                </a>
+                {% if SITESUBTITLE %}<span class="tagline">{{ SITESUBTITLE }}</span>{% endif %}
+            </div>
+            <div class="header-mobile-toggles">
+                <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-primary-nav">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="mobile-menu-icon" aria-hidden="true"></span>
+                </button>
+                <button class="mobile-aux-toggle" type="button" aria-expanded="false" aria-controls="mobile-aux-panel">
+                    <span class="sr-only">Toggle settings</span>
+                    <span class="mobile-aux-icon" aria-hidden="true">•••</span>
+                </button>
+            </div>
+            {% set nav_home_label = 'Home' if current_lang == 'en-us' else 'ホーム' %}
+            {% set nav_articles_label = 'Articles' if current_lang == 'en-us' else '記事一覧' %}
+            {% set nav_archives_label = 'Archives' if current_lang == 'en-us' else 'アーカイブ' %}
+            {% set nav_about_label = 'About' if current_lang == 'en-us' else 'このブログについて' %}
+            <nav class="main-nav main-nav--desktop" aria-label="Primary">
+                <ul>
+                    <li><a href="/{{ localized_root }}">{{ nav_home_label }}</a></li>
+                    <li><a href="/{{ localized_root }}categories.html">{{ nav_articles_label }}</a></li>
+                    <li><a href="/{{ localized_root }}archives.html">{{ nav_archives_label }}</a></li>
+                    {% set about_page = pages
+                        | selectattr('slug', 'equalto', 'about')
+                        | selectattr('lang', 'equalto', current_lang)
+                        | list
+                        | first
+                    %}
+                    {% if about_page %}
+                        <li><a href="{{ url_helpers.lang_url(about_page.url, current_lang, localized_root) }}">{{ nav_about_label }}</a></li>
+                    {% else %}
+                        <li><a href="/{{ localized_root }}pages/about.html">{{ nav_about_label }}</a></li>
+                    {% endif %}
+                    {% for title, url in MENUITEMS %}
+                            {% if url.startswith('http') %}
+                                {% set menu_href = url %}
+                            {% else %}
+                                {% set normalized_url = url.lstrip('/') %}
+                                {% if normalized_url.startswith(current_lang ~ '/') %}
+                                    {% set menu_href = '/' ~ normalized_url %}
+                                {% else %}
+                                    {% set menu_href = '/' ~ localized_root ~ normalized_url %}
+                                {% endif %}
+                            {% endif %}
+                        <li><a href="{{ menu_href }}">{{ title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            <div class="header-aux header-aux--desktop">
+                <div class="theme-selector">
+                    <button class="theme-select-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                        <span class="theme-current">Light mode</span>
+                        <span class="theme-caret" aria-hidden="true"></span>
+                    </button>
+                    <ul class="theme-options" role="listbox" aria-label="Color theme" hidden>
+                        <li>
+                            <button type="button" role="option" aria-selected="false" data-theme-value="light">Light mode</button>
+                        </li>
+                        <li>
+                            <button type="button" role="option" aria-selected="false" data-theme-value="dark">Dark mode</button>
+                        </li>
+                    </ul>
+                </div>
+                {% if language_switcher_items %}
+                    {% set language_label = namespace(active=current_lang|upper) %}
+                    {% for code, label in language_switcher_items %}
+                        {% if code == current_lang %}
+                            {% set language_label.active = label %}
+                        {% endif %}
+                    {% endfor %}
+                    <div class="language-selector">
+                        <button class="language-select-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                            <span class="language-current">{{ language_label.active }}</span>
+                            <span class="language-caret" aria-hidden="true"></span>
+                        </button>
+                        <ul class="language-options" role="listbox" aria-label="Language selection" hidden>
+                            {% for code, label in language_switcher_items %}
+                            {% set destination = '/' ~ code ~ '/' %}
+                            {% if relative_to_lang %}
+                                {% set destination = destination ~ relative_to_lang %}
+                            {% endif %}
+                            <li>
+                                <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected="{{ 'true' if code == current_lang else 'false' }}"
+                                    data-language-code="{{ code }}"
+                                    data-language-href="{{ destination }}"
+                                >
+                                    {{ label }}
+                                </button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="mobile-drawers">
+            <div class="mobile-drawer" id="mobile-primary-nav" hidden>
+                <ul>
+                    <li><a href="/{{ localized_root }}">{{ nav_home_label }}</a></li>
+                    <li><a href="/{{ localized_root }}categories.html">{{ nav_articles_label }}</a></li>
+                    <li><a href="/{{ localized_root }}archives.html">{{ nav_archives_label }}</a></li>
+                    {% if about_page %}
+                        <li><a href="{{ url_helpers.lang_url(about_page.url, current_lang, localized_root) }}">{{ nav_about_label }}</a></li>
+                    {% else %}
+                        <li><a href="/{{ localized_root }}pages/about.html">{{ nav_about_label }}</a></li>
+                    {% endif %}
+                    {% for title, url in MENUITEMS %}
+                            {% if url.startswith('http') %}
+                                {% set menu_href = url %}
+                            {% else %}
+                                {% set normalized_url = url.lstrip('/') %}
+                                {% if normalized_url.startswith(current_lang ~ '/') %}
+                                    {% set menu_href = '/' ~ normalized_url %}
+                                {% else %}
+                                    {% set menu_href = '/' ~ localized_root ~ normalized_url %}
+                                {% endif %}
+                            {% endif %}
+                        <li><a href="{{ menu_href }}">{{ title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mobile-drawer" id="mobile-aux-panel" hidden>
+                <div class="mobile-aux-group">
+                    <div class="theme-selector">
+                        <button class="theme-select-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                            <span class="theme-current">Light mode</span>
+                            <span class="theme-caret" aria-hidden="true"></span>
+                        </button>
+                        <ul class="theme-options" role="listbox" aria-label="Color theme" hidden>
+                            <li>
+                                <button type="button" role="option" aria-selected="false" data-theme-value="light">Light mode</button>
+                            </li>
+                            <li>
+                                <button type="button" role="option" aria-selected="false" data-theme-value="dark">Dark mode</button>
+                            </li>
+                        </ul>
+                    </div>
+                    {% if language_switcher_items %}
+                        {% set language_label = namespace(active=current_lang|upper) %}
+                        {% for code, label in language_switcher_items %}
+                            {% if code == current_lang %}
+                                {% set language_label.active = label %}
+                            {% endif %}
+                        {% endfor %}
+                        <div class="language-selector">
+                            <button class="language-select-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="language-current">{{ language_label.active }}</span>
+                                <span class="language-caret" aria-hidden="true"></span>
+                            </button>
+                            <ul class="language-options" role="listbox" aria-label="Language selection" hidden>
+                                {% for code, label in language_switcher_items %}
+                                {% set destination = '/' ~ code ~ '/' %}
+                                {% if relative_to_lang %}
+                                    {% set destination = destination ~ relative_to_lang %}
+                                {% endif %}
+                                <li>
+                                    <button
+                                        type="button"
+                                        role="option"
+                                        aria-selected="{{ 'true' if code == current_lang else 'false' }}"
+                                        data-language-code="{{ code }}"
+                                        data-language-href="{{ destination }}"
+                                    >
+                                        {{ label }}
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% block hero %}{% endblock %}
+
+    <main class="wrapper" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="ms-footer" role="contentinfo">
+        <div class="wrapper footer-inner">
+            <div>
+                <strong>{{ SITENAME }}</strong>
+                {% if FOOTER_TEXT %}<p>{{ FOOTER_TEXT }}</p>{% endif %}
+                <p>&copy; {% if COPYRIGHT_YEAR is defined %}{{ COPYRIGHT_YEAR }} {% endif %}{{ AUTHOR or SITENAME }}. All rights reserved.</p>
+            </div>
+            <div>
+                {% if SOCIAL or LINKS %}
+                    <ul class="social-links">
+                        {% for name, url in SOCIAL %}
+                            <li><a href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a></li>
+                        {% endfor %}
+                        {% for name, url in LINKS %}
+                            <li><a href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </footer>
+    {% block extra_js %}{% endblock %}
+    <script>
+    (function () {
+        var storageKey = 'my-blog-template-theme';
+        var root = document.documentElement;
+        var bodyEl = document.body;
+        var header = document.querySelector('.ms-header');
+        var themeSelectors = Array.prototype.slice.call(document.querySelectorAll('.theme-selector'));
+        var themeButtons = Array.prototype.slice.call(document.querySelectorAll('.theme-options button[data-theme-value]'));
+        var themeTriggers = themeSelectors.map(function (sel) { return sel.querySelector('.theme-select-trigger'); }).filter(Boolean);
+        var themeCurrentLabels = themeTriggers.map(function (trig) { return trig.querySelector('.theme-current'); }).filter(Boolean);
+        var isDropdownOpen = false;
+        var languageSelectors = Array.prototype.slice.call(document.querySelectorAll('.language-selector'));
+        var languageTriggers = languageSelectors.map(function (sel) { return sel.querySelector('.language-select-trigger'); }).filter(Boolean);
+        var languageMenus = languageSelectors.map(function (sel) { return sel.querySelector('.language-options'); });
+        var languageButtons = Array.prototype.slice.call(document.querySelectorAll('.language-options button[data-language-code]'));
+        var languageCurrentLabels = languageTriggers.map(function (trig) { return trig.querySelector('.language-current'); }).filter(Boolean);
+        var isLanguageOpen = false;
+        var mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        var mobileAuxToggle = document.querySelector('.mobile-aux-toggle');
+        var mobilePrimaryNav = document.getElementById('mobile-primary-nav');
+        var mobileAuxPanel = document.getElementById('mobile-aux-panel');
+        var isMobileMenuOpen = false;
+        var isMobileAuxOpen = false;
+        var prefersDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+        var prefersReducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        var parallaxTargets = [];
+        var parallaxFrame = null;
+        var blobImageBase = '{{ blob_image_base|e }}';
+        var blobImageSas = '{{ blob_image_sas|e }}';
+
+        function applyTheme(mode) {
+            var active = mode === 'dark' ? 'dark' : 'light';
+            root.setAttribute('data-theme', active);
+            themeCurrentLabels.forEach(function (label) {
+                label.textContent = active === 'dark' ? 'Dark mode' : 'Light mode';
+            });
+            themeButtons.forEach(function (btn) {
+                var value = btn.getAttribute('data-theme-value');
+                var isActive = value === active;
+                btn.setAttribute('aria-selected', String(isActive));
+                btn.classList.toggle('is-active', isActive);
+            });
+        }
+
+        function getStoredPreference() {
+            try {
+                return localStorage.getItem(storageKey);
+            } catch (err) {
+                return null;
+            }
+        }
+
+        function setStoredPreference(mode) {
+            try {
+                localStorage.setItem(storageKey, mode);
+            } catch (err) {
+                /* storage not available */
+            }
+        }
+
+        function initTheme() {
+            var stored = getStoredPreference();
+            if (stored) {
+                applyTheme(stored);
+                return;
+            }
+            var fallback = root.getAttribute('data-theme') || 'light';
+            var initial = prefersDark && prefersDark.matches ? 'dark' : fallback;
+            applyTheme(initial);
+        }
+
+        function handleSystemThemeChange(event) {
+            if (getStoredPreference()) {
+                return;
+            }
+            applyTheme(event.matches ? 'dark' : 'light');
+        }
+
+        function syncHeaderState() {
+            if (!header) {
+                return;
+            }
+            header.classList.toggle('is-stuck', window.scrollY > 12);
+        }
+
+        function initRevealAnimations() {
+            var nodes = document.querySelectorAll('[data-animate="reveal"]');
+            if (!nodes.length) {
+                return;
+            }
+
+            if (!('IntersectionObserver' in window) || (prefersReducedMotion && prefersReducedMotion.matches)) {
+                nodes.forEach(function (el) {
+                    el.classList.add('is-visible');
+                });
+                return;
+            }
+
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.18,
+                rootMargin: '0px 0px -10% 0px'
+            });
+
+            nodes.forEach(function (el) {
+                observer.observe(el);
+            });
+        }
+
+        function updateParallaxValues() {
+            if (!parallaxTargets.length || (prefersReducedMotion && prefersReducedMotion.matches)) {
+                return;
+            }
+
+            var scrollY = window.scrollY || window.pageYOffset;
+
+            parallaxTargets.forEach(function (el) {
+                var intent = el.dataset.parallax || 'default';
+                var intensity = intent === 'background' ? 0.06 : 0.12;
+                var offset = scrollY * intensity;
+                el.style.transform = 'translate3d(0,' + (-offset) + 'px,0)';
+            });
+        }
+
+        function scheduleParallaxUpdate() {
+            if (!parallaxTargets.length || parallaxFrame !== null) {
+                return;
+            }
+            parallaxFrame = window.requestAnimationFrame(function () {
+                updateParallaxValues();
+                parallaxFrame = null;
+            });
+        }
+
+        function initParallax() {
+            parallaxTargets = Array.prototype.slice.call(document.querySelectorAll('[data-parallax]'));
+            if (!parallaxTargets.length) {
+                return;
+            }
+
+            updateParallaxValues();
+        }
+
+        function initPageTransitions() {
+            var supportsViewTransition = typeof document.startViewTransition === 'function';
+
+            document.addEventListener('click', function (event) {
+                if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                    return;
+                }
+
+                var anchor = event.target.closest('a[href]');
+                if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) {
+                    return;
+                }
+
+                var href = anchor.getAttribute('href');
+                if (!href || href.charAt(0) === '#') {
+                    return;
+                }
+
+                if (anchor.protocol && anchor.protocol !== window.location.protocol && anchor.protocol.indexOf('http') !== 0) {
+                    return;
+                }
+
+                var destination = anchor.href;
+                if (anchor.origin !== window.location.origin) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (supportsViewTransition) {
+                    document.startViewTransition(function () {
+                        window.location.href = destination;
+                    });
+                } else {
+                    bodyEl.classList.add('is-transitioning');
+                    window.location.href = destination;
+                }
+            });
+
+            window.addEventListener('pageshow', function () {
+                bodyEl.classList.remove('is-transitioning');
+            });
+        }
+
+        function rewriteBlobImages() {
+            if (!blobImageBase || !blobImageSas) {
+                return;
+            }
+            var images = document.querySelectorAll('img[src^="/blob/"]');
+            images.forEach(function (img) {
+                var src = img.getAttribute('src');
+                if (!src || !src.startsWith('/blob/')) {
+                    return;
+                }
+                var normalized = src.replace(/^\/blob\//, '');
+                var joined = blobImageBase.replace(/\/$/, '') + '/' + normalized;
+                img.src = joined + '?' + blobImageSas;
+                if (!img.hasAttribute('loading')) {
+                    img.setAttribute('loading', 'lazy');
+                }
+                img.setAttribute('data-blob-resolved', 'true');
+            });
+        }
+
+        function setThemeDropdownState(open) {
+            isDropdownOpen = open;
+            themeSelectors.forEach(function (sel) {
+                var trigger = sel.querySelector('.theme-select-trigger');
+                var menu = sel.querySelector('.theme-options');
+                if (!trigger || !menu) {
+                    return;
+                }
+                sel.classList.toggle('is-open', open);
+                trigger.setAttribute('aria-expanded', String(open));
+                menu.hidden = !open;
+            });
+        }
+
+        function closeThemeDropdown() {
+            setThemeDropdownState(false);
+        }
+
+        function setLanguageDropdownState(open) {
+            isLanguageOpen = open;
+            languageSelectors.forEach(function (sel) {
+                var trigger = sel.querySelector('.language-select-trigger');
+                var menu = sel.querySelector('.language-options');
+                if (!trigger || !menu) {
+                    return;
+                }
+                sel.classList.toggle('is-open', open);
+                trigger.setAttribute('aria-expanded', String(open));
+                menu.hidden = !open;
+            });
+        }
+
+        function closeLanguageDropdown() {
+            setLanguageDropdownState(false);
+        }
+
+        if (themeTriggers.length) {
+            setThemeDropdownState(false);
+            themeTriggers.forEach(function (trigger) {
+                trigger.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    setThemeDropdownState(!isDropdownOpen);
+                });
+            });
+        }
+
+        if (themeButtons.length) {
+            themeButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var requested = btn.getAttribute('data-theme-value');
+                    setStoredPreference(requested);
+                    applyTheme(requested);
+                    closeThemeDropdown();
+                });
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            if (isDropdownOpen && themeSelectors.length && !themeSelectors.some(function (sel) { return sel.contains(event.target); })) {
+                closeThemeDropdown();
+            }
+            if (isLanguageOpen && languageSelectors.length && !languageSelectors.some(function (sel) { return sel.contains(event.target); })) {
+                closeLanguageDropdown();
+            }
+        });
+
+        function setMobileMenuState(open) {
+            if (!mobilePrimaryNav || !mobileMenuToggle) {
+                return;
+            }
+            isMobileMenuOpen = open;
+            mobilePrimaryNav.hidden = !open;
+            mobileMenuToggle.setAttribute('aria-expanded', String(open));
+            if (open) {
+                setMobileAuxState(false);
+            }
+        }
+
+        function setMobileAuxState(open) {
+            if (!mobileAuxPanel || !mobileAuxToggle) {
+                return;
+            }
+            isMobileAuxOpen = open;
+            mobileAuxPanel.hidden = !open;
+            mobileAuxToggle.setAttribute('aria-expanded', String(open));
+            if (open) {
+                setMobileMenuState(false);
+            }
+        }
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                setMobileMenuState(!isMobileMenuOpen);
+            });
+        }
+
+        if (mobileAuxToggle) {
+            mobileAuxToggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                setMobileAuxState(!isMobileAuxOpen);
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            if (isMobileMenuOpen && mobilePrimaryNav && !mobilePrimaryNav.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+                setMobileMenuState(false);
+            }
+            if (isMobileAuxOpen && mobileAuxPanel && !mobileAuxPanel.contains(event.target) && !mobileAuxToggle.contains(event.target)) {
+                setMobileAuxState(false);
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                if (isDropdownOpen) {
+                    closeThemeDropdown();
+                    if (themeTriggers.length) {
+                        themeTriggers[0].focus();
+                    }
+                }
+                if (isLanguageOpen) {
+                    closeLanguageDropdown();
+                    if (languageTriggers.length) {
+                        languageTriggers[0].focus();
+                    }
+                }
+            }
+        });
+
+        if (languageTriggers.length) {
+            setLanguageDropdownState(false);
+            languageTriggers.forEach(function (trigger) {
+                trigger.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    setLanguageDropdownState(!isLanguageOpen);
+                });
+            });
+        }
+
+        if (languageButtons.length) {
+            languageButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var destination = btn.getAttribute('data-language-href');
+                    if (destination) {
+                        window.location.href = destination;
+                    }
+                });
+            });
+        }
+
+        initTheme();
+
+        if (prefersDark && typeof prefersDark.addEventListener === 'function') {
+            prefersDark.addEventListener('change', handleSystemThemeChange);
+        } else if (prefersDark && typeof prefersDark.addListener === 'function') {
+            prefersDark.addListener(handleSystemThemeChange);
+        }
+
+        syncHeaderState();
+        initRevealAnimations();
+        initParallax();
+        initPageTransitions();
+        rewriteBlobImages();
+
+        window.addEventListener('scroll', function () {
+            syncHeaderState();
+            scheduleParallaxUpdate();
+        }, { passive: true });
+
+        function handleReducedMotionChange(event) {
+            if (event.matches) {
+                parallaxTargets.forEach(function (el) {
+                    el.style.transform = '';
+                });
+            } else {
+                updateParallaxValues();
+            }
+        }
+
+        if (prefersReducedMotion && typeof prefersReducedMotion.addEventListener === 'function') {
+            prefersReducedMotion.addEventListener('change', handleReducedMotionChange);
+        } else if (prefersReducedMotion && typeof prefersReducedMotion.addListener === 'function') {
+            prefersReducedMotion.addListener(handleReducedMotionChange);
+        }
+    }());
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js" defer></script>
+    <script>
+    (function () {
+        function isMermaidText(text) {
+            if (!text) {
+                return false;
+            }
+            var trimmed = text.trim();
+            return (
+                trimmed.startsWith('flowchart') ||
+                trimmed.startsWith('graph') ||
+                trimmed.startsWith('sequenceDiagram') ||
+                trimmed.startsWith('classDiagram') ||
+                trimmed.startsWith('stateDiagram') ||
+                trimmed.startsWith('erDiagram') ||
+                trimmed.startsWith('journey') ||
+                trimmed.startsWith('gantt') ||
+                trimmed.startsWith('mindmap') ||
+                trimmed.startsWith('timeline')
+            );
+        }
+
+        function renderMermaid() {
+            if (!window.mermaid) {
+                return;
+            }
+            var blocks = document.querySelectorAll('pre > code');
+            if (!blocks.length) {
+                return;
+            }
+            var targets = [];
+            blocks.forEach(function (code) {
+                if (!(code.classList.contains('language-mermaid') || code.classList.contains('mermaid') || isMermaidText(code.textContent))) {
+                    return;
+                }
+                targets.push(code);
+            });
+            if (!targets.length) {
+                return;
+            }
+            targets.forEach(function (code) {
+                var pre = code.parentElement;
+                var container = document.createElement('div');
+                container.className = 'mermaid';
+                container.textContent = code.textContent;
+                if (pre && pre.parentElement && pre.parentElement.classList.contains('highlight')) {
+                    pre.parentElement.replaceWith(container);
+                    return;
+                }
+                var container = document.createElement('div');
+                container.className = 'mermaid';
+                container.textContent = code.textContent;
+                pre.replaceWith(container);
+            });
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: isDark ? 'dark' : 'default',
+                securityLevel: 'loose',
+                flowchart: {
+                    htmlLabels: true
+                }
+            });
+            mermaid.run({ querySelector: '.mermaid' });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderMermaid);
+        } else {
+            renderMermaid();
+        }
+    }());
+    </script>
+</body>
+</html>
+
+
+

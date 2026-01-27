@@ -1,0 +1,145 @@
+﻿{% extends "base.html" %}
+
+{% import "macros/url_helpers.html" as url_helpers %}
+{% set current_lang = (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set localized_root = current_lang ~ '/' %}
+{% set is_japanese = (current_lang == 'ja-jp') %}
+{% set hero_about_page = pages
+    | selectattr('slug', 'equalto', 'about')
+    | selectattr('lang', 'equalto', current_lang)
+    | list
+    | first
+%}
+
+{% block title %}{{ SITENAME }} | {{ SITESUBTITLE or 'Security insights and updates' }}{% endblock %}
+
+{% block hero %}
+<section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-background" aria-hidden="true" data-parallax="background">
+        <span class="hero-gradient"></span>
+        <span class="hero-grid"></span>
+    </div>
+    <div class="wrapper hero-inner" data-animate="reveal" style="--reveal-delay: 100ms;">
+        <div class="hero-visual" aria-hidden="true" data-parallax="logo">
+            <div class="hero-logo-wrapper">
+                <img
+                    src="{{ asset_root }}/images/icon/kamomecloud.png"
+                    alt="Kamome Cloud"
+                    class="hero-logo"
+                    loading="lazy"
+                    decoding="async"
+                />
+            </div>
+        </div>
+        <div class="hero-copy" data-animate="reveal" style="--reveal-delay: 200ms;">
+            <p class="hero-eyebrow">{{ 'LEARNING NOTES' if not is_japanese else '学習ノート' }}</p>
+            <h1 id="hero-heading">{{ "Bringing Azure closer to you" if not is_japanese else 'Azure をもっと身近に。' }}</h1>
+            <p class="hero-subtitle">
+                {{ "As fellow travellers on the highway to the cloud, let's tackle the same stumbling blocks together.<br>For the record, the author simply happens to be rather fond of seagulls." if not is_japanese else 'クラウドへのハイウェイを走る仲間として、同じハマりどころを一緒に突破しましょう。<br>筆者は単にカモメが好きなだけです。' }}
+            </p>
+            <div class="hero-actions">
+                <a class="button" href="/{{ localized_root }}categories.html">{{ 'Explore topics' if not is_japanese else 'トピックを探る' }}</a>
+                <a class="button ghost" href="{{ url_helpers.lang_url(hero_about_page.url if hero_about_page else localized_root ~ 'pages/about.html', current_lang, localized_root) }}">{{ 'Why this blog' if not is_japanese else 'このブログについて' }}</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+    {% set tag_pairs = tags | list %}
+    {% set tag_data = namespace(items=[]) %}
+    {% set all_articles = articles | list %}
+    {% if all_articles %}
+        {% set all_articles = all_articles | sort(attribute='date', reverse=True) %}
+    {% endif %}
+    {% set latest_cards = all_articles[:3] %}
+    {% for tag, tag_articles in tag_pairs %}
+        {% set ordered_tag_articles = tag_articles | sort(attribute='date', reverse=True) %}
+        {% set tag_data.items = tag_data.items + [
+            {
+                'tag': tag,
+                'articles': ordered_tag_articles,
+                'latest_date': ordered_tag_articles[0].date if ordered_tag_articles else none
+            }
+        ] %}
+    {% endfor %}
+    {% set topic_cards = tag_data.items | sort(attribute='latest_date', reverse=True) %}
+
+    <section class="latest-section section-shell">
+        <div class="section-header" data-animate="reveal">
+            <div class="section-title-group">
+                <h2>{{ 'Latest Posts' if not is_japanese else '最新記事' }}</h2>
+                <p>{{ 'Fresh verification notes from the Lab (up to three recent entries).' if not is_japanese else '最新の検証ノートを最大3件までピックアップしています。' }}</p>
+            </div>
+            <a class="view-all" href="/{{ localized_root }}categories.html">{{ 'View all' if not is_japanese else 'すべて表示' }}</a>
+        </div>
+        {% if latest_cards %}
+            <div class="article-grid latest-grid" data-animate="reveal" style="--reveal-delay: 120ms;">
+                {% for article in latest_cards %}
+                    {% include "partials/post-card.html" %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="article-grid latest-grid" aria-live="polite">
+                {% for _ in range(4) %}
+                    <article class="post-card skeleton-card skeleton-shimmer" aria-hidden="true">
+                        <div class="skeleton-line" style="width: 45%;"></div>
+                        <div class="skeleton-line" style="width: 70%;"></div>
+                        <div class="skeleton-line" style="width: 62%;"></div>
+                        <div class="skeleton-line" style="width: 35%;"></div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <nav class="paginator" aria-label="Pagination">
+            {% if articles_page.has_previous() %}
+                <a class="button ghost" href="{{ url_helpers.lang_url(articles_previous_page.url, current_lang, localized_root) }}">{{ 'Newer posts' if not is_japanese else '新しい記事' }}</a>
+            {% endif %}
+            {% if articles_page.has_next() %}
+                <a class="button" href="{{ url_helpers.lang_url(articles_next_page.url, current_lang, localized_root) }}">{{ 'Older posts' if not is_japanese else '過去の記事' }}</a>
+            {% endif %}
+        </nav>
+    </section>
+
+    {% if topic_cards %}
+    {% set featured_topics = topic_cards[:10] %}
+    {% set has_more_topics = topic_cards | length > 10 %}
+    <section class="topics-section section-shell">
+        <div class="section-header" data-animate="reveal">
+            <div class="section-title-group">
+                <h2>{{ 'Topics by Tag' if not is_japanese else 'タグ別トピック' }}</h2>
+                <p>{{ 'Jump directly into a topic stream.' if not is_japanese else '気になるテーマへすぐにジャンプ。' }}</p>
+            </div>
+            <a class="view-all" href="/{{ localized_root }}categories.html">{{ 'View all' if not is_japanese else 'すべて表示' }}</a>
+        </div>
+        <div class="topic-card-grid" data-animate="reveal" style="--reveal-delay: 150ms;">
+            {% for topic in featured_topics %}
+                {% set tag = topic.tag %}
+                {% set tag_list = topic.articles %}
+                <article class="topic-card">
+                    <div class="topic-card__header">
+                        <h3>{{ tag.name }}</h3>
+                        <span class="pill">{{ tag_list | length }} posts</span>
+                    </div>
+                    {% set teaser = tag_list[0] if tag_list else none %}
+                    {% if teaser %}
+                        <p>{{ teaser.summary|striptags|truncate(200, True, '…') if teaser.summary else teaser.content|striptags|truncate(200, True, '…') }}</p>
+                        <a class="text-link" href="{{ url_helpers.lang_url(teaser.url, current_lang, localized_root) }}">{{ 'Latest:' if not is_japanese else '最新: ' }} {{ teaser.title }}</a>
+                    {% else %}
+                        <p>Posts are coming soon.</p>
+                    {% endif %}
+                    <div class="topic-card__actions">
+                        <a class="button ghost" href="{{ url_helpers.lang_url(tag.url, current_lang, localized_root) }}">{{ 'Browse tag' if not is_japanese else 'タグを開く' }}</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+        {% if has_more_topics %}
+            <div class="section-footer">
+                <a class="button" href="/{{ localized_root }}categories.html">{{ 'Browse all articles' if not is_japanese else '記事をすべて見る' }}</a>
+            </div>
+        {% endif %}
+    </section>
+    {% endif %}
+{% endblock %}

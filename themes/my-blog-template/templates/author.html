@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% set current_lang = (lang if lang is defined and lang else DEFAULT_LANG) %}
+{% set is_japanese = (current_lang == 'ja-jp') %}
+
+{% block title %}{{ author }} | {{ SITENAME }}{% endblock %}
+
+{% block hero %}
+<section class="hero article-hero">
+    <div class="wrapper hero-inner">
+        <h1>{{ author }}</h1>
+        <p>{{ 'Articles written by' if not is_japanese else '執筆者:' }} {{ author }}.</p>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="article-grid">
+    {% for article in articles %}
+        {% include "partials/post-card.html" %}
+    {% endfor %}
+</section>
+{% endblock %}
