@@ -17,21 +17,36 @@ How I cite:
 
 ## 0. Official pages (minimal set)
 
-- [Overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview)
-- [Create and use an agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage)
-- [Roles and permissions overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview)
-- [User access roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-access-roles)
-- [Managed identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity)
-- [Agent run modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes)
-- [Scheduled tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks)
-- [Incident management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management)
-- [Incident response plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan)
-- [Memory system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system)
-- [Subagent builder overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview)
-- [Connectors](https://learn.microsoft.com/en-us/azure/sre-agent/connectors)
-- [Custom logic (Python)](https://learn.microsoft.com/en-us/azure/sre-agent/custom-logic-python)
-- [Custom MCP server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server)
-- [FAQ](https://learn.microsoft.com/en-us/azure/sre-agent/faq)
+- Overview[0-1]
+- Create and use an agent[0-2]
+- Roles and permissions overview[0-3]
+- Managed identity[0-4]
+- Agent run modes[0-5]
+- Scheduled tasks[0-6]
+- Incident management[0-7]
+- Incident response plan[0-8]
+- Memory system[0-9]
+- Subagent builder overview[0-10]
+- Connectors[0-11]
+- Custom logic (Python)[0-12]
+- Custom MCP server[0-13]
+- FAQ[0-14]
+
+### References (Chapter 0)
+- [0-1] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “AI-powered monitoring, troubleshooting, and remediation capabilities.”
+- [0-2] [https://learn.microsoft.com/en-us/azure/sre-agent/usage](https://learn.microsoft.com/en-us/azure/sre-agent/usage) — “Make sure that your user account has the `Microsoft.Authorization/roleAssignments/write` permissions”
+- [0-3] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “consists of three main components”
+- [0-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “Azure SRE Agent has its own managed identity”
+- [0-5] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “generates an execution plan and waits for your consent”
+- [0-6] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “automate workflows such as monitoring, maintenance, and security checks”
+- [0-7] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management) — “receives alerts from … Azure Monitor alerts … PagerDuty … ServiceNow”
+- [0-8] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan) — “Filters … Execution mode … Customize instructions”
+- [0-9] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “gives agents the knowledge they need to troubleshoot effectively”
+- [0-10] [https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview) — “Incident response plans or scheduled tasks trigger subagents.”
+- [0-11] [https://learn.microsoft.com/en-us/azure/sre-agent/connectors#what-are-connectors](https://learn.microsoft.com/en-us/azure/sre-agent/connectors#what-are-connectors) — “Communication connectors … knowledge connectors … custom connectors … MCP server endpoint.”
+- [0-12] [https://learn.microsoft.com/en-us/azure/sre-agent/custom-logic-python#create-a-python-tool](https://learn.microsoft.com/en-us/azure/sre-agent/custom-logic-python#create-a-python-tool) — “From the left navigation: [Builder > Subagent builder] … Create > Tools … Python tool.”
+- [0-13] [https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server) — “only accessible through subagents and aren't directly accessible to main Azure SRE Agent.”
+- [0-14] [https://learn.microsoft.com/en-us/azure/sre-agent/faq](https://learn.microsoft.com/en-us/azure/sre-agent/faq) — “Avoid relying solely on group-based role assignments … Use the Check Access feature”
 
 ---
 

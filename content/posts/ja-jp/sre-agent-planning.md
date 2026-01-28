@@ -15,23 +15,60 @@ Summary: SRE Agent の概要資料を作成するための勉強ノート
 
 ---
 
+## アジェンダ（案）
+
+> 大枠は「機能紹介」と「デモ」。各スライドは「説明文（話す文章）＋要点」で作る。
+
+### 機能紹介（構成案）
+- イントロ: 何ができる/何ができない（承認が必要な write、英語UIなど）[1-2][1-3]
+- 導入前提: RBAC とネットワークの落とし穴[2-1][2-2]
+- セキュリティ: “誰が/何で/どの範囲で” の3要素で説明[3-1]
+- 実行: Review/Autonomous の違いと同意モデル[5-1][5-5]
+- 運用: Incident management と response plan で何が自動化できるか[7-1][7-2]
+- コンテキスト: Memory system とチーム共有の前提[8-2][8-9]
+- 拡張: Subagent / Tools / Connectors / MCP の関係と境界[9-2][9-3]
+
+### デモ（構成案）
+- デモA: “App Service が遅い/タイムアウト” → Cosmos DB 429/ホットパーティション切り分け（既存）
+- デモB: “散発的タイムアウト” → Cosmos DB 408 切り分け（既存）
+
+### まとめ（構成案）
+- 実運用で効くポイント（RBAC/同意/スコープ/メモリ/拡張）を早見表で締める[11-2]
+
+---
+
 ## 0. 公式ページ（最小セット）
 
-- [Overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview)
-- [Create and use an agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage)
-- [Roles and permissions overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview)
-- [User access roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-access-roles)
-- [Managed identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity)
-- [Agent run modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes)
-- [Scheduled tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks)
-- [Incident management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management)
-- [Incident response plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan)
-- [Memory system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system)
-- [Subagent builder overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview)
-- [Connectors](https://learn.microsoft.com/en-us/azure/sre-agent/connectors)
-- [Custom logic (Python)](https://learn.microsoft.com/en-us/azure/sre-agent/custom-logic-python)
-- [Custom MCP server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server)
-- [FAQ](https://learn.microsoft.com/en-us/azure/sre-agent/faq)
+- Overview[0-1]
+- Create and use an agent[0-2]
+- Roles and permissions overview[0-3]
+- Managed identity[0-4]
+- Agent run modes[0-5]
+- Scheduled tasks[0-6]
+- Incident management[0-7]
+- Incident response plan[0-8]
+- Memory system[0-9]
+- Subagent builder overview[0-10]
+- Connectors[0-11]
+- Custom logic (Python)[0-12]
+- Custom MCP server[0-13]
+- FAQ[0-14]
+
+### 参考（第0章）
+- [0-1] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “AI-powered monitoring, troubleshooting, and remediation capabilities.”
+- [0-2] [https://learn.microsoft.com/en-us/azure/sre-agent/usage](https://learn.microsoft.com/en-us/azure/sre-agent/usage) — “Make sure that your user account has the `Microsoft.Authorization/roleAssignments/write` permissions”
+- [0-3] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “consists of three main components”
+- [0-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “Azure SRE Agent has its own managed identity”
+- [0-5] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “generates an execution plan and waits for your consent”
+- [0-6] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “automate workflows such as monitoring, maintenance, and security checks”
+- [0-7] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-management](https://learn.microsoft.com/en-us/azure/sre-agent/incident-management) — “receives alerts from … Azure Monitor alerts … PagerDuty … ServiceNow”
+- [0-8] [https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan](https://learn.microsoft.com/en-us/azure/sre-agent/incident-response-plan) — “Filters … Execution mode … Customize instructions”
+- [0-9] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “gives agents the knowledge they need to troubleshoot effectively”
+- [0-10] [https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview) — “Incident response plans or scheduled tasks trigger subagents.”
+- [0-11] [https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#what-are-connectors](https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#what-are-connectors) — “通信コネクタ … ナレッジ コネクタ … カスタム コネクタ … MCP サーバー エンドポイント”
+- [0-12] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-logic-python#create-a-python-tool) — “左側のナビゲーションから [Builder>Subagent builder ] … 作成>ツール … Python ツール”
+- [0-13] [https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server) — “only accessible through subagents and aren't directly accessible to main Azure SRE Agent.”
+- [0-14] [https://learn.microsoft.com/en-us/azure/sre-agent/faq](https://learn.microsoft.com/en-us/azure/sre-agent/faq) — “Avoid relying solely on group-based role assignments … Use the Check Access feature”
 
 ---
 
@@ -358,7 +395,7 @@ flowchart LR
   SM --> DC[Documentation connector]
   SM --> SI[Session insights]
 
-  SN["SearchNodes<br/>filters / includeNeighbors"] --> Graph[Graph of connected nodes]
+  SN["SearchNodes\nfilters / includeNeighbors"] --> Graph[Graph of connected nodes]
   Graph --> UM
   Graph --> SI
 ```
@@ -367,6 +404,57 @@ flowchart LR
 User memories は `#remember` / `#forget` / `#retrieve` のチャットコマンドを使います。[8-6]
 
 `#remember` は将来の会話のために fact/standard/context を保存し、`#forget` は保存済みメモリを検索して削除し、`#retrieve` はエージェントの推論をトリガーせずに検索・表示します。[8-11]
+
+### User Memories の実用例（提案）
+
+前提:
+- メモリに secrets/credentials/API keys を保存しません（運用手順で徹底）。[8-4]
+- チームで共有され検索用にインデックス化されるので、「個人メモ」ではなく「運用の構成情報」として扱います。[8-9]
+
+実用例 1: “最初の一言” を短くする（環境コンテキスト）
+- ねらい: 毎回の前提説明（prod/stg、主要リソース、既知の監視ポイント）を省略し、診断にすぐ入る。
+- 例（保存）:
+
+```text
+#remember
+In our environment:
+- Production: <subscription-alias>, <resource-group>
+- Primary workload: <service-name> (App Service / Container Apps)
+- Logs: <Log Analytics workspace alias>
+- APM: Application Insights enabled
+```
+
+実用例 2: Runbook と“判断基準”を固定する（チーム標準）
+- ねらい: “何を確認したら次に何をするか” を、記憶（標準手順）として持たせる。
+- 例（保存）:
+
+```text
+#remember
+Runbook standard:
+1) Confirm symptom, time window (UTC), and impact
+2) Collect evidence: errors/exceptions + dependency latency + resource metrics
+3) Produce a short incident summary (What/When/Where/Impact/Suspected cause/Next actions)
+```
+
+実用例 3: “検索だけ”を安全に使う（確認・棚卸し）
+- ねらい: エージェントの推論を走らせず、保存済みメモリを確認する。
+- 例（取得）:
+
+```text
+#retrieve runbook
+```
+
+実用例 4: 更新時の事故を減らす（削除）
+- ねらい: 交代/変更で古くなった運用前提を残さない。
+- 例（削除）:
+
+```text
+#forget on-call rotation
+```
+
+スライド要点:
+- User Memories は「チーム標準の短文化」に向く（毎回の前提説明を削れる）。[8-6][8-11]
+- “共有され検索される” 前提なので、運用のコンフィグとして扱う（秘密情報は入れない）。[8-4][8-9]
 
 ### Session insights（説明）
 セッション分析情報は、各セッションから「症状、解決手順、根本原因、落とし穴」をキャプチャして検索可能なメモリになり、関連する過去の分析情報が今後のセッションで自動的に取得されます。[8-12]
@@ -435,6 +523,104 @@ flowchart LR
   MCP --> Server["MCP server endpoint\nSSE or HTTP over HTTPS"]
 ```
 
+### Tool が多い前提での整理（提案）
+
+添付画像のように、ポータル上の「ツール」はカテゴリ単位（例: DevOps / Diagnostics / Knowledge Base …）で大量に並ぶ前提で設計します。
+
+整理のしかた（例）:
+- Diagnostics: Kusto（Log Analytics / App Insights）やメトリック取得、クエリ検証など
+- DevOps: GitHub Issue / コメント、Azure DevOps Work Item、リポジトリ紐付け など
+- Knowledge Base: Memory/Knowledge の検索・投入
+- Connectors: Outlook/Teams、外部監視/ナレッジ、カスタム MCP
+- Custom logic: Python ツール（用途特化の“薄い関数”）[9-8][9-9]
+
+スライド要点:
+- “ツールが多い” のは正常（能力を足していくと増える）。設計で重要なのは「どれをいつ使うか」を主語にすること。
+- main agent から直接使えないツールがある（MCP は subagent 経由）。[9-3]
+
+### SubAgent の設計方法（他 MS AI ドキュメントの原則を援用）
+
+SRE Agent の Subagent 仕様は製品ドキュメント中心ですが、**プロンプト（system/instructions）設計の作法**は一般化できます。
+
+要点（設計チェックリスト）:
+- 役割と成果物を最初に書く（assistant の job）。[9-16]
+- 境界条件（やらないこと）を明示する。[9-16]
+- 出力フォーマット（例: Markdown の章立て、JSON のキー固定）を固定する。[9-16]
+- 不確実なときの方針（質問する/わからないと言う）を明示する。[9-16]
+- 指示は具体的に、解釈の余地を減らす（Be Specific など）。[9-17]
+
+ツール呼び出しを安定させるコツ（設計）:
+- ツールは「説明（description）」「引数の説明」を厚くし、システム指示で“いつ呼ぶか”を明示する。[9-18]
+- 重要な確認が欠けている場合は、推測せず質問させる（例: 対象リソース/時間範囲）。[9-18]
+
+複数エージェントに分けるときの注意（一般論）:
+- 役割を分割して、主エージェントは “委譲と統合” に徹する（責務分離）。[9-19]
+- 深さや引用の伝播など、マルチエージェント固有の制約がある（設計で吸収する）。[9-20]
+
+#### シナリオ例（提案）: HTTP 500 のインシデントを「証跡収集→報告→Issue化」まで
+
+ゴール（提案）:
+- インシデントを診断し、**証跡（KQL/メトリクス/例外）**を揃え、開発者が着手できる GitHub Issue を作る。
+- 本番変更や自動緩和はしない（diagnose + report に限定）。
+
+分担（例）:
+- Subagent A: Diagnostics（ログ/例外/メトリクス）
+- Subagent B: Repo triage（該当箇所の候補、設定/IaC の差分観点）
+- Subagent C: Reporter（Issue/Teams の定型出力）
+
+プロンプト構成（疑似例）:
+
+```yaml
+api_version: azuresre.ai/v1
+kind: AgentConfiguration
+spec:
+  name: Http500EvidencePackager
+  system_prompt: >-
+    Role: Incident diagnostics assistant.
+    Goal: Collect concrete evidence (KQL queries + key metrics) for HTTP 500 incidents,
+    summarize findings, then draft a developer-ready GitHub issue.
+    Boundaries: Do not execute mitigations or production changes. Do not store secrets.
+    Output format: Use Markdown with sections: Summary / Evidence / Suspected causes / Next checks.
+    When unsure: Ask one clarifying question.
+  tools:
+    - Diagnostics (Log Analytics / App Insights / Metrics)
+    - GitHub
+    - Teams
+```
+
+ハンドオフ（Main → Subagent A）のプロンプト例:
+
+```text
+Task: Collect evidence for an HTTP 500 incident.
+Context:
+- Service: <service-name>
+- Time window (UTC): <start> - <end>
+- Environment: <prod/stg>
+Constraints:
+- Read-only. No mitigations.
+Output contract:
+1) 3-5 KQL queries (Log Analytics / App Insights) with what each query proves
+2) 3 key metrics to chart (name + dimension if any)
+3) A short summary (What/When/Impact/Suspected cause)
+If missing critical identifiers, ask one question.
+```
+
+ハンドオフ（Main → Subagent C）のプロンプト例:
+
+```text
+Task: Create a GitHub-issue-ready report.
+Inputs:
+- Evidence pack (queries, metrics, notable exceptions)
+- Suspected code areas (paths/functions)
+Output contract (Markdown):
+- Title
+- Impact
+- Timeline (UTC)
+- Evidence (with KQL snippets)
+- Suspected cause(s)
+- Proposed next actions
+```
+
 ### 参考（第9章）
 - [9-1] [https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview](https://learn.microsoft.com/en-us/azure/sre-agent/subagent-builder-overview) — “Incident response plans or scheduled tasks trigger subagents.”
 - [9-2] [https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server](https://learn.microsoft.com/en-us/azure/sre-agent/custom-mcp-server) — “must host … remotely and make them reachable over HTTPS … doesn't support running MCP servers locally”
@@ -451,10 +637,16 @@ flowchart LR
 - [9-13] [https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#configure-a-connector](https://learn.microsoft.com/ja-jp/azure/sre-agent/connectors#configure-a-connector) — “設定 … コネクタ … Outlook と Teams … OAuth … MCP URL と資格情報または OAuth トークン”
 - [9-14] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#how-custom-mcp-connections-work](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#how-custom-mcp-connections-work) — “コネクタは次を定義 … エンドポイント … トランスポート … 認証”
 - [9-15] [https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#add-a-custom-mcp-server-connector](https://learn.microsoft.com/ja-jp/azure/sre-agent/custom-mcp-server#add-a-custom-mcp-server-connector) — “Azure portal … [ 設定] → [コネクタ] … [ コネクタの追加] … MCP サーバー … SSE … HTTP … URL … 認証”
+- [9-16] [https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/advanced-prompt-engineering?view=foundry-classic#design-checklist](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/advanced-prompt-engineering?view=foundry-classic#design-checklist) — “Start with the assistant’s job … Define boundaries … Specify the output format … Add a “when unsure” policy”
+- [9-17] [https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/prompt-engineering?view=foundry-classic#best-practices](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/prompt-engineering?view=foundry-classic#best-practices) — “Be Specific … Order Matters … Give the model an “out””
+- [9-18] [https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/function-calling?view=foundry-classic#prompt-engineering-with-functions](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/function-calling?view=foundry-classic#prompt-engineering-with-functions) — “Provide more context in the system message … Ask for clarification if a user request is ambiguous.”
+- [9-19] [https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic) — “break down complex tasks into coordinated, specialized roles”
+- [9-20] [https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic#limitations](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic#limitations) — “maximum depth of 2 … not possible to guarantee citations …”
+- [9-21] [https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ai-agents/build-secure-process#agent-instructions](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ai-agents/build-secure-process#agent-instructions) — “Standardize instruction architecture … Identity and tone … Scope and boundaries … Tool mandates … Citation rules”
 
 ---
 
-## 10. デモ（提案）: “Learnのチュートリアル丸写し” ではないトラブルシュート 2本
+## 10. デモ:
 
 > 注意: ここは「何をどう壊す/どう直す」を構成した **デモ案（提案）**です。
 > ただし、各ステップの“事実として言い切る部分”は Microsoft Learn の記述に基づき、参照番号で根拠を示します。
