@@ -86,17 +86,17 @@ Azure SRE Agent は、運用に関する監視・トラブルシューティン�
 
 ```mermaid
 flowchart LR
-  U["Operator"] --> Chat["Portal chat"]
+  U["運用担当者"] --> Chat["ポータル チャット"]
   Chat --> Agent["Azure SRE Agent"]
-  Agent --> Read["Read: diagnostics"]
-  Agent --> Plan["Write: execution plan"]
-  Plan --> Consent{"Consent?"}
-  Consent -->|Yes| Act["Take action"]
-  Consent -->|No| Stop["Stop"]
+  Agent --> Read["Read: 診断"]
+  Agent --> Plan["Write: 実行計画"]
+  Plan --> Consent{"同意しますか？"}
+  Consent -->|はい| Act["アクション実行"]
+  Consent -->|いいえ| Stop["停止"]
 
   Agent --> AI["Application Insights"]
-  Agent --> LA["Log Analytics workspace"]
-  Agent --> MI["Managed Identity"]
+  Agent --> LA["Log Analytics ワークスペース"]
+  Agent --> MI["マネージド ID"]
 ```
 
 ### 参考（第1章）
@@ -122,11 +122,11 @@ SRE Agent を作成するには、ユーザー側に `Microsoft.Authorization/ro
 
 ```mermaid
 flowchart TD
-  S["Start"] --> R{"Has roleAssignments/write?"}
-  R -->|No| FixRBAC["Grant required permissions"]
-  R -->|Yes| N{"Can reach *.azuresre.ai?"}
-  N -->|No| FixNW["Allowlist in firewall"]
-  N -->|Yes| OK["Ready to create agent"]
+  S["開始"] --> R{"roleAssignments/write を持つ？"}
+  R -->|いいえ| FixRBAC["必要な権限を付与"]
+  R -->|はい| N{"*.azuresre.ai に到達可能？"}
+  N -->|いいえ| FixNW["FW で allowlist を追加"]
+  N -->|はい| OK["エージェント作成の準備 OK"]
 ```
 
 ### 参考（第2章）
@@ -155,11 +155,11 @@ SRE Agent の権限は、(1) ユーザーが SRE Agent に対して持つロー�
 
 ```mermaid
 flowchart LR
-  RBAC["User roles\n(Admin/Standard/Reader)"] --> UX["What user can do\nin portal/chat"]
-  MI["Agent managed identity\npermission level: Reader/Privileged"] --> ACT["What agent can do\nin Azure"]
-  RM["Run modes\nConsent / Credentials"] --> FLOW["How actions are executed"]
+  RBAC["ユーザー ロール\n(Admin/Standard/Reader)"] --> UX["ユーザーができること\n(ポータル/チャット)"]
+  MI["エージェントのマネージド ID\n権限レベル: Reader/Privileged"] --> ACT["エージェントができること\n(Azure 上の操作)"]
+  RM["実行モード\nConsent / Credentials"] --> FLOW["アクション実行の流れ"]
 
-  ACT --> BND["Boundary:\nagent scope/permissions take precedence"]
+  ACT --> BND["境界:\nエージェントのスコープ/権限が優先"]
   FLOW --> BND
 ```
 
@@ -195,19 +195,19 @@ SRE Agent は「自身の managed identity」を持ち、管理対象の resourc
 ```mermaid
 sequenceDiagram
   autonumber
-  participant User as Operator
+  participant User as 運用担当者
   participant Agent as Azure SRE Agent
-  participant Entra as Entra ID (OBO)
+  participant Entra as Entra ID（OBO）
   participant Azure as Azure Resource
 
-  User->>Agent: Ask for write action
-  Agent-->>User: Ask for consent
-  User-->>Agent: Approve
-  Agent->>Entra: Request temporary elevation (OBO)
-  Entra-->>Agent: Temporary credentials
-  Agent->>Azure: Execute action via managed identity / delegated creds
-  Azure-->>Agent: Result
-  Agent-->>User: Report outcome
+  User->>Agent: write アクションを依頼
+  Agent-->>User: 同意を要求
+  User-->>Agent: 承認
+  Agent->>Entra: 一時的な昇格を要求（OBO）
+  Entra-->>Agent: 一時的な資格情報
+  Agent->>Azure: マネージド ID / 委任資格情報で実行
+  Azure-->>Agent: 結果
+  Agent-->>User: 結果を報告
 ```
 
 ### 参考（第4章）
@@ -240,15 +240,15 @@ Autonomous mode は “implicit consent” として扱われますが、無制�
 
 ```mermaid
 flowchart TD
-  A["Agent generates an execution plan"] --> B{"Consent?"}
-  B -->|No| Z["Stop (no action)"]
-  B -->|Yes| C["Agent attempts to take action"]
-  C --> D{"Has required credentials?"}
-  D -->|Yes| E["Execute the plan"]
-  D -->|No| F{"Grant temporary credentials (OBO)?"}
-  F -->|No| Z
-  F -->|Yes| E
-  E --> G["End"]
+  A["エージェントが実行計画を生成"] --> B{"同意しますか？"}
+  B -->|いいえ| Z["停止（実行なし）"]
+  B -->|はい| C["エージェントが実行を試行"]
+  C --> D{"必要な資格情報がある？"}
+  D -->|はい| E["計画を実行"]
+  D -->|いいえ| F{"一時的な資格情報を付与（OBO）？"}
+  F -->|いいえ| Z
+  F -->|はい| E
+  E --> G["終了"]
 ```
 
 ### 参考（第5章）
@@ -275,16 +275,16 @@ Scheduled tasks は、monitoring / maintenance / security checks といったワ
 
 ```mermaid
 flowchart TD
-  A[Scheduled task] --> B{How to create?}
-  B --> UI[Create manually in UI]
-  B --> Chat[Request during chat]
-  B --> IRP[Generated as part of incident response]
+  A["Scheduled task"] --> B{"作成方法は？"}
+  B --> UI["UI から手動作成"]
+  B --> Chat["チャット中に依頼"]
+  B --> IRP["インシデント対応の一部として自動生成"]
 
-  UI --> Exec[Runs on schedule]
+  UI --> Exec["スケジュール実行"]
   Chat --> Exec
   IRP --> Exec
 
-  Exec --> Out[Monitoring / maintenance / security checks]
+  Exec --> Out["Monitoring / maintenance / security checks"]
 ```
 
 ### 参考（第6章）
@@ -329,13 +329,13 @@ Incident management タブには、エージェントが管理するインシデ
 
 ```mermaid
 flowchart TD
-  A["Alert in platform\nAzure Monitor / PagerDuty / ServiceNow"] --> B["Incident management receives alert"]
-  B --> C["New chat thread created\nwith initial analysis"]
-  C --> D{"Execution mode"}
-  D -->|Viewer| V["Show recommendations\nHuman intervenes"]
-  D -->|Autonomous| AU["Execute remediation\nMay close incident"]
-  V --> E["Operator approves/acts"]
-  AU --> F["Update/close incident\nin platform"]
+  A["プラットフォーム側のアラート\nAzure Monitor / PagerDuty / ServiceNow"] --> B["Incident management が受信"]
+  B --> C["初期分析つきの\n新しいチャット スレッドを作成"]
+  C --> D{"実行モード"}
+  D -->|閲覧者| V["推奨を提示\n人が介入"]
+  D -->|自律| AU["是正を実行\nインシデントを自動終了する場合あり"]
+  V --> E["運用担当が承認/対応"]
+  AU --> F["プラットフォーム側の\nインシデントを更新/終了"]
   E --> F
 ```
 
@@ -390,12 +390,12 @@ Knowledge Base は `.md` と `.txt` を扱い、1ファイル最大 16MB です�
 
 ```mermaid
 flowchart LR
-  SM[SearchMemory] --> UM[User Memories]
-  SM --> KB[Knowledge Base]
-  SM --> DC[Documentation connector]
-  SM --> SI[Session insights]
+  SM["SearchMemory"] --> UM["User Memories"]
+  SM --> KB["Knowledge Base"]
+  SM --> DC["Documentation connector"]
+  SM --> SI["Session insights"]
 
-  SN["SearchNodes\nfilters / includeNeighbors"] --> Graph[Graph of connected nodes]
+  SN["SearchNodes\nfilters / includeNeighbors"] --> Graph["接続ノードのグラフ"]
   Graph --> UM
   Graph --> SI
 ```
@@ -514,13 +514,13 @@ Custom MCP server は HTTPS で到達可能なリモートホストが必須で�
 
 ```mermaid
 flowchart LR
-  Main["Main Azure SRE Agent"] --> Sub["Subagent"]
-  Sub --> Tools["Tools (Python)"]
-  Sub --> Conn["Connectors"]
-  Conn --> Outlook["Outlook / Teams (OAuth)"]
-  Conn --> Telemetry["Knowledge/Telemetry sources"]
-  Conn --> MCP["Custom MCP connector"]
-  MCP --> Server["MCP server endpoint\nSSE or HTTP over HTTPS"]
+  Main["メイン エージェント\n(Azure SRE Agent)"] --> Sub["サブエージェント"]
+  Sub --> Tools["ツール（Python）"]
+  Sub --> Conn["コネクタ"]
+  Conn --> Outlook["Outlook / Teams（OAuth）"]
+  Conn --> Telemetry["ナレッジ/テレメトリ ソース"]
+  Conn --> MCP["カスタム MCP コネクタ"]
+  MCP --> Server["MCP サーバー エンドポイント\nHTTPS 上で SSE/HTTP"]
 ```
 
 ### Tool が多い前提での整理（提案）
@@ -661,12 +661,12 @@ Output contract (Markdown):
 
 ```mermaid
 flowchart LR
-  U[User / Synthetic load] -->|HTTP| AS[App Service]
-  AS -->|SDK calls| CDB[Azure Cosmos DB for NoSQL]
-  CDB -->|429 / latency| AS
-  CDB --> M[Azure Monitor metrics: 429, Normalized RU]
-  SA[Azure SRE Agent + Cosmos DB SRE Agent] -->|diagnose / guide| M
-  SA -->|recommend fixes| Ops[Ops / Dev]
+  U["ユーザー / 疑似負荷"] -->|HTTP| AS["App Service"]
+  AS -->|SDK 呼び出し| CDB["Azure Cosmos DB for NoSQL"]
+  CDB -->|429 / レイテンシ| AS
+  CDB --> M["Azure Monitor メトリクス\n429 / Normalized RU"]
+  SA["Azure SRE Agent + Cosmos DB SRE Agent"] -->|診断/ガイド| M
+  SA -->|改善案| Ops["Ops / Dev"]
 ```
 
 #### 事前準備（Azure portal での設定 / 事実＋提案を分離）
@@ -713,16 +713,16 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  S["Symptom:\nApp Service slow/timeouts"] --> A["Check Cosmos 429 rate"]
-  A --> C{"429 low and latency OK?"}
-  C -->|Yes| OK["No action required"]
-  C -->|No| B["Check Normalized RU\nby PartitionKeyRangeID"]
-  B --> D{"Skewed/hot partition?"}
-  D -->|Yes| HP["Hot partition suspected"]
-  D -->|No| TH["Overall throughput\nlikely insufficient"]
-  HP --> FIX1["Fix partitioning strategy\n(long term)"]
-  TH --> FIX2["Increase throughput (RU/s)\nor reduce RU per op"]
-  FIX2 --> META["Also rule out\nmetadata throttling"]
+  S["症状:\nApp Service が遅い/タイムアウト"] --> A["Cosmos の 429 比率を確認"]
+  A --> C{"429 が低く、レイテンシも OK？"}
+  C -->|はい| OK["追加対応なし"]
+  C -->|いいえ| B["PartitionKeyRangeID ごとの\nNormalized RU を確認"]
+  B --> D{"偏り/ホットパーティション？"}
+  D -->|はい| HP["ホットパーティション疑い"]
+  D -->|いいえ| TH["全体スループット不足の可能性"]
+  HP --> FIX1["パーティション戦略を見直す\n（中長期）"]
+  TH --> FIX2["スループット（RU/s）増\nまたは 1 操作あたり RU 削減"]
+  FIX2 --> META["メタデータの\nスロットリングも除外"]
   META --> SYS["Insights > System\nMetadata Requests By Status Code"]
 ```
 
@@ -790,13 +790,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  S["Start: Portal / chat issue"] --> A{"Portal unresponsive?"}
-  A -->|Yes| N["Check network allowlist"]
-  N --> F["Allowlist *.azuresre.ai"]
-  A -->|No| B{"403/CORS or cannot chat?"}
-  B -->|Yes| P["Check role assignments"]
-  P --> Q["Prefer direct assignment\nUse Check Access"]
-  B -->|No| O["Check other causes"]
+  S["開始: ポータル/チャットの問題"] --> A{"ポータルが応答しない？"}
+  A -->|はい| N["ネットワーク allowlist を確認"]
+  N --> F["*.azuresre.ai を allowlist に追加"]
+  A -->|いいえ| B{"403/CORS またはチャット不可？"}
+  B -->|はい| P["ロール割り当てを確認"]
+  P --> Q["直接割り当てを優先\nCheck Access を使用"]
+  B -->|いいえ| O["その他の原因を確認"]
 ```
 
 ### 参考（第11章）
