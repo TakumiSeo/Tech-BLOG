@@ -251,6 +251,113 @@ flowchart TD
   E --> G["終了"]
 ```
 
+### 実行モードを「権限の2軸」で理解する（整理）
+
+実行モードの本質は、write（変更）アクションに対して次の2点をどう扱うかです。[5-2][5-3]
+
+- **Consent（同意）**: 生成された実行プランに基づいて “実行してよいか”
+- **Credentials（資格情報）**: エージェントの権限が不足する場合に、ユーザーの資格情報へ一時的アクセス（OBO）を許可するか[5-3]
+
+この2軸は、次の3要素と組み合わせて考えると混乱しにくいです。
+
+- **ユーザーロール（SRE Agent 内の RBAC）**: そのユーザーがポータル/チャットで何をできるか[5-7]
+- **エージェントのマネージド ID（MI）権限レベル**: エージェントが自分の権限だけで何をできるか（Reader / Privileged）[5-8]
+- **実行モード（Review / Autonomous）**: 同意の扱い（明示/暗黙）と、Autonomous の有効範囲（incident plan の文脈のみ）[5-4][5-10]
+
+補足（重要）:
+- エージェントのスコープ/権限が優先される（特権の“バックドア”昇格を防ぐ）という境界があるため、「ユーザーが外側で強権限」でも、SRE Agent 経由でできるとは限りません。[5-9]
+
+---
+
+### 早見表（Read / Write × Review / Autonomous）
+
+この章では「エージェントにアクセス許可があるか？」を **“MI（＋管理対象スコープ）でその操作ができるか”**として扱います。[5-8][5-9]
+
+#### 1) Read-only（読み取り）
+
+| MIで実行できる？ | 実行モード | 何が起きるか（要点） |
+| --- | --- | --- |
+| はい | Review | MI の権限で読み取りを実行する[5-1] |
+| いいえ | Review | 必要なら OBO による一時アクセスを求める（ユーザーが拒否すると停止）[5-3] |
+| はい | Autonomous | MI の権限で読み取りを実行する[5-1] |
+| いいえ | Autonomous | 必要なら OBO による一時アクセスを求める（ユーザーが拒否すると停止）[5-3] |
+
+ポイント:
+- 読み取りは、Review/Autonomous の違い（=同意の扱い）が出にくい。差が出るのは主に write。[5-1]
+
+#### 2) Write（変更）
+
+| MIで実行できる？ | 実行モード | 何が起きるか（要点） |
+| --- | --- | --- |
+| はい | Review | 実行プランへの同意を求め、同意があれば MI の権限で実行[5-2] |
+| いいえ | Review | 実行プランへの同意を求め、同意後に OBO による一時アクセスを求める（拒否で停止）[5-2][5-3] |
+| はい | Autonomous | 暗黙的同意のもとで MI の権限で実行（ただし incident plan の文脈に限定）[5-4][5-10] |
+| いいえ | Autonomous | 必要なら OBO による一時アクセスを求める（拒否で停止）[5-3][5-4] |
+
+---
+
+### シナリオ（ユーザーロール × MI権限 × 実行モード）
+
+ここでは、代表的な組み合わせを「誰が（SRE Agent 内ロール）」「エージェントが（MI）」「どのモードで（Review/Autonomous）」で整理します。[5-7][5-8]
+
+#### シナリオA: ユーザーロール=Reader、MI=Reader
+
+- ねらい: 監視/状況把握、根本原因の仮説立て、レポート生成。
+- Review: 診断（read）は進められるが、write は同意・実行の操作を担う想定ではない。
+- Autonomous: incident plan の文脈に限定されるため、Reader が自律実行の主体になる設計には向きません。[5-10]
+
+結論:
+- **“閲覧中心”**の運用で、実行は管理者へエスカレーションする前提が安全。
+
+#### シナリオB: ユーザーロール=Standard User、MI=Reader（“まず安全に”の典型）
+
+- Review:
+  - 実行プランは生成できるが、write の最終実行は同意・権限・運用ルールの壁に当たりやすい。
+  - MI=Reader なので、実行に不足があれば OBO（資格情報の一時アクセス）要求が発生し得る。[5-3][5-8]
+- Autonomous:
+  - 同意が暗黙扱いでも、MI=Reader だと不足が出やすく、結局 OBO が必要になり “完全自律” になりにくい。[5-3][5-4]
+  - そもそも incident plan の文脈でしか有効化できない。[5-10]
+
+結論:
+- Standard User は **診断→提案（実行計画）**まで。
+- 実行は管理者へ引き継ぐ分業が設計しやすい。
+
+#### シナリオC: ユーザーロール=Admin、MI=Reader（“人が承認し、必要時だけ昇格”）
+
+- Review:
+  - 管理者が明示的に同意し、エージェントは実行を試みる。[5-2]
+  - MI が不足する場合、OBO による一時アクセスを求め、承認されれば実行する（拒否で停止）。[5-3][5-8]
+- Autonomous:
+  - 同意は暗黙扱いになるが、MI が不足するケースでは OBO が必要（＝人の関与が残る）。[5-3][5-4]
+
+結論:
+- **Review と Autonomous の差は「同意が省略されるか」**。
+- MI=Reader では、権限不足がある限り OBO が残りやすい。
+
+#### シナリオD: ユーザーロール=Admin、MI=Privileged（“自動化を進めたい”）
+
+- Review:
+  - 管理者が同意し、MI の権限で実行できる範囲が増える（OBO を減らしやすい）。[5-2][5-8]
+- Autonomous:
+  - incident plan の限定スコープで、暗黙的同意のもとで実行できる範囲が増える。[5-4][5-10]
+
+結論:
+- 自律性を上げるには、**MI を Privileged にするだけでなく、管理対象スコープ設計（対象RG/許可する操作）**が重要。[5-8][5-9]
+
+#### シナリオE: “Adminでも失敗する” 代表例（境界の確認）
+
+- 管理者ロールは「SRE Agent 内の操作権」を付与するが、Azure 側（MIの権限/スコープ）で許されなければ実行できない。[5-9]
+- 例: ロールバック/スケール等を試みても、MI のスコープ外、または必要 RBAC が割り当てられていなければ失敗する。
+
+---
+
+### 使い分け（運用設計の結論）
+
+- **Review（既定）**: “提案→人が確認→実行” の安全な導線。教育/監査/誤実行防止に向く。[5-2]
+- **Autonomous**: incident plan の文脈に限定して「境界内で自律」を狙う。範囲設計（スコープ/許可操作）とセットで考える。[5-10]
+- **MI=Reader**: 原則 read 中心。write は OBO に寄りやすいので、責任分界（誰が承認/資格情報を出すか）を決める。[5-8]
+- **MI=Privileged**: OBO 依存を減らしやすいが、スコープ/境界の設計が前提になる。[5-8][5-9]
+
 ### 参考（第5章）
 - [5-1] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “Consent / Credentials”
 - [5-2] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “generates an execution plan and waits for your consent”
@@ -258,6 +365,10 @@ flowchart TD
 - [5-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “implicit consent”
 - [5-5] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode) — “既定では … レビュー モード … 実行プランを生成し、同意を待ってからアクションを実行”
 - [5-6] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode) — “どのコンテキストでも自律的に作業できるのではなく … 制限付きスコープ”
+- [5-7] [https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview) — “3 つの主要ロール … 管理者 … 標準ユーザー … 閲覧者”
+- [5-8] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-managed-identity) — “Reader … 必要なアクションに昇格されたアクセス許可が必要な場合 … OBO フロー … / 特権付き … 承認されたアクションを実行”
+- [5-9] [https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/ja-jp/azure/sre-agent/roles-permissions-overview) — “エージェントのアクセス許可 … 優先 … 特権エスカレーションを防ぐ”
+- [5-10] [https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/ja-jp/azure/sre-agent/agent-run-modes) — “インシデント管理計画のコンテキストでのみ自律モードを有効にできます”
 
 ---
 
@@ -332,8 +443,8 @@ flowchart TD
   A["プラットフォーム側のアラート\nAzure Monitor / PagerDuty / ServiceNow"] --> B["Incident management が受信"]
   B --> C["初期分析つきの\n新しいチャット スレッドを作成"]
   C --> D{"実行モード"}
-  D -->|閲覧者| V["推奨を提示\n人が介入"]
-  D -->|自律| AU["是正を実行\nインシデントを自動終了する場合あり"]
+  D -->|Review| V["推奨を提示\n人が介入"]
+  D -->|Autonomous| AU["是正を実行\nインシデントを自動終了する場合あり"]
   V --> E["運用担当が承認/対応"]
   AU --> F["プラットフォーム側の\nインシデントを更新/終了"]
   E --> F
