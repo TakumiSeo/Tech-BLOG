@@ -418,13 +418,116 @@ Azure Monitor は既定の統合で、最小限のセットアップで使えま
 - 既定では Azure Monitor アラートがインシデント管理プラットフォームとして構成されます。[7-8]
 
 ### Incident response plan の位置づけ（説明）
-Incident response plan は、incidents の検知/レビュー/ミティゲーションのやり方を定義します。filters / execution mode / custom instructions をカスタマイズできます。[7-2]
+Incident response plan は、インシデントに対して「どう検知し、どう確認し、どう軽減するか」を定義する計画です。
+カスタム計画では、(1) 対象インシデントのフィルター、(2) 自律性レベル（実行モード）、(3) 問題解決のためのカスタム命令を使って、エージェントの対応を調整します。[7-15]
+
+補足（説明）:
+- エージェントの動作は、インシデント対応計画の構成によって異なります（昇格して人手解決に回す/ユーザーに代わって解決する等）。[7-15]
+
+### スライド要点（Incident response plan の定義）
+- 目的: インシデント対応のやり方を「計画」として固定化する。[7-15]
+- 調整レバー: `filters` / `execution mode` / `custom instructions`。[7-15]
+- 効果: “検知→分析→人手介入 or 自律是正” の分岐が設計できる。[7-15]
 
 ### 既定値（説明）
 Incident management を有効化した場合の既定として、Azure Monitor alerts と接続し、low priority を全サービス対象にして review mode で処理します。[7-3]
 
+補足（説明）:
+- サポートされているインシデント管理プラットフォームとして PagerDuty / ServiceNow が挙げられています。[7-16]
+- Azure Monitor をインシデント管理システムとして使う機能は試験段階で、まだ完全には機能していません。[7-17]
+
+### スライド要点（既定の応答計画）
+- 既定の接続先: Azure Monitor alerts。[7-3]
+- 既定の対象: 影響を受ける全サービスの低優先度。[7-3]
+- 既定の実行: Review mode。[7-3]
+
 ### テスト（説明）
 Incident response plan は過去インシデントに対して test mode で実行できます。test mode は read-only です。[7-4]
+
+補足（説明）:
+- 期待どおりに動作するかを、既存インシデントに対して実行して確認します。[7-18]
+- 新規/既存どちらのインシデント対応計画でもテストできます。[7-18]
+
+### スライド要点（テストモード）
+- 過去インシデントで事前検証できる（安全に挙動確認）。[7-18]
+- テストモードは常に read-only。[7-4]
+
+### 応答計画をカスタマイズする（説明）
+インシデント対応計画は、(1) 管理サービスの選択、(2) フィルター適用、(3) 自律レベルの設定、(4) プロンプト コンテキスト（カスタム命令）のカスタマイズを通じて作成できます。[7-19]
+
+#### フィルター（filters）（説明）
+プランを実行するインシデントを、次のフィルターで決められます。[7-20]
+- インシデントの種類（例: 既定 / メジャー / セキュリティ）[7-20]
+- 影響を受けたサービス（すべて/名前で選択）[7-20]
+- Priority（優先度）[7-20]
+- タイトルに含まれるもの（タイトル文字列の一致）[7-20]
+
+#### 自律レベル（execution mode）（説明）
+応答計画内で、エージェントの自律性レベルを選べます。[7-21]
+- Review: 診断し、提案されたアクションのレビューと承認の後にのみ軽減/変更します。[7-21]
+- Autonomous: 分析し、軽減策またはリソース変更を個別に実行します。必要なアクセス許可がない場合は、昇格されたアクセス許可への一時的なアクセスを付与するように求められます。[7-21]
+
+#### カスタム命令（custom instructions）とツール（説明）
+SRE Agent は過去インシデントを調べて、過去の解決方法に基づくプロファイルと、より詳細なコンテキスト（命令）を生成できます。[7-22]
+生成された命令は編集してカスタマイズでき、独自の命令に置き換えることもできます。[7-23]
+また、応答計画の内容に応じて、インシデント対応時に使用するツールの一覧が生成されます。ツールは追加/削除でき、カスタム命令を変更した場合はツール一覧を再生成して同期を維持できます。[7-24]
+
+### 図（パワポ用・下書き）
+
+#### 図1: 「応答計画」の構成要素（1枚で説明）
+
+```mermaid
+flowchart LR
+  Plan["Incident response plan\n(インシデント対応計画)"]
+
+  F["Filters\n対象インシデントの絞り込み"] --> Plan
+  M["Execution mode\nReview / Autonomous"] --> Plan
+  I["Custom instructions\n解決方針・手順の文脈"] --> Plan
+  T["Tools list\n使うツールの選択"] --> Plan
+
+  Plan --> Out["実行時のエージェント挙動\n(分析 / 推奨 / 是正 / 更新)"]
+
+  classDef core fill:#111827,stroke:#111827,color:#ffffff;
+  classDef box fill:#F3F4F6,stroke:#9CA3AF,color:#111827;
+  class Plan core;
+  class F,M,I,T,Out box;
+```
+
+#### 図2: 実行時の流れ（構成で分岐が変わる）
+
+```mermaid
+flowchart LR
+  subgraph P["Incident management platform"]
+    Alert["Alert / Incident"]
+  end
+
+  subgraph A["Azure SRE Agent"]
+    Recv["Incident management\nが受信"]
+    Thread["初期分析つきの\nチャット スレッド"]
+    Mode{"Execution mode"}
+    Rec["推奨を提示"]
+    Rem["是正を実行\n(状況により自動終了)"]
+  end
+
+  subgraph H["運用担当"]
+    Approve["レビュー/承認"]
+  end
+
+  subgraph P2["Incident management platform"]
+    Update["インシデント更新/終了"]
+  end
+
+  Alert --> Recv --> Thread --> Mode
+  Mode -->|Review| Rec --> Approve --> Update
+  Mode -->|Autonomous| Rem --> Update
+
+  classDef lane fill:#ffffff,stroke:#D1D5DB,color:#111827;
+  classDef action fill:#EEF2FF,stroke:#6366F1,color:#111827;
+  classDef decision fill:#FEF3C7,stroke:#F59E0B,color:#111827;
+  class P,A,H,P2 lane;
+  class Recv,Thread,Rec,Rem,Update action;
+  class Mode decision;
+```
 
 ### エージェントの応答（説明）
 - インシデントが検出されると、最初の分析を含む新しいスレッドがチャット履歴に作成されます。[7-9]
@@ -468,6 +571,16 @@ PagerDuty 統合では User API key が必要です。General API key では ack
 - [7-12] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#agent-responses) — “インシデント ハンドラーをカスタマイズ … 自律性レベル … 使用できるツール … カスタム手順”
 - [7-13] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard) — “ダッシュボード … すべてのインシデントの一元的なビュー … 主要なメトリック … 保留中のインシデント”
 - [7-14] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-management?tabs=azmon-alerts#dashboard) — “集計された視覚化と AI によって生成された根本原因分析”
+- [7-15] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan) — “インシデントを検出、確認、軽減する方法を定義 … 自律レベルを設定 … カスタム指示”
+- [7-16] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#default-settings](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#default-settings) — “サポートされているインシデント管理プラットフォーム … PagerDuty … ServiceNow”
+- [7-17] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#default-settings](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#default-settings) — “Azure Monitor … 試験段階 … まだ完全には機能していません”
+- [7-18] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#test-a-response-plan](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#test-a-response-plan) — “過去の問題に対して計画をテスト … テスト モード … 常に読み取り専用 … 新規および既存 … テスト”
+- [7-19] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#customize-a-response-plan](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#customize-a-response-plan) — “管理サービスの選択 … フィルター … 自律レベル … プロンプト コンテキストのカスタマイズ”
+- [7-20] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#filter-incidents](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#filter-incidents) — “インシデントの種類 … 影響を受けたサービス … Priority … タイトルに含まれるもの”
+- [7-21] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#set-an-autonomy-level](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#set-an-autonomy-level) — “Review … レビューと承認 … Autonomous … 必要なアクセス許可がない場合 … 一時的なアクセス”
+- [7-22] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#define-custom-instructions](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#define-custom-instructions) — “以前のインシデント … 過去の解決方法 … プロファイル … より詳細なコンテキストを生成”
+- [7-23] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#define-custom-instructions](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#define-custom-instructions) — “生成された命令をカスタマイズ … 置き換え”
+- [7-24] [https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#define-custom-instructions](https://learn.microsoft.com/ja-jp/azure/sre-agent/incident-response-plan?tabs=new-plan#define-custom-instructions) — “ツールの一覧を生成 … 追加または削除 … ツールの一覧を再生成して同期”
 
 ---
 
