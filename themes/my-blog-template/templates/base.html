@@ -63,6 +63,8 @@
     {% if SITEDESCRIPTION %}<meta name="description" content="{{ SITEDESCRIPTION }}" />{% endif %}
     <!-- debug-lang: lang={{ lang if lang is defined else 'none' }}, article={{ article.lang if article is defined else 'n/a' }}, page={{ page.lang if page is defined else 'n/a' }} -->
     <link rel="stylesheet" href="{{ asset_root }}/theme/css/security.css" />
+    <link rel="icon" href="{{ asset_root }}/images/icon/kamomecloud.png" type="image/png" />
+    <link rel="apple-touch-icon" href="{{ asset_root }}/images/icon/kamomecloud.png" />
     {% if FEED_ALL_ATOM %}<link rel="alternate" type="application/atom+xml" title="{{ SITENAME }} Full Atom Feed" href="{{ SITEURL }}/{{ FEED_ALL_ATOM }}" />{% endif %}
     {% if FEED_ALL_RSS %}<link rel="alternate" type="application/rss+xml" title="{{ SITENAME }} Full RSS Feed" href="{{ SITEURL }}/{{ FEED_ALL_RSS }}" />{% endif %}
     {% block extra_head %}{% endblock %}
