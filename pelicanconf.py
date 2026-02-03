@@ -7,7 +7,7 @@ import re
 BASE_DIR = Path(__file__).parent.resolve()
 
 AUTHOR = "Taku Sewo"
-SITENAME = "Gull Cloud Note"
+SITENAME = "My Mate"
 SITESUBTITLE = ""
 SITEURL = ""
 
@@ -36,7 +36,7 @@ LANGUAGE_SWITCHER = (
 )
 I18N_SUBSITES = {
     "ja-jp": {
-        "SITENAME": "カモメのクラウドノート",
+        "SITENAME": "My Mate",
         "SITESUBTITLE": "",
         "LOCALE": "ja_JP",
         "LANGUAGE_SWITCHER": LANGUAGE_SWITCHER,
