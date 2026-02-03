@@ -439,7 +439,7 @@ Incident management タブには、エージェントが管理するインシデ
 ### インシデント処理の流れ
 
 ```mermaid
-flowchart TD
+flowchart LR
   A["プラットフォーム側のアラート\nAzure Monitor / PagerDuty / ServiceNow"] --> B["Incident management が受信"]
   B --> C["初期分析つきの\n新しいチャット スレッドを作成"]
   C --> D{"実行モード"}
