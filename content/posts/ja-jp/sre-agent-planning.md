@@ -595,10 +595,30 @@ Memory system のコンポーネントは User Memories / Knowledge Base / Docum
 補足（説明）:
 - Session insights はセッションからエージェントが生成するメモリ（自動）です。[8-7]
 
+（補足: 4コンポーネントの役割の切り分け）
+
+| コンポーネント | 目的 | 設定のしやすさ | 最適な用途 |
+| --- | --- | --- | --- |
+| User memories | チーム知識のクイック保存（チャットコマンド） | インスタント | チーム標準、サービス構成、運用ワークフローのパターン |
+| Knowledge Base | Runbook 等の直接アップロード | クイック（ファイルアップロード） | 静的 runbook、トラブルシューティングガイド、内部ドキュメント |
+| Documentation connector | Azure DevOps の自動同期 | 構成が必要 | 頻繁に更新されるドキュメント（ライブドキュメント） |
+| Session insights | セッションから自動生成される学習 | 自動 | トラブルシューティングパターン、過去の解決から学習 |
+
+この表の理解は「何を、どこに置くべきか」を決めるための前提になります。[8-14]
+
 ### 取り出し方（説明）
 `SearchMemory` は4コンポーネントを横断検索するツールです。Custom subagents ではツール追加が必要です。[8-3]
 
 より対象を絞った検索として `SearchNodes` がフィルターをサポートし、`includeNeighbors` を `true` にすると接続されたノード（リソースや関連インシデント等）も返します。[8-8]
+
+拡張検索パラメーター（事実）:
+
+| パラメーター | 役割 |
+| --- | --- |
+| `entityType` | `Incident` / `Service` / `Resource` など、エンティティ種別で結果をフィルターする |
+| `includeNeighbors` | `true` の場合、一致したノードだけでなく接続されたノードも返す |
+
+`includeNeighbors` により「一致ノード + つながっているリソース/サービス/関連インシデント/リンク文書」まで含めたリレーションシップの把握が可能になります。[8-15]
 
 ### データ投入の注意（説明）
 秘密情報（secrets/credentials/API keys）は保存しません。[8-4]
@@ -628,6 +648,11 @@ flowchart LR
 User memories は `#remember` / `#forget` / `#retrieve` のチャットコマンドを使います。[8-6]
 
 `#remember` は将来の会話のために fact/standard/context を保存し、`#forget` は保存済みメモリを検索して削除し、`#retrieve` はエージェントの推論をトリガーせずに検索・表示します。[8-11]
+
+補足（仕組み: 事実）:
+- `#remember` で保存した内容は、（Learnの記述では）OpenAI を用いた埋め込み（embedding）として格納され、Azure AI Search に保存されます。保存後に `✅ Agent Memory saved.` の確認が表示されます。[8-16]
+- `#forget` は意味的検索で一致候補を見つけて削除し、`✅ Agent Memory forgotten: [deleted content]` の確認が表示されます。[8-17]
+- `#retrieve` は保存メモリを意味的に検索し、上位5件をもとに「合成された回答」と「個々のメモリ」の両方を表示します（推論をトリガーせずに確認したい用途）。[8-18]
 
 ### User Memories の実用例（提案）
 
@@ -685,6 +710,73 @@ Runbook standard:
 
 分析情報は「会話完了後に定期的に（約30分ごと）自動生成」されるか、「チャット フッターで[セッション分析情報の生成]を選ぶと約30秒でオンデマンド生成」されます。[8-13]
 
+補足（エージェントがキャプチャする内容: 事実）:
+- 観察された症状（同様パターン認識）
+- 動作した手順（実証済みの解決パス提案）
+- 根本原因（より可能性の高い原因へのショートカット）
+- 落とし穴（同じ間違いの回避）
+- 指定したコンテキスト（環境事実の記憶）
+- 関連するリソース（同一リソースの過去問題と接続）[8-19]
+
+補足（「見に行く」価値: 事実）:
+セッション分析情報を確認すると、繰り返し発生・知識ギャップ・runbook不足・テレメトリ不足などのパターンが見える場合があり、対処（コード/構成の修正、サブエージェント作成、runbook更新、ログ/メトリック追加、アラート調整など）につなげられます。[8-20]
+
+補足（インサイトの構造: 事実）:
+各分析情報は「タイムライン（最大8つのマイルストーン）」「エージェントのパフォーマンス（うまくいったこと/改善領域/主要な学習）」「調査品質スコア（1〜5）」を含みます。[8-21]
+
+### Quickstart（Learn の推奨手順: 事実）
+
+Learn では、段階的に導入する流れが提示されています。[8-22]
+
+1) User memories から始める（`#remember` でチーム知識を即時保存）[8-22]
+
+2) 主要ドキュメントを Knowledge Base にアップロードする（`.md` / `.txt`、最大 16MB / ファイル）。アップロード後、システムがインデックス化し、`SearchMemory` で取得できるようになります。[8-5][8-23]
+
+3) Session insights を確認し、何がうまくいったか/不足していたコンテキストを見て「知識ギャップ」を埋める（必要ならメモリやドキュメントを追加）。[8-24]
+
+4) （任意）Documentation connector を使い、Azure DevOps リポジトリのドキュメントを自動同期する（設定 > Connectors から、リポジトリ URL と managed identity を指定してインデックスを開始）。[8-25]
+
+### Knowledge Base（詳細: 事実）
+
+ポータルでのアップロードは **設定 > Knowledge Base** から行い、ファイルの検証/アップロード/インデックス作成が自動で行われます。[8-23]
+
+さらにエージェントは `UploadKnowledgeDocument` ツールで、Knowledge Base へ直接アップロードできます（調査中に得た手順の保存、インシデント解決からの runbook 追加、UIなしでの追加）。[8-26]
+
+`UploadKnowledgeDocument` の仕様（事実）:
+- `fileName`: `.md` / `.txt` 必須
+- `content`: プレーンテキストまたは Markdown の全文
+- `triggerIndexing`: 省略時 `true`（バッチでは `false` にできる）[8-26]
+
+制約・挙動（事実）:
+- 最大ファイルサイズ: 16MB
+- 同名ファイルが存在する場合は上書き
+- （Learnの記載では）Azure Blob Storage にアップロードし、検索可能なインデックス作成をトリガーする[8-26]
+
+### Azure Portal で「どこで」「どう実装するか」（事実）
+
+ここでは、Memory system を Azure Portal の UI で“実装（運用に載せる）”する際の操作パスをまとめます。
+
+前提: まず Azure portal で **Azure SRE Agent** を検索して開き、一覧から対象のエージェントを選択します（チャット UI が開けば OK）。[8-27]
+
+1) User memories（チーム知識の即時保存）
+- 場所: エージェントの **チャット**
+- やること: `#remember` / `#forget` / `#retrieve` をそのまま入力して実行します。[8-6][8-11]
+
+2) Knowledge Base（runbook のアップロード）
+- 場所: エージェントの **Settings** > **Knowledge base**
+- やること: **Add file** を選ぶか、ドラッグ&ドロップで `.md` / `.txt` をアップロードします（最大 16MB / ファイル）。アップロード後、ポータル側で検証/アップロード/インデックス作成が実行され、`SearchMemory` で検索可能になります。[8-5][8-23]
+
+3) Session insights（改善ループの確認）
+- 場所: エージェントの **Settings** > **Session insights**
+- 生成: 会話終了後に定期的（約30分）に自動生成、またはチャットフッターの **Generate Session insights**（日本語 UI では「セッション分析情報の生成」）でオンデマンド生成（約30秒）できます。[8-13]
+
+4) Documentation connector（Azure DevOps リポジトリの同期）
+- 場所: エージェントの **Settings** > **Connectors**
+- やること: **Add connector** から **Documentation connector** を選び、Azure DevOps の repository URL と managed identity を指定します。コネクタが自動でインデックスを開始します。[8-25]
+
+補足（実装の考え方）:
+- まず `#remember` で「運用の前提」を短く保存し、次に Knowledge Base に“手順化された runbook”を入れ、最後に Session insights で「不足していた前提」を埋めていく、という順が Learn の Quickstart と整合します。[8-22][8-24]
+
 ### 参考（第8章）
 - [8-1] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “gives agents the knowledge they need to troubleshoot effectively”
 - [8-2] [https://learn.microsoft.com/en-us/azure/sre-agent/memory-system](https://learn.microsoft.com/en-us/azure/sre-agent/memory-system) — “consists of four complementary components”
@@ -699,6 +791,20 @@ Runbook standard:
 - [8-11] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#chat-commands](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#chat-commands) — “`#remember` … `#forget` … `#retrieve`”
 - [8-12] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#session-insights](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#session-insights) — “症状、解決手順、根本原因、および落とし穴をキャプチャ … 検索可能なメモリ … 自動的に取得”
 - [8-13] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#when-insights-are-generated](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#when-insights-are-generated) — “約 30 分ごと … [セッション分析情報の生成 ] … (約 30 秒)”
+- [8-14] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#memory-components](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#memory-components) — “4 つの補完的なコンポーネント … 目的 … 設定 … 最適な用途”
+- [8-15] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#advanced-search-parameters](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#advanced-search-parameters) — “`entityType` … `includeNeighbors` … 接続されたノードも返す”
+- [8-16] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#remember-%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E6%83%85%E5%A0%B1%E3%82%92%E4%BF%9D%E5%AD%98%E3%81%99%E3%82%8B](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#remember-%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E6%83%85%E5%A0%B1%E3%82%92%E4%BF%9D%E5%AD%98%E3%81%99%E3%82%8B) — “OpenAI … 埋め込み … Azure AI Search … `✅ Agent Memory saved.`”
+- [8-17] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#forget-%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E3%83%A1%E3%83%A2%E3%83%AA%E3%82%92%E5%89%8A%E9%99%A4%E3%81%99%E3%82%8B](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#forget-%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E3%83%A1%E3%83%A2%E3%83%AA%E3%82%92%E5%89%8A%E9%99%A4%E3%81%99%E3%82%8B) — “意味的な分析 … `✅ Agent Memory forgotten`”
+- [8-18] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#retrieve-%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E3%83%A1%E3%83%A2%E3%83%AA%E3%81%AB%E3%82%AF%E3%82%A8%E3%83%AA%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#retrieve-%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E3%83%A1%E3%83%A2%E3%83%AA%E3%81%AB%E3%82%AF%E3%82%A8%E3%83%AA%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%99%E3%82%8B) — “上位 5 つの一致 … 個々のメモリ … 合成された回答”
+- [8-19] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#what-the-agent-captures](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#what-the-agent-captures) — “観察された症状 … 動作した手順 … 根本原因 … 落とし穴 … コンテキスト … 関連するリソース”
+- [8-20] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#find-opportunities](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#find-opportunities) — “繰り返し発生 … 知識不足 … Runbook … テレメトリ … アラート”
+- [8-21] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#insight-structure](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#insight-structure) — “タイムライン … エージェントのパフォーマンス … 調査品質スコア … 1 から 5”
+- [8-22] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#quickstart](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#quickstart) — “ユーザーメモリ … ドキュメント … 自動同期に拡張”
+- [8-23] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#uploading-documents](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#uploading-documents) — “設定 > ナレッジベース … `.md` または `.txt` … インデックス … `SearchMemory`”
+- [8-24] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#3-review-session-insights](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#3-review-session-insights) — “設定 > Session の分析情報 … 知識のギャップ … メモリまたはドキュメントを追加”
+- [8-25] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#4-connect-a-repository-optional](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#4-connect-a-repository-optional) — “設定 > Connectors … ドキュメント コネクタ … Azure DevOps … マネージド ID”
+- [8-26] [https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#uploading-documents-with-agent-tools](https://learn.microsoft.com/ja-jp/azure/sre-agent/memory-system#uploading-documents-with-agent-tools) — “UploadKnowledgeDocument … `fileName` … `content` … `triggerIndexing` … 上書き … Blob Storage … インデックス”
+- [8-27] [https://learn.microsoft.com/en-us/azure/sre-agent/usage#chat-with-your-agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage#chat-with-your-agent) — “In the Azure portal, search for and select Azure SRE Agent … Locate your agent … select it”
 
 ---
 
