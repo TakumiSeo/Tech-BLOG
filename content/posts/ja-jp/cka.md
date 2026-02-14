@@ -108,52 +108,104 @@ Namespace によってリソースは分割されるため、Pod 間連携（安
 
 ```mermaid
 flowchart TB
-	subgraph Cluster [Kubernetes Cluster]
-		direction TB
+  subgraph Cluster [Kubernetes Cluster]
+    direction TB
 
-		subgraph CP [Control Plane]
-			direction TB
-			API[kube-apiserver]
-			ETCD[etcd]
-			CM[kube-controller-manager]
-			SCH[kube-scheduler]
-			API --- ETCD
-			CM --> API
-			SCH --> API
-		end
+    subgraph CP [Control Plane]
+      direction TB
+      API[kube-apiserver]
+      ETCD[etcd]
+      CM[kube-controller-manager]
+      SCH[kube-scheduler]
+      API --- ETCD
+      CM --> API
+      SCH --> API
+    end
 
-		subgraph W1 [Worker Node]
-			direction TB
-			K1[kubelet]
-			R1[container runtime]
-			K1 --> R1
+    subgraph W1 [Worker Node]
+      direction TB
+      K1[kubelet]
+      R1[container runtime]
+      K1 --> R1
 
-			subgraph NS1 [Namespace: team-a]
-				direction TB
-				SVC1[Service]
-				P1[Pod]
-				P2[Pod]
-				SVC1 --> P1
-				SVC1 --> P2
-			end
-		end
+      subgraph NS1 [Namespace: team-a]
+        direction TB
+        SVC1[Service]
+        P1[Pod]
+        P2[Pod]
+        SVC1 --> P1
+        SVC1 --> P2
+      end
+    end
 
-		subgraph W2 [Worker Node]
-			direction TB
-			K2[kubelet]
-			R2[container runtime]
-			K2 --> R2
+    subgraph W2 [Worker Node]
+      direction TB
+      K2[kubelet]
+      R2[container runtime]
+      K2 --> R2
 
-			subgraph NS2 [Namespace: team-b]
-				direction TB
-				P3[Pod]
-			end
-		end
+      subgraph NS2 [Namespace: team-b]
+        direction TB
+        P3[Pod]
+      end
+    end
 
-		K1 --> API
-		K2 --> API
-	end
+    K1 --> API
+    K2 --> API
+  end
 ```
+
+---
+
+## 3.6 Python runtime のWebマイクロサービスをクラスタでホストするイメージ
+
+「Python の runtime を持つコンテナ（例: FastAPI/Flask/Django）で Web サイト/API をマイクロサービスとして動かす」時の典型パターンです。
+
+ざっくり流れ:
+
+- 外部アクセス（ブラウザ/クライアント） → **Ingress（入口）**
+- Ingress は **Ingress Controller（例: nginx ingress）** が実際にルーティング
+- ルーティング先は **Service（安定した宛先）**
+- Service が **ラベルで Pod を選択**（Pod は Deployment/ReplicaSet が管理）
+
+```mermaid
+flowchart TB
+  Client["Client<br/>(Browser / App)"] --> DNS["DNS<br/>example.com"]
+  DNS --> LB["Load Balancer<br/>(Public IP)"]
+  LB --> IC["Ingress Controller<br/>(runs as Pods)"]
+  IC --> ING["Ingress Resource<br/>host/path rules"]
+
+  subgraph Cluster [Kubernetes Cluster]
+    direction TB
+
+    subgraph NS [Namespace: prod]
+      direction TB
+      SVC["Service<br/>web-python-svc"]
+      DEP["Deployment<br/>web-python"]
+      RS[ReplicaSet]
+      P1["Pod<br/>Python runtime + app"]
+      P2["Pod<br/>Python runtime + app"]
+
+      ING --> SVC
+      SVC --> P1
+      SVC --> P2
+      DEP --> RS
+      RS --> P1
+      RS --> P2
+
+      CMAP[ConfigMap] -.-> P1
+      SECRET[Secret] -.-> P1
+      CMAP -.-> P2
+      SECRET -.-> P2
+    end
+  end
+```
+
+覚えどころ（CKA向け）:
+
+- **Ingress は「入口のルール」**、実処理は Ingress Controller
+- **Service は Pod の IP が変わっても安定**（selector で追従する）
+- **Deployment はローリングアップデート**やスケールの中心（Pod を直接ではなく ReplicaSet 経由で管理）
 
 ---
 
