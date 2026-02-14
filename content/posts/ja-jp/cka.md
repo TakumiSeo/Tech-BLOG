@@ -40,21 +40,21 @@ Kubernetes は「コンテナをデプロイして管理する」ためのオー
 
 ```mermaid
 flowchart TB
-	subgraph Pod[Pod]
-		direction TB
-		Net[Pod IP / Network]
-		Vol[Shared Volume]
-		subgraph C1[Container: main app]
-			A[Application]
-		end
-		subgraph C2[Container: sidecar]
-			S[Support: log/agent/proxy]
-		end
-		Net --- C1
-		Net --- C2
-		Vol --- C1
-		Vol --- C2
-	end
+  subgraph Pod [Pod]
+    direction TB
+    Net[Pod IP / Network]
+    Vol[Shared Volume]
+    subgraph C1 [Container: main app]
+      A[Application]
+    end
+    subgraph C2 [Container: sidecar]
+      S[Support: log/agent/proxy]
+    end
+    Net --- C1
+    Net --- C2
+    Vol --- C1
+    Vol --- C2
+  end
 ```
 
 ASCII での見え方（Mermaidが表示されない場合）:
@@ -95,6 +95,68 @@ Namespace によってリソースは分割されるため、Pod 間連携（安
 
 ---
 
+## 3.5 クラスター全体イメージ（Control Plane / Worker / Namespace）
+
+「クラスタの中で何がどこにいるか」を、まずは1枚で把握する用の図です。
+
+ポイント:
+
+- **Control Plane** は「状態を保存し、調整して、割り当てる」側
+- **Worker Node** は「Pod（コンテナ）を実際に動かす」側
+- 多くの操作は `kube-apiserver` を経由して行われる
+- Namespace は論理的な区切り（ノードの物理的分割ではない）
+
+```mermaid
+flowchart TB
+	subgraph Cluster [Kubernetes Cluster]
+		direction TB
+
+		subgraph CP [Control Plane]
+			direction TB
+			API[kube-apiserver]
+			ETCD[etcd]
+			CM[kube-controller-manager]
+			SCH[kube-scheduler]
+			API --- ETCD
+			CM --> API
+			SCH --> API
+		end
+
+		subgraph W1 [Worker Node]
+			direction TB
+			K1[kubelet]
+			R1[container runtime]
+			K1 --> R1
+
+			subgraph NS1 [Namespace: team-a]
+				direction TB
+				SVC1[Service]
+				P1[Pod]
+				P2[Pod]
+				SVC1 --> P1
+				SVC1 --> P2
+			end
+		end
+
+		subgraph W2 [Worker Node]
+			direction TB
+			K2[kubelet]
+			R2[container runtime]
+			K2 --> R2
+
+			subgraph NS2 [Namespace: team-b]
+				direction TB
+				P3[Pod]
+			end
+		end
+
+		K1 --> API
+		K2 --> API
+	end
+```
+
+---
+
 ## 4. オーケストレーションの本質: コントローラの監視ループ
 
 オーケストレーションは、**コントローラ（controller / operator）** と呼ばれる監視ループで実現します。
@@ -112,21 +174,21 @@ Namespace によってリソースは分割されるため、Pod 間連携（安
 
 ```mermaid
 sequenceDiagram
-	participant U as User (kubectl)
-	participant A as kube-apiserver
-	participant C as Controller/Operator
-	participant S as Scheduler
-	participant K as kubelet
-	participant R as Container Runtime
+  participant U as User (kubectl)
+  participant A as kube-apiserver
+  participant C as Controller/Operator
+  participant S as Scheduler
+  participant K as kubelet
+  participant R as Container Runtime
 
-	U->>A: オブジェクトを作成/更新（Desired state）
-	loop reconcile
-		C->>A: 現在の状態をwatch/list
-		C->>A: 足りない分を作る/直す（例: ReplicaSet更新）
-	end
-	S->>A: Podにノード割り当て
-	K->>A: PodSpecを取得
-	K->>R: イメージ取得/コンテナ作成・停止
+  U->>A: オブジェクトを作成/更新（Desired state）
+  loop reconcile
+    C->>A: 現在の状態をwatch/list
+    C->>A: 足りない分を作る/直す（例: ReplicaSet更新）
+  end
+  S->>A: Podにノード割り当て
+  K->>A: PodSpecを取得
+  K->>R: イメージ取得/コンテナ作成・停止
 ```
 
 ---
@@ -143,13 +205,13 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-	D[Deployment] --> RS[ReplicaSet]
-	RS -->|create/delete| P1[Pod]
-	RS -->|create/delete| P2[Pod]
-	P1 -->|PodSpec| K1[kubelet]
-	P2 -->|PodSpec| K2[kubelet]
-	K1 --> CR1[container runtime]
-	K2 --> CR2[container runtime]
+  D[Deployment] --> RS[ReplicaSet]
+  RS -->|create/delete| P1[Pod]
+  RS -->|create/delete| P2[Pod]
+  P1 -->|PodSpec| K1[kubelet]
+  P2 -->|PodSpec| K2[kubelet]
+  K1 --> CR1[container runtime]
+  K2 --> CR2[container runtime]
 ```
 
 補足:
@@ -173,10 +235,10 @@ Service（および関連するオペレータ）は、ラベルに基づいて�
 
 ```mermaid
 flowchart TB
-	SVC[Service\nselector: app=web] --> EP[Endpoints / EndpointSlice]
-	EP --> P1[Pod app=web]
-	EP --> P2[Pod app=web]
-	EP -.-> P3[Pod app=batch\n(選ばれない)]
+  SVC["Service<br/>selector: app=web"] --> EP[Endpoints / EndpointSlice]
+  EP --> P1["Pod app=web"]
+  EP --> P2["Pod app=web"]
+  EP -.-> P3["Pod app=batch<br/>(選ばれない)"]
 ```
 
 ---
@@ -190,8 +252,8 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-	CJ[CronJob] -->|schedule| J1[Job]
-	J1 --> P[Pod (run-to-completion)]
+  CJ[CronJob] -->|schedule| J1[Job]
+  J1 --> P["Pod (run-to-completion)"]
 ```
 
 ---
