@@ -293,8 +293,13 @@ flowchart LR
 ```mermaid
 flowchart TB
   PA["Pod A<br/>10.244.1.2"] --> NA["Node A"]
-  NA -->| (A) overlay: VXLAN encap | NB["Node B"]
-  NA -->| (B) L3 routing: BGP/routes | NB
+
+  NA --> OV["Overlay<br/>(VXLAN / encap)"]
+  OV --> NB["Node B"]
+
+  NA --> RT["L3 routing<br/>(BGP / routes)"]
+  RT --> NB
+
   NB --> PB["Pod B<br/>10.244.2.3"]
 ```
 
