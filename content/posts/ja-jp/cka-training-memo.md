@@ -1,5 +1,10 @@
-
-# CKA Training Memo
+Title: CKA学習メモ: kubeadm 演習メモ（課題3.1）
+Date: 2026-02-14
+Slug: cka-training-memo
+Lang: ja-jp
+Category: notebook
+Tags: kubernetes,cka,cni
+Summary: kubeadm を使ったKubernetesクラスタ構築手順（init/CNI/join）を図解して整理します。
 
 ## 課題3.1（kubeadmでクラスタ構築）まとめ
 
