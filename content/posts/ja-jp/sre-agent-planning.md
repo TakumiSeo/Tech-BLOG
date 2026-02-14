@@ -840,6 +840,41 @@ Custom MCP server は HTTPS で到達可能なリモートホストが必須で�
 - カスタム MCP 接続では、コネクタが「MCP サーバー エンドポイント」「トランスポート（SSE/HTTP）」「認証メカニズム」を定義します。[9-14]
 - 追加は **[設定] → [コネクタ] → [コネクタの追加] → 種類: MCP サーバー** を選び、名前/接続の種類（SSE/HTTP）/MCP サーバー URL/認証などを入力して検証します。[9-15]
 
+### オンプレミス機器に SRE Agent を使いたい場合（設計パターン）
+
+結論としては「オンプレを Azure の管理プレーンに“載せる”」か「オンプレ/外部SaaSにあるデータを MCP で“引く”」の2択に分解すると整理しやすいです。
+
+#### パターンA: オンプレを Azure リソース化して“スコープに入れる”
+
+SRE Agent は、エージェントに関連付けたリソース グループ内のリソースへアクセスできます。[9-22]
+
+そのため、オンプレの Windows/Linux（サーバー等）を **Azure Arc-enabled servers** として Azure リソース化し、（リソース グループに配置したうえで）そのリソース グループを SRE Agent の managed resource groups に含める、という設計が成立します。[9-23]
+
+補足（監視データの取り込み: 事実）:
+Azure Arc の Connected Machine agent は「オンプレを Azure リソースとして扱えるようにするエージェント」ですが、監視テレメトリ収集（Log Analytics 等）を置き換えるものではありません。オンプレ側で OS/ワークロードの監視やログ収集をするには別途 Azure Monitor Agent が必要になります。[9-23]
+
+さらに Azure Monitor Agent は、オンプレ/他クラウドのマシンでも Azure Arc を介してサポートされ、ワークスペースへの認証に managed identity を使用します（Connected Machine agent の導入で作成される）。[9-24]
+
+このパターンが向くケース:
+- 「オンプレも Azure portal 上で資産として扱いたい」（タグ/ポリシー/一元管理の文脈）
+- “診断の一次データ”を Azure Monitor / Log Analytics に寄せたい
+
+#### パターンB: MCP でオンプレ/外部SaaSのデータを“引く”
+
+オンプレ機器の状態が Datadog など外部の観測基盤に集約されている場合は、SRE Agent の **Custom MCP server connector** を使い、外部システムに対する“問い合わせ手段”をサブエージェントに提供するのが整理しやすいです。[9-12][9-15]
+
+注意点（事実）:
+- MCP サーバーは **HTTPS で到達可能なリモートホスト**が必須で、SRE Agent の中でローカル実行はできません。[9-2]
+- MCP ツールは **メイン エージェントから直接は使えず**、サブエージェント経由でのみアクセスできます（= Datadog MCP を使うなら、Datadog問い合わせ専用サブエージェントを作るのが基本線）。[9-3]
+
+このパターンが向くケース:
+- 「オンプレの操作/問い合わせAPIが社内にある」→ そのAPIを包む MCP を用意する
+- 「既に Datadog MCP 等がある」→ それをコネクタとしてつなぐ
+
+#### 「データをためる場所」についての整理（運用上の注意）
+
+SRE Agent の Memory system（User memories / Knowledge Base / Session insights）は、runbook やチーム標準など“手順と前提”を置く場所で、メトリクス/ログなどの“生のテレメトリ”を溜めるストアではありません（テレメトリは Azure Monitor/Log Analytics や Datadog 等に置く）。また、Memory system には秘密情報を保存しない前提です。[8-4][8-14]
+
 ### Main agent / Subagent / Tools の関係
 
 ```mermaid
@@ -973,6 +1008,9 @@ Output contract (Markdown):
 - [9-19] [https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic) — “break down complex tasks into coordinated, specialized roles”
 - [9-20] [https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic#limitations](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/connected-agents?view=foundry-classic#limitations) — “maximum depth of 2 … not possible to guarantee citations …”
 - [9-21] [https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ai-agents/build-secure-process#agent-instructions](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ai-agents/build-secure-process#agent-instructions) — “Standardize instruction architecture … Identity and tone … Scope and boundaries … Tool mandates … Citation rules”
+- [9-22] [https://learn.microsoft.com/en-us/azure/sre-agent/usage#chat-with-your-agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage#chat-with-your-agent) — “Your agent has access to any resource inside the resource group that's associated with the agent.”
+- [9-23] [https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview) — “machines outside of Azure … treated as a resource in Azure … included in a resource group … Connected Machine agent … doesn't replace … Azure Monitor Agent”
+- [9-24] [https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-supported-operating-systems#on-premises-and-in-other-clouds](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-supported-operating-systems#on-premises-and-in-other-clouds) — “supported on … on-premises … via Azure Arc-enabled servers … authenticates … using a managed identity … created when you install the Connected Machine agent”
 
 ---
 
