@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>win365poc.md</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+html,footer,header{
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Custom MD PDF CSS
+ */
+html,footer,header{
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+
+ }
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+<link rel="stylesheet" href="file:///r%3A/2.Travail/1.Enseignement/Cours/_1.Outils/2.Developpement/1.SCSS/main.css" type="text/css"><link rel="stylesheet" href="file:///d%3A/rdaros/Cours/_1.Outils/2.Developpement/1.SCSS/main.css" type="text/css">
+</head>
+
+<body>
+    <p>Title: Windows 365 向け Azure インフラ構築手順（Azure Portal 手順）<br>
+Date: 2026-02-17<br>
+Slug: win365-azure-infra-portal<br>
+Lang: ja-jp<br>
+Category: notebook<br>
+Tags: azure, Windows 365, networking, firewall, dns<br>
+Summary: Cloud Diaries: Windows 365（Cloud PC）向けに Azure 側のネットワーク/Firewall/DNS 基盤を Azure Portal で構築する手順メモです。<br>
+Modified: 2026-02-17</p>
+<p>本稿は、Windows 365（Cloud PC）を使うための「Azure 側の基盤（Hub-Spoke / Firewall / DNS Private Resolver）」にフォーカスした構築メモです。AVD 手順は本筋ではないため付録扱いにしています。</p>
+<h2 id="%E7%9B%AE%E7%9A%84--%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%97">目的 / スコープ</h2>
+<ul>
+<li>本資料は、Windows 365（Cloud PC）利用のための <strong>Azure 側のネットワーク/セキュリティ/DNS 基盤</strong>を構築する手順をまとめたものです。</li>
+<li><strong>AVD（Azure Virtual Desktop）自体は本番構成として作成不要</strong>のため、AVD 作成手順は「参考（付録）」として末尾に記載します。</li>
+</ul>
+<h2 id="%E5%89%8D%E6%8F%90">前提</h2>
+<ul>
+<li>本資料は <strong>Azure Portal で作成する前提</strong>の手順です（コマンドやテンプレートの説明はしません）。</li>
+<li>リソース名や CIDR は環境に合わせて <code>&lt;...&gt;</code> のプレースホルダーを置き換えてください。</li>
+</ul>
+<hr>
+<h2 id="1-%E6%A7%8B%E6%88%90%E6%A6%82%E8%A6%81">1. 構成概要</h2>
+<h3 id="11-%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF%E6%A7%8B%E6%88%90%E8%AB%96%E7%90%86">1.1 ネットワーク構成（論理）</h3>
+<pre class="hljs"><code><div>flowchart LR
+  subgraph HUB[&quot;Hub VNet: hubVnetName&quot;]
+    AFW[&quot;Azure Firewall: firewallName\n(Policy: firewallPolicyName)&quot;]
+    BAS[&quot;Bastion: bastionName\nPublic IP: bastionPipName&quot;]
+    HUBSUB1[&quot;Subnet: hubSubnet01Name&quot;]
+    AFSUB[AzureFirewallSubnet]
+    BASSUB[AzureBastionSubnet]
+  end
+
+  subgraph SPOKE[&quot;Spoke VNet: spokeVnetName&quot;]
+    W365SUB[&quot;Subnet: spokeSubnetName\n(UDR -&gt; Firewall)&quot;]
+    W365VM[(&quot;Cloud PC / NIC群\n※実体VMは不要&quot;)]
+  end
+
+  subgraph DNSVNET[&quot;Private Resolver VNet: privateResolverVnetName&quot;]
+    DNSR[&quot;Azure DNS Private Resolver: dnsResolverName&quot;]
+    INEP[&quot;Inbound EP: dnsInboundEndpointName\nIP: dnsInboundIp&quot;]
+    OUTEP[&quot;Outbound EP: dnsOutboundEndpointName&quot;]
+  end
+
+  SPOKE --&gt; HUB
+  HUB --&gt; SPOKE
+  DNSVNET --&gt; HUB
+  HUB --&gt; DNSVNET
+
+  DNSR --- INEP
+  DNSR --- OUTEP
+</div></code></pre>
+<h3 id="12-%E4%B8%BB%E8%A6%81%E3%81%AA%E6%84%8F%E5%9B%B3%E4%BD%95%E3%82%92%E3%81%97%E3%81%A6%E3%81%84%E3%82%8B%E3%81%8B">1.2 主要な意図（何をしているか）</h3>
+<ul>
+<li>Spoke 側（Windows 365 関連サブネット）からの <strong>既定ルート (0.0.0.0/0)</strong> を Azure Firewall に強制し、外向き通信を制御します。</li>
+<li>Spoke の DNS を Firewall に向け、Firewall 側の <strong>DNS Proxy</strong> で Private Resolver（Inbound Endpoint）へ転送します。</li>
+<li>Azure Firewall Policy で、Windows 365 / Intune / Office 365 / Windows Update などの <strong>FQDN タグ</strong>を許可します。</li>
+</ul>
+<h3 id="13-dns-%E8%A8%AD%E8%A8%88%E3%81%AE%E9%81%B8%E6%8A%9E%E8%82%A2%E6%A1%881%E3%80%9C4">1.3 DNS 設計の選択肢（案1〜4）</h3>
+<p>案は 1〜4 まであります。</p>
+<p>本稿では <strong>案2</strong> と <strong>案4</strong> を取り上げます。</p>
+<h4 id="%E6%A1%881">案1</h4>
+<p><img src="/images/win365/1.png" alt="DNS 設計 案1"></p>
+<h4 id="%E6%A1%882">案2</h4>
+<p><img src="/images/win365/2.png" alt="DNS 設計 案2"></p>
+<h4 id="%E6%A1%883">案3</h4>
+<p><img src="/images/win365/3.png" alt="DNS 設計 案3"></p>
+<h4 id="%E6%A1%884">案4</h4>
+<p><img src="/images/win365/4.png" alt="DNS 設計 案4"></p>
+<hr>
+<p>以降では DNS の構成として、案2 → 案4 の順に説明します。</p>
+<h3 id="14-dns-%E8%A8%AD%E8%A8%88%E6%A1%882-inbound-endpoint-%E3%82%92-dns-%E3%81%A8%E3%81%97%E3%81%A6%E7%9B%B4%E6%8C%87%E5%AE%9Adns-proxy-%E3%81%AA%E3%81%97--%E6%B7%BB%E4%BB%982%E6%9E%9A%E7%9B%AE">1.4 DNS 設計（案2）: Inbound Endpoint を DNS として直指定（DNS Proxy なし / 添付2枚目）</h3>
+<p>DNS の入口を Firewall ではなく <strong>Inbound Endpoint</strong> にし、Firewall は **ルーティング（トランジット）**として通します。</p>
+<p>ポイント:</p>
+<ul>
+<li>Spoke VNet の DNS サーバーは Inbound Endpoint を指定します</li>
+<li>戻り経路も Firewall 経由に揃えるため、DNS VNet 側にも戻り用の UDR を設定します</li>
+</ul>
+<p>DNS フロー（案2の概念）:</p>
+<pre class="hljs"><code><div>sequenceDiagram
+  participant VM as &quot;Spoke (Cloud PC/NIC)&quot;
+  participant IN as &quot;DNS Resolver Inbound EP&quot;
+  participant AZDNS as &quot;Azure DNS (Private DNS / Internet)&quot;
+
+  VM-&gt;&gt;IN: DNS Query (UDP/TCP 53)
+  IN-&gt;&gt;AZDNS: Resolve
+  AZDNS--&gt;&gt;IN: Response
+  IN--&gt;&gt;VM: Response
+</div></code></pre>
+<h3 id="15-dns-%E8%A8%AD%E8%A8%88%E6%A1%884-azure-firewall-%E3%81%AE-dns-proxy-%E3%82%92%E4%BD%BF%E3%81%86">1.5 DNS 設計（案4）: Azure Firewall の DNS Proxy を使う</h3>
+<ul>
+<li>Spoke VNet の DNS を <strong>Azure Firewall のプライベート IP</strong> に設定</li>
+<li>Firewall Policy で <strong>DNS Proxy を有効化</strong>し、転送先 DNS として Private Resolver の <strong>Inbound Endpoint</strong>（例: <code>&lt;dnsInboundIp&gt;</code>）を指定</li>
+</ul>
+<p>この案は、DNS の入口を Firewall に寄せられるため、運用上は「DNS の経路を一箇所に集約しやすい」構成です。</p>
+<p>DNS フロー（案4の概念）:</p>
+<pre class="hljs"><code><div>sequenceDiagram
+  participant VM as &quot;Spoke (Cloud PC/NIC)&quot;
+  participant FW as &quot;Azure Firewall (DNS Proxy)&quot;
+  participant IN as &quot;DNS Resolver Inbound EP&quot;
+  participant AZDNS as &quot;Azure DNS (Private DNS / Internet)&quot;
+
+  VM-&gt;&gt;FW: DNS Query (UDP/TCP 53)
+  FW-&gt;&gt;IN: Forward DNS Query
+  IN-&gt;&gt;AZDNS: Resolve
+  AZDNS--&gt;&gt;IN: Response
+  IN--&gt;&gt;FW: Response
+  FW--&gt;&gt;VM: Response
+</div></code></pre>
+<hr>
+<h2 id="2-%E4%BA%8B%E5%89%8D%E6%BA%96%E5%82%99azure-portal">2. 事前準備（Azure Portal）</h2>
+<h3 id="21-%E5%BF%85%E8%A6%81%E3%81%AA%E6%A8%A9%E9%99%90">2.1 必要な権限</h3>
+<ul>
+<li>対象サブスクリプションに対し、少なくとも以下が必要です。
+<ul>
+<li>リソース作成権限（例: Contributor）</li>
+<li>Azure Firewall / Network / DNS Private Resolver 作成に必要な権限</li>
+</ul>
+</li>
+</ul>
+<h3 id="22-%E4%BA%8B%E5%89%8D%E3%81%AB%E6%B1%BA%E3%82%81%E3%81%A6%E3%81%8A%E3%81%8F%E5%80%A4%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E3%83%AA%E3%82%B9%E3%83%88">2.2 事前に決めておく値（チェックリスト）</h3>
+<ul>
+<li>リソースグループ: <code>&lt;resourceGroupName&gt;</code> / リージョン: <code>&lt;location&gt;</code></li>
+<li>VNet とアドレス空間
+<ul>
+<li>Hub: <code>&lt;hubVnetName&gt;</code> / <code>&lt;hubVnetCidr&gt;</code></li>
+<li>Spoke: <code>&lt;spokeVnetName&gt;</code> / <code>&lt;spokeVnetCidr&gt;</code></li>
+<li>DNS VNet（Private Resolver 用）: <code>&lt;privateResolverVnetName&gt;</code> / <code>&lt;privateResolverVnetCidr&gt;</code></li>
+</ul>
+</li>
+<li>Azure Firewall のプライベート IP（固定化推奨）: <code>&lt;firewallPrivateIp&gt;</code></li>
+<li>Private Resolver Inbound Endpoint のプライベート IP（固定化推奨）: <code>&lt;dnsInboundIp&gt;</code></li>
+</ul>
+<hr>
+<h2 id="3-azure-portal-%E3%81%A7%E3%81%AE%E6%A7%8B%E7%AF%89%E6%89%8B%E9%A0%86%E5%85%B1%E9%80%9A">3. Azure Portal での構築手順（共通）</h2>
+<h3 id="31-%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97%E3%82%92%E4%BD%9C%E6%88%90">3.1 リソースグループを作成</h3>
+<ul>
+<li>Azure Portal → <strong>リソース グループ</strong> → 作成</li>
+<li>名前: <code>&lt;resourceGroupName&gt;</code> / リージョン: <code>&lt;location&gt;</code></li>
+</ul>
+<h3 id="32-vnethub--spoke--dns-vnet%E3%81%A8%E3%82%B5%E3%83%96%E3%83%8D%E3%83%83%E3%83%88%E3%82%92%E4%BD%9C%E6%88%90">3.2 VNet（Hub / Spoke / DNS VNet）とサブネットを作成</h3>
+<ol>
+<li>
+<p>Hub VNet（例: <code>&lt;hubVnetName&gt;</code>）</p>
+<ul>
+<li>Azure Portal → <strong>仮想ネットワーク</strong> → 作成</li>
+<li>サブネット
+<ul>
+<li><code>AzureFirewallSubnet</code>（Firewall 用。名前は固定）</li>
+<li><code>AzureBastionSubnet</code>（Option: Bastion を使う場合。名前は固定）</li>
+<li>運用用サブネット（Option: 例: <code>&lt;hubSubnet01Name&gt;</code>）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Spoke VNet（例: <code>&lt;spokeVnetName&gt;</code>）</p>
+<ul>
+<li>Windows 365 用のサブネット（例: <code>&lt;spokeSubnetName&gt;</code>）を作成</li>
+</ul>
+</li>
+<li>
+<p>DNS VNet（Private Resolver 用。例: <code>&lt;privateResolverVnetName&gt;</code>）</p>
+<ul>
+<li>Inbound Endpoint 用サブネット（例: <code>sub-inbound</code>）を作成</li>
+<li>Outbound Endpoint 用サブネット（例: <code>sub-outbound</code>）を作成</li>
+</ul>
+</li>
+</ol>
+<h3 id="33-vnet-peeringhub-%E2%86%94-spokehub-%E2%86%94-dns-vnet">3.3 VNet Peering（Hub ↔ Spoke、Hub ↔ DNS VNet）</h3>
+<p>この手順は <strong>ExpressRoute Gateway（Virtual Network Gateway）が Hub VNet に存在する前提</strong>です。<br>
+Spoke/DNS VNet からオンプレミス（ExpressRoute）へ到達させたい場合は、ピアリングの Gateway 関連設定も合わせて有効化します。</p>
+<ol>
+<li>
+<p>ピアリングを作成（Hub ↔ Spoke、Hub ↔ DNS VNet）</p>
+<ul>
+<li>Azure Portal → 各 VNet → <strong>ピアリング</strong> → 追加</li>
+<li>Hub ↔ Spoke、Hub ↔ DNS VNet の <strong>両方向</strong>で作成（Portal の案内に従って作成）</li>
+</ul>
+</li>
+<li>
+<p>推奨設定（要件に合わせ調整）</p>
+<ul>
+<li><strong>仮想ネットワーク アクセス: 許可</strong>
+<ul>
+<li>ピアリングした VNet 同士で相互に通信できるようにします。</li>
+</ul>
+</li>
+<li><strong>転送されたトラフィック: 許可</strong>
+<ul>
+<li>Hub の Azure Firewall を経由するような“トランジット通信”で必要になります（UDR で Firewall に送った通信が、別 VNet 宛として転送されるため）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>ExpressRoute Gateway（Hub）を Spoke/DNS VNet から利用する場合の設定</p>
+<ul>
+<li>Hub 側（Hub → Spoke / Hub → DNS VNet のピアリング）
+<ul>
+<li><strong>ゲートウェイ トランジットを許可（Allow gateway transit）: 有効</strong>
+<ul>
+<li>Hub の Virtual Network Gateway（ExpressRoute Gateway）を、ピアリング先に“共有”できるようにします。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Spoke 側（Spoke → Hub のピアリング）
+<ul>
+<li><strong>リモート ゲートウェイを使用（Use remote gateways）: 有効</strong>
+<ul>
+<li>Spoke からオンプレミス（ExpressRoute）への経路として、Hub の Gateway を利用します。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>DNS VNet 側（DNS VNet → Hub のピアリング）
+<ul>
+<li>DNS VNet からもオンプレミス到達が必要な場合のみ、Spoke と同様に <strong>リモート ゲートウェイを使用</strong>を有効にします。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="34-azure-firewall-%E3%81%A8-firewall-policy">3.4 Azure Firewall と Firewall Policy</h3>
+<ol>
+<li>
+<p>Firewall Policy を作成</p>
+<ul>
+<li>Azure Portal → <strong>Firewall ポリシー</strong> → 作成（例: <code>&lt;firewallPolicyName&gt;</code>）</li>
+</ul>
+</li>
+<li>
+<p>Azure Firewall を作成</p>
+<ul>
+<li>Azure Portal → <strong>Azure Firewall</strong> → 作成（例: <code>&lt;firewallName&gt;</code>）</li>
+<li>仮想ネットワーク: Hub VNet</li>
+<li>サブネット: <code>AzureFirewallSubnet</code></li>
+<li>パブリック IP: 新規作成（または既存）</li>
+<li>Firewall Policy: 3.4-1 で作成したものを関連付け</li>
+</ul>
+</li>
+</ol>
+<h3 id="35-%E3%83%AB%E3%83%BC%E3%83%88-%E3%83%86%E3%83%BC%E3%83%96%E3%83%ABudr%E3%82%92%E4%BD%9C%E6%88%90%E3%81%97spoke-%E3%82%B5%E3%83%96%E3%83%8D%E3%83%83%E3%83%88%E3%81%AB%E9%96%A2%E9%80%A3%E4%BB%98%E3%81%91">3.5 ルート テーブル（UDR）を作成し、Spoke サブネットに関連付け</h3>
+<ul>
+<li>Azure Portal → <strong>ルート テーブル</strong> → 作成（例: <code>&lt;udrName&gt;</code>）</li>
+<li>ルート
+<ul>
+<li>宛先: <code>0.0.0.0/0</code></li>
+<li>次ホップの種類: 仮想アプライアンス</li>
+<li>次ホップ アドレス: <code>&lt;firewallPrivateIp&gt;</code></li>
+</ul>
+</li>
+<li>Azure Portal → Spoke VNet → サブネット <code>&lt;spokeSubnetName&gt;</code> → <strong>ルート テーブル</strong> を関連付け</li>
+</ul>
+<h3 id="36-azure-dns-private-resolverinboundoutbound-endpoint">3.6 Azure DNS Private Resolver（Inbound/Outbound Endpoint）</h3>
+<ol>
+<li>
+<p>Private Resolver を作成</p>
+<ul>
+<li>Azure Portal → <strong>Azure DNS Private Resolver</strong> → 作成（例: <code>&lt;dnsResolverName&gt;</code>）</li>
+<li>VNet: DNS VNet（<code>&lt;privateResolverVnetName&gt;</code>）</li>
+</ul>
+</li>
+<li>
+<p>Inbound Endpoint を作成（IP 固定推奨）</p>
+<ul>
+<li>Private Resolver → <strong>Inbound endpoints</strong> → 追加</li>
+<li>サブネット: <code>sub-inbound</code></li>
+<li>IP: <code>&lt;dnsInboundIp&gt;</code></li>
+</ul>
+</li>
+<li>
+<p>Outbound Endpoint を作成</p>
+<ul>
+<li>Private Resolver → <strong>Outbound endpoints</strong> → 追加</li>
+<li>サブネット: <code>sub-outbound</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="37-%E5%BF%85%E8%A6%81%E3%81%AA%E5%A0%B4%E5%90%88-private-dns-zone-%E3%82%92-dns-vnet-%E3%81%AB%E3%83%AA%E3%83%B3%E3%82%AF">3.7 必要な場合 Private DNS zone を DNS VNet にリンク</h3>
+<ul>
+<li>各 Private DNS zone → <strong>仮想ネットワーク リンク</strong> → DNS VNet（<code>&lt;privateResolverVnetName&gt;</code>）にリンク</li>
+</ul>
+<hr>
+<h2 id="4-dns-%E3%81%AE%E8%A8%AD%E5%AE%9A">4. DNS の設定</h2>
+<h2 id="41-%E6%A1%882-inbound-endpoint-%E3%82%92-dns-%E3%81%A8%E3%81%97%E3%81%A6%E7%9B%B4%E6%8C%87%E5%AE%9A">4.1 案2: Inbound Endpoint を DNS として直指定</h2>
+<h3 id="spoke-vnet-%E3%81%AE-dns-%E3%82%92-inbound-endpoint-%E3%81%AB%E5%90%91%E3%81%91%E3%82%8B">Spoke VNet の DNS を Inbound Endpoint に向ける</h3>
+<ul>
+<li>Azure Portal → Spoke VNet → <strong>DNS サーバー</strong></li>
+<li>「カスタム」 → DNS サーバー: <code>&lt;dnsInboundIp&gt;</code></li>
+</ul>
+<h3 id="%E6%88%BB%E3%82%8A%E7%B5%8C%E8%B7%AF%E3%82%92%E6%8F%83%E3%81%88%E3%82%8Bdns-vnet-%E5%81%B4%E3%81%AE-udr-%E3%81%8C%E9%87%8D%E8%A6%81">戻り経路を揃える（DNS VNet 側の UDR が重要）</h3>
+<p>案2は「Spoke →（既定ルートにより）Firewall → DNS VNet → Inbound Endpoint」と流れます。<br>
+このとき DNS VNet 側が peering のシステムルートで Spoke に直帰すると <strong>非対称ルーティング</strong>になり、Firewall でドロップし得ます。</p>
+<p>そのため DNS VNet 側にも以下の UDR を入れ、戻りも Firewall 経由にします。</p>
+<ol>
+<li>
+<p>ルート テーブルを作成（DNS 戻り用）</p>
+<ul>
+<li>Azure Portal → <strong>ルート テーブル</strong> → 作成（例: <code>&lt;udrDnsReturnName&gt;</code>）</li>
+<li>ルート
+<ul>
+<li>宛先: <code>&lt;spokeVnetCidr&gt;</code>（例: <code>10.0.1.0/24</code>）</li>
+<li>次ホップの種類: 仮想アプライアンス</li>
+<li>次ホップ アドレス: <code>&lt;firewallPrivateIp&gt;</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>DNS VNet のサブネットに関連付け</p>
+<ul>
+<li>Azure Portal → DNS VNet → サブネット <code>sub-inbound</code>  に <code>&lt;udrDnsReturnName&gt;</code> を関連付け</li>
+</ul>
+</li>
+</ol>
+<h3 id="firewall-%E3%81%AE-l4-%E3%83%AB%E3%83%BC%E3%83%AB%E3%81%A7-dns53-%E3%82%92%E8%A8%B1%E5%8F%AF">Firewall の L4 ルールで DNS(53) を許可</h3>
+<ul>
+<li>Azure Portal → Firewall Policy <code>&lt;firewallPolicyName&gt;</code> → <strong>ルール</strong></li>
+<li>Network rule で、以下を許可
+<ul>
+<li>送信元: <code>&lt;spokeSubnetCidr&gt;</code></li>
+<li>宛先: <code>&lt;dnsInboundIp&gt;</code></li>
+<li>プロトコル: TCP/UDP</li>
+<li>ポート: 53</li>
+</ul>
+</li>
+</ul>
+<h3 id="fqdn-%E3%83%99%E3%83%BC%E3%82%B9%E3%81%AE-network-%E3%83%AB%E3%83%BC%E3%83%AB%E3%82%92%E4%BD%BF%E3%81%86%E5%A0%B4%E5%90%88dns-proxy-%E3%81%AE%E8%80%83%E3%81%88%E6%96%B9">（FQDN ベースの Network ルールを使う場合）DNS Proxy の考え方</h3>
+<p>FQDN ベースの Network ルール（宛先を FQDN で指定）を使う場合、Azure Firewall 側が FQDN を IP に解決できる必要があるため、一般に <strong>DNS Proxy を有効化</strong>し、 DNS サーバー を <code>&lt;dnsInboundIp&gt;</code> にします。</p>
+<p>ただし、案2は Spoke の DNS を <code>&lt;dnsInboundIp&gt;</code> に直指定しているため、<strong>Spoke の DNS クエリ自体は Firewall を経由しません</strong>。</p>
+<h2 id="42-%E6%A1%884-azure-firewall-%E3%81%AE-dns-proxy-%E3%82%92%E4%BD%BF%E3%81%86%E6%B7%BB%E4%BB%981%E6%9E%9A%E7%9B%AE">4.2 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）</h2>
+<h3 id="spoke-vnet-%E3%81%AE-dns-%E3%82%92-firewall-%E3%81%AB%E5%90%91%E3%81%91%E3%82%8B">Spoke VNet の DNS を Firewall に向ける</h3>
+<ul>
+<li>Azure Portal → Spoke VNet → <strong>DNS サーバー</strong></li>
+<li>「カスタム」 → DNS サーバー: <code>&lt;firewallPrivateIp&gt;</code></li>
+</ul>
+<h3 id="firewall-policy-%E3%81%A7-dns-proxy-%E3%82%92%E6%9C%89%E5%8A%B9%E5%8C%96%E3%81%97%E8%BB%A2%E9%80%81%E5%85%88%E3%82%92-inbound-endpoint-%E3%81%AB%E3%81%99%E3%82%8B">Firewall Policy で DNS Proxy を有効化し、転送先を Inbound Endpoint にする</h3>
+<ul>
+<li>Azure Portal → Firewall Policy <code>&lt;firewallPolicyName&gt;</code> → <strong>DNS 設定</strong></li>
+<li>DNS プロキシ: 有効</li>
+<li>DNS サーバー（転送先）: <code>&lt;dnsInboundIp&gt;</code></li>
+</ul>
+<p>補足:</p>
+<ul>
+<li>転送先 DNS は、Private Endpoint（<code>privatelink.*</code>）を確実に解決できるように <strong><code>&lt;dnsInboundIp&gt;</code>（Private Resolver Inbound Endpoint）推奨</strong>です。</li>
+<li>Azure Default を指定すると、Private DNS zone の解決ができずに Private Endpoint 名が引けない構成になりやすいです。</li>
+</ul>
+<hr>
+<h2 id="5-azure-firewall-%E3%81%AE%E3%83%AB%E3%83%BC%E3%83%ABportal-%E3%81%A7%E8%A8%AD%E5%AE%9A">5. Azure Firewall のルール（Portal で設定）</h2>
+<blockquote>
+<p>注: Windows 365 の宛先要件は更新される可能性があるため、最終的には Microsoft の公開情報に沿って見直してください。ここでは Portal での作り方と代表例をまとめます。</p>
+</blockquote>
+<h3 id="51-application-%E3%83%AB%E3%83%BC%E3%83%ABl7--fqdn-%E3%82%BF%E3%82%B0">5.1 Application ルール（L7 / FQDN タグ）</h3>
+<p>Azure Portal → Firewall Policy <code>&lt;firewallPolicyName&gt;</code> → <strong>ルール</strong> → Application rule collection group を作成し、FQDN タグを追加します。</p>
+<table>
+<thead>
+<tr>
+<th>Rule 名</th>
+<th>FQDN Tag</th>
+<th style="text-align:right">Protocol</th>
+<th style="text-align:right">Port</th>
+<th>Source</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Allow Windows 365</td>
+<td><code>Windows365</code></td>
+<td style="text-align:right">Https</td>
+<td style="text-align:right">443</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>Windows 365 サービス通信</td>
+</tr>
+<tr>
+<td>Allow Intune</td>
+<td><code>MicrosoftIntune</code></td>
+<td style="text-align:right">Https</td>
+<td style="text-align:right">443</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>Intune 管理通信</td>
+</tr>
+<tr>
+<td>Allow Office 365</td>
+<td><code>Office365.Common.*</code></td>
+<td style="text-align:right">Https</td>
+<td style="text-align:right">443</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>M365 通信（必要範囲）</td>
+</tr>
+<tr>
+<td>Allow Windows Update</td>
+<td><code>WindowsUpdate</code></td>
+<td style="text-align:right">Https</td>
+<td style="text-align:right">443</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>Windows Update</td>
+</tr>
+<tr>
+<td>Allow AVD</td>
+<td><code>WindowsVirtualDesktop</code></td>
+<td style="text-align:right">Https</td>
+<td style="text-align:right">443</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>AVD 通信</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-network-%E3%83%AB%E3%83%BC%E3%83%ABl4">5.2 Network ルール（L4）</h3>
+<p>Azure Portal → Firewall Policy <code>&lt;firewallPolicyName&gt;</code> → <strong>ルール</strong> → Network rule collection group を作成し、必要な L4 通信を許可します。</p>
+<table>
+<thead>
+<tr>
+<th>Rule 名</th>
+<th>Protocol</th>
+<th>Dest</th>
+<th>Ports</th>
+<th>Source</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Registration01</td>
+<td>TCP</td>
+<td><code>azkms.core.windows.net</code></td>
+<td>1688</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>KMS</td>
+</tr>
+<tr>
+<td>TURN</td>
+<td>UDP</td>
+<td><code>&lt;turnIpCidr&gt;</code></td>
+<td>3478</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>TURN（音声/映像等）</td>
+</tr>
+<tr>
+<td>Entra</td>
+<td>TCP</td>
+<td>Service Tag: <code>AzureActiveDirectory</code></td>
+<td>443</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>Entra ID</td>
+</tr>
+<tr>
+<td>DNS (案2)</td>
+<td>TCP/UDP</td>
+<td><code>&lt;dnsInboundIp&gt;</code></td>
+<td>53</td>
+<td><code>&lt;spokeSubnetCidr&gt;</code></td>
+<td>Spoke → Inbound Endpoint の DNS 転送</td>
+</tr>
+<tr>
+<td>DNS (案4: 必要な場合)</td>
+<td>TCP/UDP</td>
+<td><code>&lt;dnsInboundIp&gt;</code></td>
+<td>53</td>
+<td><code>&lt;hubVnetCidr&gt;</code>（または Firewall 送信元に絞った範囲）</td>
+<td>Firewall DNS Proxy → Inbound Endpoint の転送</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-%E4%BD%9C%E6%88%90%E5%BE%8C%E3%81%AE%E7%A2%BA%E8%AA%8D%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88portal-%E3%81%A7%E7%A2%BA%E8%AA%8D">6. 作成後の確認ポイント（Portal で確認）</h2>
+<h3 id="61-vnet-peering">6.1 VNet Peering</h3>
+<ul>
+<li>Hub ↔ Spoke</li>
+<li>Hub ↔ DNS VNet</li>
+</ul>
+<h3 id="62-udr%E6%97%A2%E5%AE%9A%E3%83%AB%E3%83%BC%E3%83%88--%E6%88%BB%E3%82%8A%E3%83%AB%E3%83%BC%E3%83%88">6.2 UDR（既定ルート / 戻りルート）</h3>
+<ul>
+<li>Spoke サブネットに <code>0.0.0.0/0 → &lt;firewallPrivateIp&gt;</code> が付いている</li>
+<li>（案2の場合）DNS VNet サブネットに <code>&lt;spokeVnetCidr&gt; → &lt;firewallPrivateIp&gt;</code> が付いている</li>
+</ul>
+<h3 id="63-dns">6.3 DNS</h3>
+<ul>
+<li>Spoke VNet の DNS サーバー設定が想定どおり（案4なら Firewall、案2なら Inbound Endpoint）</li>
+<li>Private DNS zone のリンクが DNS VNet に張られている</li>
+</ul>
+<hr>
+<h2 id="7-%E5%8F%82%E8%80%83-%E3%82%AA%E3%83%B3%E3%83%97%E3%83%ACdns-%E3%83%95%E3%82%A9%E3%83%AF%E3%83%BC%E3%83%80%E3%81%8B%E3%82%89-azure-private-dns-%E3%82%92%E5%BC%95%E3%81%8F%E5%A0%B4%E5%90%88">7. 参考: オンプレ（DNS フォワーダ）から Azure Private DNS を引く場合</h2>
+<p>オンプレ側の DNS サーバー（フォワーダ）で、必要なドメインに対して <strong>条件付きフォワーダ</strong>を作成します。</p>
+<ul>
+<li>例: <code>privatelink.&lt;service&gt;.windows.net</code></li>
+<li>転送先:
+<ul>
+<li>案4: Firewall のプライベート IP（DNS Proxy が Inbound Endpoint に転送）</li>
+<li>案2: Inbound Endpoint の IP（<code>&lt;dnsInboundIp&gt;</code>）</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>Windows 365 の Azure 側インフラとしては、通常 <strong>お客様が AVD HostPool 等を作る必要はありません</strong>。<br>
+ただし、検証や比較のために AVD を作成したい場合は以下を参考にしてください。</p>
+<h3 id="81-%E4%BD%95%E3%82%92%E4%BD%9C%E3%82%8B%E3%81%8B%E9%AB%98%E3%83%AC%E3%83%99%E3%83%AB">8.1 何を作るか（高レベル）</h3>
+<pre class="hljs"><code><div>flowchart LR
+  HP[Host Pool] --&gt; AG[Application Group]
+  AG --&gt; WS[Workspace]
+</div></code></pre>
+<h3 id="82-%E6%B3%A8%E6%84%8F%E7%82%B9">8.2 注意点</h3>
+<ul>
+<li>AVD 用のセッションホスト VM やドメイン参加方式、FSLogix、プロファイル格納などは別途設計が必要です。</li>
+<li>本資料の Firewall ルールには <code>WindowsVirtualDesktop</code> の FQDN タグが含まれていますが、<strong>参考</strong>として扱ってください。</li>
+</ul>
+<hr>
+<h2 id="%E4%BB%98%E9%8C%B2-%E7%BD%AE%E3%81%8D%E6%8F%9B%E3%81%88%E7%94%A8%E3%83%97%E3%83%AC%E3%83%BC%E3%82%B9%E3%83%9B%E3%83%AB%E3%83%80%E3%83%BC%E4%B8%80%E8%A6%A7%E4%BE%8B">付録: 置き換え用プレースホルダー一覧（例）</h2>
+<ul>
+<li><code>&lt;subscriptionId&gt;</code></li>
+<li><code>&lt;resourceGroupName&gt;</code></li>
+<li><code>&lt;location&gt;</code></li>
+<li><code>&lt;hubVnetName&gt;</code>, <code>&lt;spokeVnetName&gt;</code>, <code>&lt;privateResolverVnetName&gt;</code></li>
+<li><code>&lt;firewallName&gt;</code>, <code>&lt;firewallPolicyName&gt;</code></li>
+<li><code>&lt;dnsResolverName&gt;</code>, <code>&lt;dnsInboundIp&gt;</code></li>
+<li><code>&lt;spokeSubnetName&gt;</code>, <code>&lt;spokeSubnetCidr&gt;</code>, <code>&lt;privateResolverVnetCidr&gt;</code></li>
+<li><code>&lt;udrName&gt;</code>, <code>&lt;bastionName&gt;</code>, <code>&lt;bastionPipName&gt;</code>, <code>&lt;firewallPipName&gt;</code></li>
+</ul>
+
+</body>
+
+</html>

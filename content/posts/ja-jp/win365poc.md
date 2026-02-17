@@ -65,16 +65,16 @@ flowchart LR
 本稿では **案2** と **案4** を取り上げます。
 
 #### 案1
-![DNS 設計 案1](/images/win365/1.png)
+![DNS 設計 案1](../../images/win365/1.png)
 
 #### 案2
-![DNS 設計 案2](/images/win365/2.png)
+![DNS 設計 案2](../../images/win365/2.png)
 
 #### 案3
-![DNS 設計 案3](/images/win365/3.png)
+![DNS 設計 案3](../../images/win365/3.png)
 
 #### 案4
-![DNS 設計 案4](/images/win365/4.png)
+![DNS 設計 案4](../../images/win365/4.png)
 
 ---
 
@@ -317,11 +317,11 @@ Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Ne
 
 | Rule 名 | Protocol | Dest | Ports | Source | 目的 |
 |---|---|---|---|---|---|
-| Registration01 | TCP | `azkms.core.windows.net` | 1688 | `<spokeSubnetCidr>` | KMS |
-| TURN | UDP | `<turnIpCidr>` | 3478 | `<spokeSubnetCidr>` | TURN（音声/映像等） |
+| Licence | TCP | `azkms.core.windows.net` | 1688 | `<spokeSubnetCidr>` | KMS |
+| Registration | TCP | `global.azure-devices-provisioning.net,hm-iot-in-prod-preu01.azure-devices.net,hm-iot-in-prod-prap01.azure-devices.net,hm-iot-in-prod-prna01.azure-devices.net,hm-iot-in-prod-prau01.azure-devices.net,hm-iot-in-prod-prna02.azure-devices.net,hm-iot-in-2-prod-prna01.azure-devices.net,hm-iot-in-3-prod-prna01.azure-devices.net,hm-iot-in-2-prod-preu01.azure-devices.net,hm-iot-in-3-prod-preu01.azure-devices.net,hm-iot-in-4-prod-prna01.azure-devices.net` | 443,5671 | `<spokeSubnetCidr>` | IoT 登録/接続（Registration） |
+| TURN | UDP | `51.5.0.0/16` | 3478 | `<spokeSubnetCidr>` | TURN（音声/映像等） |
 | Entra | TCP | Service Tag: `AzureActiveDirectory` | 443 | `<spokeSubnetCidr>` | Entra ID |
 | DNS (案2) | TCP/UDP | `<dnsInboundIp>` | 53 | `<spokeSubnetCidr>` | Spoke → Inbound Endpoint の DNS 転送 |
-| DNS (案4: 必要な場合) | TCP/UDP | `<dnsInboundIp>` | 53 | `<hubVnetCidr>`（または Firewall 送信元に絞った範囲） | Firewall DNS Proxy → Inbound Endpoint の転送 |
 
 ---
 
