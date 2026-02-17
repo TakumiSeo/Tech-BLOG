@@ -60,7 +60,7 @@ flowchart LR
 
 ### 1.3 DNS 設計の選択肢（案1〜4）
 
-案は本来 1〜4 まであります。図（`content/images/win365/`）を先にまとめて掲載します。
+案は 1〜4 まであります。
 
 本稿では **案2** と **案4** を取り上げます。
 
@@ -100,7 +100,7 @@ sequenceDiagram
   IN-->>VM: Response
 ```
 
-### 1.5 DNS 設計（案4）: Azure Firewall の DNS Proxy を使う（添付1枚目）
+### 1.5 DNS 設計（案4）: Azure Firewall の DNS Proxy を使う
 - Spoke VNet の DNS を **Azure Firewall のプライベート IP** に設定
 - Firewall Policy で **DNS Proxy を有効化**し、転送先 DNS として Private Resolver の **Inbound Endpoint**（例: `<dnsInboundIp>`）を指定
 
@@ -149,19 +149,22 @@ sequenceDiagram
 
 ### 3.2 VNet（Hub / Spoke / DNS VNet）とサブネットを作成
 
-1) Hub VNet（例: `<hubVnetName>`）
-  - Azure Portal → **仮想ネットワーク** → 作成
-  - サブネット
-    - `AzureFirewallSubnet`（Firewall 用。名前は固定）
-    - `AzureBastionSubnet`（Bastion を使う場合。名前は固定）
-    - 運用用サブネット（例: `<hubSubnet01Name>`）
+1. Hub VNet（例: `<hubVnetName>`）
 
-2) Spoke VNet（例: `<spokeVnetName>`）
-  - Windows 365 用のサブネット（例: `<spokeSubnetName>`）を作成
+    - Azure Portal → **仮想ネットワーク** → 作成
+    - サブネット
+        - `AzureFirewallSubnet`（Firewall 用。名前は固定）
+        - `AzureBastionSubnet`（Option: Bastion を使う場合。名前は固定）
+        - 運用用サブネット（Option: 例: `<hubSubnet01Name>`）
 
-3) DNS VNet（Private Resolver 用。例: `<privateResolverVnetName>`）
-  - Inbound Endpoint 用サブネット（例: `sub-inbound`）を作成
-  - Outbound Endpoint 用サブネット（例: `sub-outbound`）を作成
+2. Spoke VNet（例: `<spokeVnetName>`）
+
+    - Windows 365 用のサブネット（例: `<spokeSubnetName>`）を作成
+
+3. DNS VNet（Private Resolver 用。例: `<privateResolverVnetName>`）
+
+    - Inbound Endpoint 用サブネット（例: `sub-inbound`）を作成
+    - Outbound Endpoint 用サブネット（例: `sub-outbound`）を作成
 
 ### 3.3 VNet Peering（Hub ↔ Spoke、Hub ↔ DNS VNet）
 - Azure Portal → 各 VNet → **ピアリング** → 追加
@@ -171,15 +174,17 @@ sequenceDiagram
 
 ### 3.4 Azure Firewall と Firewall Policy
 
-1) Firewall Policy を作成
-- Azure Portal → **Firewall ポリシー** → 作成（例: `<firewallPolicyName>`）
+1. Firewall Policy を作成
 
-2) Azure Firewall を作成
-- Azure Portal → **Azure Firewall** → 作成（例: `<firewallName>`）
-- 仮想ネットワーク: Hub VNet
-- サブネット: `AzureFirewallSubnet`
-- パブリック IP: 新規作成（または既存）
-- Firewall Policy: 3.4-1 で作成したものを関連付け
+    - Azure Portal → **Firewall ポリシー** → 作成（例: `<firewallPolicyName>`）
+
+2. Azure Firewall を作成
+
+    - Azure Portal → **Azure Firewall** → 作成（例: `<firewallName>`）
+    - 仮想ネットワーク: Hub VNet
+    - サブネット: `AzureFirewallSubnet`
+    - パブリック IP: 新規作成（または既存）
+    - Firewall Policy: 3.4-1 で作成したものを関連付け
 
 ### 3.5 ルート テーブル（UDR）を作成し、Spoke サブネットに関連付け
 - Azure Portal → **ルート テーブル** → 作成（例: `<udrName>`）
@@ -191,18 +196,21 @@ sequenceDiagram
 
 ### 3.6 Azure DNS Private Resolver（Inbound/Outbound Endpoint）
 
-1) Private Resolver を作成
-- Azure Portal → **Azure DNS Private Resolver** → 作成（例: `<dnsResolverName>`）
-- VNet: DNS VNet（`<privateResolverVnetName>`）
+1. Private Resolver を作成
 
-2) Inbound Endpoint を作成（IP 固定推奨）
-- Private Resolver → **Inbound endpoints** → 追加
-- サブネット: `sub-inbound`
-- IP: `<dnsInboundIp>`
+    - Azure Portal → **Azure DNS Private Resolver** → 作成（例: `<dnsResolverName>`）
+    - VNet: DNS VNet（`<privateResolverVnetName>`）
 
-3) Outbound Endpoint を作成
-- Private Resolver → **Outbound endpoints** → 追加
-- サブネット: `sub-outbound`
+2. Inbound Endpoint を作成（IP 固定推奨）
+
+    - Private Resolver → **Inbound endpoints** → 追加
+    - サブネット: `sub-inbound`
+    - IP: `<dnsInboundIp>`
+
+3. Outbound Endpoint を作成
+
+    - Private Resolver → **Outbound endpoints** → 追加
+    - サブネット: `sub-outbound`
 
 ### 3.7 Private DNS zone（必要なもの）を作成し、DNS VNet にリンク
 - Azure Portal → **プライベート DNS ゾーン** → 作成（例: `privatelink.<service>.windows.net` など要件に合わせる）
@@ -224,15 +232,17 @@ sequenceDiagram
 
 そのため DNS VNet 側にも以下の UDR を入れ、戻りも Firewall 経由にします。
 
-1) ルート テーブルを作成（DNS 戻り用）
-- Azure Portal → **ルート テーブル** → 作成（例: `<udrDnsReturnName>`）
-- ルート
-  - 宛先: `<spokeVnetCidr>`（例: `10.0.1.0/24`）
-  - 次ホップの種類: 仮想アプライアンス
-  - 次ホップ アドレス: `<firewallPrivateIp>`
+1. ルート テーブルを作成（DNS 戻り用）
 
-2) DNS VNet のサブネットに関連付け
-- Azure Portal → DNS VNet → サブネット `sub-inbound` / `sub-outbound` → それぞれに `<udrDnsReturnName>` を関連付け
+    - Azure Portal → **ルート テーブル** → 作成（例: `<udrDnsReturnName>`）
+    - ルート
+        - 宛先: `<spokeVnetCidr>`（例: `10.0.1.0/24`）
+        - 次ホップの種類: 仮想アプライアンス
+        - 次ホップ アドレス: `<firewallPrivateIp>`
+
+2. DNS VNet のサブネットに関連付け
+
+    - Azure Portal → DNS VNet → サブネット `sub-inbound` / `sub-outbound` → それぞれに `<udrDnsReturnName>` を関連付け
 
 ### Firewall の L4 ルールで DNS(53) を許可
 - Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール**
