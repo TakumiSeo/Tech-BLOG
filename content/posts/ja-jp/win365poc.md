@@ -49,8 +49,6 @@ flowchart LR
   DNSVNET --> HUB
   HUB --> DNSVNET
 
-  W365VM -->|DNS: 53| AFW
-  AFW -->|DNS Proxy| INEP
   DNSR --- INEP
   DNSR --- OUTEP
 ```
@@ -60,20 +58,14 @@ flowchart LR
 - Spoke の DNS を Firewall に向け、Firewall 側の **DNS Proxy** で Private Resolver（Inbound Endpoint）へ転送します。
 - Azure Firewall Policy で、Windows 365 / Intune / Office 365 / Windows Update などの **FQDN タグ**を許可します。
 
-以降では DNS の構成として、添付イメージの 2 パターン（案4 / 案2）を説明します。
+以降では DNS の構成として、添付イメージの 2 パターン（案2 → 案4 の順）を説明します。
 
-### 1.3 DNS 設計（案4 / 案2）
+### 1.3 DNS 設計（案2）: Inbound Endpoint を DNS として直指定（DNS Proxy なし / 添付2枚目）
+DNS の入口を Firewall ではなく **Inbound Endpoint** にし、Firewall は **ルーティング（トランジット）**として通します。
 
-#### 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）
-- Spoke VNet の DNS を **Azure Firewall のプライベート IP** に設定
-- Firewall Policy で **DNS Proxy を有効化**し、転送先 DNS として Private Resolver の **Inbound Endpoint**（例: `<dnsInboundIp>`）を指定
-
-この案は、DNS の入口を Firewall に寄せられるため、運用上は「DNS の経路を一箇所に集約しやすい」構成です。
-
-#### 案2: Inbound Endpoint を DNS として直指定（DNS Proxy なし / 添付2枚目）
-添付2枚目のイメージはこのパターンです。DNS の入口を Firewall ではなく **Inbound Endpoint** にし、Firewall は **ルーティング（トランジット）**として通します。
-
-この案のポイントは「DNS 自体は Inbound Endpoint が受ける」「Firewall は経路上を通す（＝戻り経路も揃える）」です。
+ポイント:
+- Spoke VNet の DNS サーバーは Inbound Endpoint を指定します
+- 戻り経路も Firewall 経由に揃えるため、DNS VNet 側にも戻り用の UDR を設定します
 
 DNS フロー（案2の概念）:
 ```mermaid
@@ -86,6 +78,28 @@ sequenceDiagram
   IN->>AZDNS: Resolve
   AZDNS-->>IN: Response
   IN-->>VM: Response
+```
+
+### 1.4 DNS 設計（案4）: Azure Firewall の DNS Proxy を使う（添付1枚目）
+- Spoke VNet の DNS を **Azure Firewall のプライベート IP** に設定
+- Firewall Policy で **DNS Proxy を有効化**し、転送先 DNS として Private Resolver の **Inbound Endpoint**（例: `<dnsInboundIp>`）を指定
+
+この案は、DNS の入口を Firewall に寄せられるため、運用上は「DNS の経路を一箇所に集約しやすい」構成です。
+
+DNS フロー（案4の概念）:
+```mermaid
+sequenceDiagram
+  participant VM as "Spoke (Cloud PC/NIC)"
+  participant FW as "Azure Firewall (DNS Proxy)"
+  participant IN as "DNS Resolver Inbound EP"
+  participant AZDNS as "Azure DNS (Private DNS / Internet)"
+
+  VM->>FW: DNS Query (UDP/TCP 53)
+  FW->>IN: Forward DNS Query
+  IN->>AZDNS: Resolve
+  AZDNS-->>IN: Response
+  IN-->>FW: Response
+  FW-->>VM: Response
 ```
 ---
 
@@ -176,20 +190,9 @@ sequenceDiagram
 
 ---
 
-## 4. DNS の設定（案4 / 案2 の作り分け）
+## 4. DNS の設定
 
-## 4.1 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）
-
-### Spoke VNet の DNS を Firewall に向ける
-- Azure Portal → Spoke VNet → **DNS サーバー**
-- 「カスタム」 → DNS サーバー: `<firewallPrivateIp>`
-
-### Firewall Policy で DNS Proxy を有効化し、転送先を Inbound Endpoint にする
-- Azure Portal → Firewall Policy `<firewallPolicyName>` → **DNS 設定**
-- DNS プロキシ: 有効
-- DNS サーバー（転送先）: `<dnsInboundIp>`
-
-## 4.2 案2: Inbound Endpoint を DNS として直指定（添付2枚目）
+## 4.1 案2: Inbound Endpoint を DNS として直指定（添付2枚目）
 
 ### Spoke VNet の DNS を Inbound Endpoint に向ける
 - Azure Portal → Spoke VNet → **DNS サーバー**
@@ -216,6 +219,27 @@ sequenceDiagram
 - Network rule（または DNAT ではなく Network rule）で、以下を許可
   - 送信元: `<spokeSubnetCidr>`
   - 宛先: `<dnsInboundIp>`
+  - プロトコル: TCP/UDP
+  - ポート: 53
+
+## 4.2 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）
+
+### Spoke VNet の DNS を Firewall に向ける
+- Azure Portal → Spoke VNet → **DNS サーバー**
+- 「カスタム」 → DNS サーバー: `<firewallPrivateIp>`
+
+### Firewall Policy で DNS Proxy を有効化し、転送先を Inbound Endpoint にする
+- Azure Portal → Firewall Policy `<firewallPolicyName>` → **DNS 設定**
+- DNS プロキシ: 有効
+- DNS サーバー（転送先）: `<dnsInboundIp>`
+
+### Firewall の L4 ルールで DNS(53) を許可
+案4でも、Spoke → Firewall の DNS(53) は L4 ルールで許可が必要です。
+
+- Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール**
+- Network rule で、以下を許可
+  - 送信元: `<spokeSubnetCidr>`
+  - 宛先: `<firewallPrivateIp>`
   - プロトコル: TCP/UDP
   - ポート: 53
 
