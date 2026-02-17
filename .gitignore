@@ -11,6 +11,9 @@ venv/
 output/
 cache/
 
+# Generated files
+*.pptx
+
 # Editors
 .idea/
 .vscode/
