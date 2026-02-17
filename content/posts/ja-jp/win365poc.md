@@ -1,16 +1,25 @@
-# Windows 365 向け Azure インフラ構築手順（Bicep テンプレートベース）
+Title: Windows 365 向け Azure インフラ構築手順（Bicep テンプレートベース）
+Date: 2026-02-17
+Slug: win365-azure-infra-bicep
+Lang: ja-jp
+Category: notebook
+Tags: azure, Windows 365, bicep, networking, firewall, dns
+Summary: Cloud Diaries: Windows 365（Cloud PC）向けに Azure 側のネットワーク/Firewall/DNS 基盤を Bicep ベースで構築する手順メモです。
+Modified: 2026-02-17
 
-最終更新: 2026-02-17
+本稿は、Windows 365（Cloud PC）を使うための「Azure 側の基盤（Hub-Spoke / Firewall / DNS Private Resolver）」にフォーカスした構築メモです。AVD 手順は本筋ではないため付録扱いにしています。
 
 ## 目的 / スコープ
 - 本資料は、Windows 365（Cloud PC）利用のための **Azure 側のネットワーク/セキュリティ/DNS 基盤**を構築する手順をまとめたものです。
 - **AVD（Azure Virtual Desktop）自体は本番構成として作成不要**のため、AVD 作成手順は「参考（付録）」として末尾に記載します。
 
 ## このテンプレートの前提（重要）
-このリポジトリの [main.bicep](main.bicep) は、ポータル等のエクスポートを起点としているため、**そのままではデプロイ時にエラーになり得ます**（例: 読み取り専用プロパティ、重複定義による依存サイクル）。
+このリポジトリのテンプレート（`privateJustPersonal/main.bicep`）は、ポータル等のエクスポートを起点としているため、**そのままではデプロイ時にエラーになり得ます**（例: 読み取り専用プロパティ、重複定義による依存サイクル）。
+
+- GitHub: <https://github.com/TakumiSeo/Tech-BLOG/blob/main/privateJustPersonal/main.bicep>
 
 本資料では、次の 2 つの進め方を提示します。
-- **推奨**: [main.bicep](main.bicep) を「Windows 365 用の基盤（Network/Firewall/DNS）」に絞って整理した上でデプロイ
+- **推奨**: テンプレート（`main.bicep`）を「Windows 365 用の基盤（Network/Firewall/DNS）」に絞って整理した上でデプロイ
 - 参考: 既存テンプレートの意図（構成/ルール/アドレス設計）を読み解き、手動または別テンプレートで再構築
 
 以降は「推奨」手順（テンプレート整理 → デプロイ）で記載します。
@@ -103,7 +112,7 @@ param dnsResolvers_apdr_win365_name = '<dnsResolverName>'
 
 ## 4. テンプレート整理（デプロイ可能にするチェックリスト）
 
-[main.bicep](main.bicep) はエクスポート起点のため、次の点を整理してください。
+`main.bicep` はエクスポート起点のため、次の点を整理してください。
 
 ### 4.1 読み取り専用プロパティを削除
 代表例:
@@ -193,7 +202,7 @@ sequenceDiagram
 
 ## 7. Azure Firewall ルール（見やすい表 + ARM JSON コピペ）
 
-> 注: 以下は [main.bicep](main.bicep) に記載されている内容（Windows 365/Intune/Office/Update など）を、運用向けに整理したものです。送信元 CIDR などは環境に合わせて `<...>` を置き換えてください。
+> 注: 以下は `main.bicep` に記載されている内容（Windows 365/Intune/Office/Update など）を、運用向けに整理したものです。送信元 CIDR などは環境に合わせて `<...>` を置き換えてください。
 
 ### 7.1 Application ルール（L7 / FQDN タグ）
 
