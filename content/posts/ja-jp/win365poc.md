@@ -194,9 +194,6 @@ Spoke/DNS VNet からオンプレミス（ExpressRoute）へ到達させたい�
     - DNS VNet 側（DNS VNet → Hub のピアリング）
         - DNS VNet からもオンプレミス到達が必要な場合のみ、Spoke と同様に **リモート ゲートウェイを使用**を有効にします。
 
-補足:
-- 「リモート ゲートウェイを使用」は、対象 VNet 側に別の Gateway（VPN/ER）がある場合は同時に使えません。設計（どの VNet が Gateway を持つか）に合わせて選択してください。
-
 ### 3.4 Azure Firewall と Firewall Policy
 
 1. Firewall Policy を作成
@@ -237,15 +234,14 @@ Spoke/DNS VNet からオンプレミス（ExpressRoute）へ到達させたい�
     - Private Resolver → **Outbound endpoints** → 追加
     - サブネット: `sub-outbound`
 
-### 3.7 Private DNS zone（必要なもの）を作成し、DNS VNet にリンク
-- Azure Portal → **プライベート DNS ゾーン** → 作成（例: `privatelink.<service>.windows.net` など要件に合わせる）
+### 3.7 必要な場合 Private DNS zone を DNS VNet にリンク
 - 各 Private DNS zone → **仮想ネットワーク リンク** → DNS VNet（`<privateResolverVnetName>`）にリンク
 
 ---
 
 ## 4. DNS の設定
 
-## 4.1 案2: Inbound Endpoint を DNS として直指定（添付2枚目）
+## 4.1 案2: Inbound Endpoint を DNS として直指定
 
 ### Spoke VNet の DNS を Inbound Endpoint に向ける
 - Azure Portal → Spoke VNet → **DNS サーバー**
@@ -267,15 +263,20 @@ Spoke/DNS VNet からオンプレミス（ExpressRoute）へ到達させたい�
 
 2. DNS VNet のサブネットに関連付け
 
-    - Azure Portal → DNS VNet → サブネット `sub-inbound` / `sub-outbound` → それぞれに `<udrDnsReturnName>` を関連付け
+    - Azure Portal → DNS VNet → サブネット `sub-inbound`  に `<udrDnsReturnName>` を関連付け
 
 ### Firewall の L4 ルールで DNS(53) を許可
 - Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール**
-- Network rule（または DNAT ではなく Network rule）で、以下を許可
+- Network rule で、以下を許可
   - 送信元: `<spokeSubnetCidr>`
   - 宛先: `<dnsInboundIp>`
   - プロトコル: TCP/UDP
   - ポート: 53
+
+### （FQDN ベースの Network ルールを使う場合）DNS Proxy の考え方
+FQDN ベースの Network ルール（宛先を FQDN で指定）を使う場合、Azure Firewall 側が FQDN を IP に解決できる必要があるため、一般に **DNS Proxy を有効化**し、 DNS サーバー を `<dnsInboundIp>` にします。
+
+ただし、案2は Spoke の DNS を `<dnsInboundIp>` に直指定しているため、**Spoke の DNS クエリ自体は Firewall を経由しません**。
 
 ## 4.2 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）
 
@@ -288,15 +289,9 @@ Spoke/DNS VNet からオンプレミス（ExpressRoute）へ到達させたい�
 - DNS プロキシ: 有効
 - DNS サーバー（転送先）: `<dnsInboundIp>`
 
-### Firewall の L4 ルールで DNS(53) を許可
-案4でも、Spoke → Firewall の DNS(53) は L4 ルールで許可が必要です。
-
-- Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール**
-- Network rule で、以下を許可
-  - 送信元: `<spokeSubnetCidr>`
-  - 宛先: `<firewallPrivateIp>`
-  - プロトコル: TCP/UDP
-  - ポート: 53
+補足:
+- 転送先 DNS は、Private Endpoint（`privatelink.*`）を確実に解決できるように **`<dnsInboundIp>`（Private Resolver Inbound Endpoint）推奨**です。
+- Azure Default を指定すると、Private DNS zone の解決ができずに Private Endpoint 名が引けない構成になりやすいです。
 
 ---
 
@@ -314,7 +309,7 @@ Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Ap
 | Allow Intune | `MicrosoftIntune` | Https | 443 | `<spokeSubnetCidr>` | Intune 管理通信 |
 | Allow Office 365 | `Office365.Common.*` | Https | 443 | `<spokeSubnetCidr>` | M365 通信（必要範囲） |
 | Allow Windows Update | `WindowsUpdate` | Https | 443 | `<spokeSubnetCidr>` | Windows Update |
-| AVD (参考) | `WindowsVirtualDesktop` | Https | 443 | `<spokeSubnetCidr>` | AVD 通信（参考） |
+| Allow AVD | `WindowsVirtualDesktop` | Https | 443 | `<spokeSubnetCidr>` | AVD 通信 |
 
 ### 5.2 Network ルール（L4）
 
@@ -325,7 +320,8 @@ Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Ne
 | Registration01 | TCP | `azkms.core.windows.net` | 1688 | `<spokeSubnetCidr>` | KMS |
 | TURN | UDP | `<turnIpCidr>` | 3478 | `<spokeSubnetCidr>` | TURN（音声/映像等） |
 | Entra | TCP | Service Tag: `AzureActiveDirectory` | 443 | `<spokeSubnetCidr>` | Entra ID |
-| DNS (案4/案2) | TCP/UDP | `<dnsInboundIp>` または `<privateResolverVnetCidr>` | 53 | `<spokeSubnetCidr>` | DNS 転送 |
+| DNS (案2) | TCP/UDP | `<dnsInboundIp>` | 53 | `<spokeSubnetCidr>` | Spoke → Inbound Endpoint の DNS 転送 |
+| DNS (案4: 必要な場合) | TCP/UDP | `<dnsInboundIp>` | 53 | `<hubVnetCidr>`（または Firewall 送信元に絞った範囲） | Firewall DNS Proxy → Inbound Endpoint の転送 |
 
 ---
 
