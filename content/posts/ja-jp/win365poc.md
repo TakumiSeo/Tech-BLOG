@@ -58,9 +58,29 @@ flowchart LR
 - Spoke の DNS を Firewall に向け、Firewall 側の **DNS Proxy** で Private Resolver（Inbound Endpoint）へ転送します。
 - Azure Firewall Policy で、Windows 365 / Intune / Office 365 / Windows Update などの **FQDN タグ**を許可します。
 
-以降では DNS の構成として、添付イメージの 2 パターン（案2 → 案4 の順）を説明します。
+### 1.3 DNS 設計の選択肢（案1〜4）
 
-### 1.3 DNS 設計（案2）: Inbound Endpoint を DNS として直指定（DNS Proxy なし / 添付2枚目）
+案は本来 1〜4 まであります。図（`content/images/win365/`）を先にまとめて掲載します。
+
+本稿では **案2** と **案4** を取り上げます。
+
+#### 案1
+![DNS 設計 案1](/images/win365/1.png)
+
+#### 案2
+![DNS 設計 案2](/images/win365/2.png)
+
+#### 案3
+![DNS 設計 案3](/images/win365/3.png)
+
+#### 案4
+![DNS 設計 案4](/images/win365/4.png)
+
+---
+
+以降では DNS の構成として、案2 → 案4 の順に説明します。
+
+### 1.4 DNS 設計（案2）: Inbound Endpoint を DNS として直指定（DNS Proxy なし / 添付2枚目）
 DNS の入口を Firewall ではなく **Inbound Endpoint** にし、Firewall は **ルーティング（トランジット）**として通します。
 
 ポイント:
@@ -80,7 +100,7 @@ sequenceDiagram
   IN-->>VM: Response
 ```
 
-### 1.4 DNS 設計（案4）: Azure Firewall の DNS Proxy を使う（添付1枚目）
+### 1.5 DNS 設計（案4）: Azure Firewall の DNS Proxy を使う（添付1枚目）
 - Spoke VNet の DNS を **Azure Firewall のプライベート IP** に設定
 - Firewall Policy で **DNS Proxy を有効化**し、転送先 DNS として Private Resolver の **Inbound Endpoint**（例: `<dnsInboundIp>`）を指定
 
@@ -130,18 +150,18 @@ sequenceDiagram
 ### 3.2 VNet（Hub / Spoke / DNS VNet）とサブネットを作成
 
 1) Hub VNet（例: `<hubVnetName>`）
-- Azure Portal → **仮想ネットワーク** → 作成
-- サブネット
-  - `AzureFirewallSubnet`（Firewall 用。名前は固定）
-  - `AzureBastionSubnet`（Bastion を使う場合。名前は固定）
-  - 運用用サブネット（例: `<hubSubnet01Name>`）
+  - Azure Portal → **仮想ネットワーク** → 作成
+  - サブネット
+    - `AzureFirewallSubnet`（Firewall 用。名前は固定）
+    - `AzureBastionSubnet`（Bastion を使う場合。名前は固定）
+    - 運用用サブネット（例: `<hubSubnet01Name>`）
 
 2) Spoke VNet（例: `<spokeVnetName>`）
-- Windows 365 用のサブネット（例: `<spokeSubnetName>`）を作成
+  - Windows 365 用のサブネット（例: `<spokeSubnetName>`）を作成
 
 3) DNS VNet（Private Resolver 用。例: `<privateResolverVnetName>`）
-- Inbound Endpoint 用サブネット（例: `sub-inbound`）を作成
-- Outbound Endpoint 用サブネット（例: `sub-outbound`）を作成
+  - Inbound Endpoint 用サブネット（例: `sub-inbound`）を作成
+  - Outbound Endpoint 用サブネット（例: `sub-outbound`）を作成
 
 ### 3.3 VNet Peering（Hub ↔ Spoke、Hub ↔ DNS VNet）
 - Azure Portal → 各 VNet → **ピアリング** → 追加
