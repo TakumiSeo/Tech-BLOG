@@ -25,27 +25,29 @@ Modified: 2026-02-17
 ### 1.1 ネットワーク構成（論理）
 ```mermaid
 flowchart LR
-  subgraph HUB[Hub VNet: <hubVnetName>]
-    AFW[Azure Firewall: <firewallName>\n(Policy: <firewallPolicyName>)]
-    BAS[Bastion: <bastionName>\nPublic IP: <bastionPipName>]
-    HUBSUB1[Subnet: <hubSubnet01Name>]
+  subgraph HUB["Hub VNet: hubVnetName"]
+    AFW["Azure Firewall: firewallName\n(Policy: firewallPolicyName)"]
+    BAS["Bastion: bastionName\nPublic IP: bastionPipName"]
+    HUBSUB1["Subnet: hubSubnet01Name"]
     AFSUB[AzureFirewallSubnet]
     BASSUB[AzureBastionSubnet]
   end
 
-  subgraph SPOKE[Spoke VNet: <spokeVnetName>]
-    W365SUB[Subnet: <spokeSubnetName>\n(UDR → Firewall)]
-    W365VM[(Cloud PC / NIC群\n※実体VMは不要)]
+  subgraph SPOKE["Spoke VNet: spokeVnetName"]
+    W365SUB["Subnet: spokeSubnetName\n(UDR -> Firewall)"]
+    W365VM[("Cloud PC / NIC群\n※実体VMは不要")]
   end
 
-  subgraph DNSVNET[Private Resolver VNet: <privateResolverVnetName>]
-    DNSR[Azure DNS Private Resolver: <dnsResolverName>]
-    INEP[Inbound EP: <dnsInboundEndpointName>\nIP: <dnsInboundIp>]
-    OUTEP[Outbound EP: <dnsOutboundEndpointName>]
+  subgraph DNSVNET["Private Resolver VNet: privateResolverVnetName"]
+    DNSR["Azure DNS Private Resolver: dnsResolverName"]
+    INEP["Inbound EP: dnsInboundEndpointName\nIP: dnsInboundIp"]
+    OUTEP["Outbound EP: dnsOutboundEndpointName"]
   end
 
-  SPOKE <--> HUB
-  DNSVNET <--> HUB
+  SPOKE --> HUB
+  HUB --> SPOKE
+  DNSVNET --> HUB
+  HUB --> DNSVNET
 
   W365VM -->|DNS: 53| AFW
   AFW -->|DNS Proxy| INEP
@@ -76,9 +78,9 @@ flowchart LR
 DNS フロー（案2の概念）:
 ```mermaid
 sequenceDiagram
-  participant VM as Spoke(Cloud PC/NIC)
-  participant IN as DNS Resolver Inbound EP
-  participant AZDNS as Azure DNS (Private DNS / Internet)
+  participant VM as "Spoke (Cloud PC/NIC)"
+  participant IN as "DNS Resolver Inbound EP"
+  participant AZDNS as "Azure DNS (Private DNS / Internet)"
 
   VM->>IN: DNS Query (UDP/TCP 53)
   IN->>AZDNS: Resolve
