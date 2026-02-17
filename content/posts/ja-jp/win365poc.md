@@ -167,10 +167,35 @@ sequenceDiagram
     - Outbound Endpoint 用サブネット（例: `sub-outbound`）を作成
 
 ### 3.3 VNet Peering（Hub ↔ Spoke、Hub ↔ DNS VNet）
-- Azure Portal → 各 VNet → **ピアリング** → 追加
-- 推奨設定（要件に合わせ調整）
-  - 仮想ネットワーク アクセス: 許可
-  - 転送されたトラフィック: 許可（Firewall をトランジットにするため）
+
+この手順は **ExpressRoute Gateway（Virtual Network Gateway）が Hub VNet に存在する前提**です。
+Spoke/DNS VNet からオンプレミス（ExpressRoute）へ到達させたい場合は、ピアリングの Gateway 関連設定も合わせて有効化します。
+
+1. ピアリングを作成（Hub ↔ Spoke、Hub ↔ DNS VNet）
+
+    - Azure Portal → 各 VNet → **ピアリング** → 追加
+    - Hub ↔ Spoke、Hub ↔ DNS VNet の **両方向**で作成（Portal の案内に従って作成）
+
+2. 推奨設定（要件に合わせ調整）
+
+    - **仮想ネットワーク アクセス: 許可**
+        - ピアリングした VNet 同士で相互に通信できるようにします。
+    - **転送されたトラフィック: 許可**
+        - Hub の Azure Firewall を経由するような“トランジット通信”で必要になります（UDR で Firewall に送った通信が、別 VNet 宛として転送されるため）。
+
+3. ExpressRoute Gateway（Hub）を Spoke/DNS VNet から利用する場合の設定
+
+    - Hub 側（Hub → Spoke / Hub → DNS VNet のピアリング）
+        - **ゲートウェイ トランジットを許可（Allow gateway transit）: 有効**
+            - Hub の Virtual Network Gateway（ExpressRoute Gateway）を、ピアリング先に“共有”できるようにします。
+    - Spoke 側（Spoke → Hub のピアリング）
+        - **リモート ゲートウェイを使用（Use remote gateways）: 有効**
+            - Spoke からオンプレミス（ExpressRoute）への経路として、Hub の Gateway を利用します。
+    - DNS VNet 側（DNS VNet → Hub のピアリング）
+        - DNS VNet からもオンプレミス到達が必要な場合のみ、Spoke と同様に **リモート ゲートウェイを使用**を有効にします。
+
+補足:
+- 「リモート ゲートウェイを使用」は、対象 VNet 側に別の Gateway（VPN/ER）がある場合は同時に使えません。設計（どの VNet が Gateway を持つか）に合わせて選択してください。
 
 ### 3.4 Azure Firewall と Firewall Policy
 
