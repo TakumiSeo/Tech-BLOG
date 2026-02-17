@@ -1,10 +1,10 @@
-Title: Windows 365 向け Azure インフラ構築手順（Bicep テンプレートベース）
+Title: Windows 365 向け Azure インフラ構築手順（Azure Portal 手順）
 Date: 2026-02-17
-Slug: win365-azure-infra-bicep
+Slug: win365-azure-infra-portal
 Lang: ja-jp
 Category: notebook
-Tags: azure, Windows 365, bicep, networking, firewall, dns
-Summary: Cloud Diaries: Windows 365（Cloud PC）向けに Azure 側のネットワーク/Firewall/DNS 基盤を Bicep ベースで構築する手順メモです。
+Tags: azure, Windows 365, networking, firewall, dns
+Summary: Cloud Diaries: Windows 365（Cloud PC）向けに Azure 側のネットワーク/Firewall/DNS 基盤を Azure Portal で構築する手順メモです。
 Modified: 2026-02-17
 
 本稿は、Windows 365（Cloud PC）を使うための「Azure 側の基盤（Hub-Spoke / Firewall / DNS Private Resolver）」にフォーカスした構築メモです。AVD 手順は本筋ではないため付録扱いにしています。
@@ -13,16 +13,10 @@ Modified: 2026-02-17
 - 本資料は、Windows 365（Cloud PC）利用のための **Azure 側のネットワーク/セキュリティ/DNS 基盤**を構築する手順をまとめたものです。
 - **AVD（Azure Virtual Desktop）自体は本番構成として作成不要**のため、AVD 作成手順は「参考（付録）」として末尾に記載します。
 
-## このテンプレートの前提（重要）
-このリポジトリのテンプレート（`privateJustPersonal/main.bicep`）は、ポータル等のエクスポートを起点としているため、**そのままではデプロイ時にエラーになり得ます**（例: 読み取り専用プロパティ、重複定義による依存サイクル）。
+## 前提
 
-- GitHub: <https://github.com/TakumiSeo/Tech-BLOG/blob/main/privateJustPersonal/main.bicep>
-
-本資料では、次の 2 つの進め方を提示します。
-- **推奨**: テンプレート（`main.bicep`）を「Windows 365 用の基盤（Network/Firewall/DNS）」に絞って整理した上でデプロイ
-- 参考: 既存テンプレートの意図（構成/ルール/アドレス設計）を読み解き、手動または別テンプレートで再構築
-
-以降は「推奨」手順（テンプレート整理 → デプロイ）で記載します。
+- 本資料は **Azure Portal で作成する前提**の手順です（コマンドやテンプレートの説明はしません）。
+- リソース名や CIDR は環境に合わせて `<...>` のプレースホルダーを置き換えてください。
 
 ---
 
@@ -64,147 +58,174 @@ flowchart LR
 - Spoke の DNS を Firewall に向け、Firewall 側の **DNS Proxy** で Private Resolver（Inbound Endpoint）へ転送します。
 - Azure Firewall Policy で、Windows 365 / Intune / Office 365 / Windows Update などの **FQDN タグ**を許可します。
 
+以降では DNS の構成として、添付イメージの 2 パターン（案4 / 案2）を説明します。
+
+### 1.3 DNS 設計（案4 / 案2）
+
+#### 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）
+- Spoke VNet の DNS を **Azure Firewall のプライベート IP** に設定
+- Firewall Policy で **DNS Proxy を有効化**し、転送先 DNS として Private Resolver の **Inbound Endpoint**（例: `<dnsInboundIp>`）を指定
+
+この案は、DNS の入口を Firewall に寄せられるため、運用上は「DNS の経路を一箇所に集約しやすい」構成です。
+
+#### 案2: Inbound Endpoint を DNS として直指定（DNS Proxy なし / 添付2枚目）
+添付2枚目のイメージはこのパターンです。DNS の入口を Firewall ではなく **Inbound Endpoint** にし、Firewall は **ルーティング（トランジット）**として通します。
+
+この案のポイントは「DNS 自体は Inbound Endpoint が受ける」「Firewall は経路上を通す（＝戻り経路も揃える）」です。
+
+DNS フロー（案2の概念）:
+```mermaid
+sequenceDiagram
+  participant VM as Spoke(Cloud PC/NIC)
+  participant IN as DNS Resolver Inbound EP
+  participant AZDNS as Azure DNS (Private DNS / Internet)
+
+  VM->>IN: DNS Query (UDP/TCP 53)
+  IN->>AZDNS: Resolve
+  AZDNS-->>IN: Response
+  IN-->>VM: Response
+```
 ---
 
-## 2. 事前準備
+## 2. 事前準備（Azure Portal）
 
 ### 2.1 必要な権限
 - 対象サブスクリプションに対し、少なくとも以下が必要です。
   - リソース作成権限（例: Contributor）
   - Azure Firewall / Network / DNS Private Resolver 作成に必要な権限
 
-### 2.2 ローカル環境
-- Azure CLI（`az`）
-- Bicep CLI（通常は Azure CLI に同梱、または `az bicep install`）
+### 2.2 事前に決めておく値（チェックリスト）
+- リソースグループ: `<resourceGroupName>` / リージョン: `<location>`
+- VNet とアドレス空間
+  - Hub: `<hubVnetName>` / `<hubVnetCidr>`
+  - Spoke: `<spokeVnetName>` / `<spokeVnetCidr>`
+  - DNS VNet（Private Resolver 用）: `<privateResolverVnetName>` / `<privateResolverVnetCidr>`
+- Azure Firewall のプライベート IP（固定化推奨）: `<firewallPrivateIp>`
+- Private Resolver Inbound Endpoint のプライベート IP（固定化推奨）: `<dnsInboundIp>`
 
 ---
 
-## 3. パラメータ設計（リソース名を固定しない）
+## 3. Azure Portal での構築手順（共通）
 
-### 3.1 ルール
-- **リソース名はすべてパラメータ**として外出しし、資料内では固定値を置きません。
-- 例: `<hubVnetName>`, `<spokeVnetName>`, `<firewallName>`, `<firewallPolicyName>` のようにプレースホルダーで表現します。
+### 3.1 リソースグループを作成
+- Azure Portal → **リソース グループ** → 作成
+- 名前: `<resourceGroupName>` / リージョン: `<location>`
 
-### 3.2 `bicepparam` の作り方（例）
-`main.bicep` の先頭には多数の `param ... string` が並びます。ここに対応する `main.bicepparam`（新規）を作成し、値を埋めます。
+### 3.2 VNet（Hub / Spoke / DNS VNet）とサブネットを作成
 
-例（抜粋）:
-```bicep
-using './main.bicep'
+1) Hub VNet（例: `<hubVnetName>`）
+- Azure Portal → **仮想ネットワーク** → 作成
+- サブネット
+  - `AzureFirewallSubnet`（Firewall 用。名前は固定）
+  - `AzureBastionSubnet`（Bastion を使う場合。名前は固定）
+  - 運用用サブネット（例: `<hubSubnet01Name>`）
 
-param virtualNetworks_vnet_hub_win365_name = '<hubVnetName>'
-param virtualNetworks_vnet_spoke_win365_nic_name = '<spokeVnetName>'
-param virtualNetworks_vnet_privateresolver_name = '<privateResolverVnetName>'
+2) Spoke VNet（例: `<spokeVnetName>`）
+- Windows 365 用のサブネット（例: `<spokeSubnetName>`）を作成
 
-param azureFirewalls_vnet_hub_win365_Firewall_name = '<firewallName>'
-param firewallPolicies_FirewallPolicy_vnet_hub_win365_Firewall_name = '<firewallPolicyName>'
+3) DNS VNet（Private Resolver 用。例: `<privateResolverVnetName>`）
+- Inbound Endpoint 用サブネット（例: `sub-inbound`）を作成
+- Outbound Endpoint 用サブネット（例: `sub-outbound`）を作成
 
-param publicIPAddresses_vnet_hub_win365_firewall_name = '<firewallPipName>'
-param publicIPAddresses_vnet_hub_win365_IPv4_name = '<bastionPipName>'
+### 3.3 VNet Peering（Hub ↔ Spoke、Hub ↔ DNS VNet）
+- Azure Portal → 各 VNet → **ピアリング** → 追加
+- 推奨設定（要件に合わせ調整）
+  - 仮想ネットワーク アクセス: 許可
+  - 転送されたトラフィック: 許可（Firewall をトランジットにするため）
 
-param routeTables_udr_win365_name = '<udrName>'
-param bastionHosts_win365_bastion_name = '<bastionName>'
+### 3.4 Azure Firewall と Firewall Policy
 
-param dnsResolvers_apdr_win365_name = '<dnsResolverName>'
-```
+1) Firewall Policy を作成
+- Azure Portal → **Firewall ポリシー** → 作成（例: `<firewallPolicyName>`）
 
----
+2) Azure Firewall を作成
+- Azure Portal → **Azure Firewall** → 作成（例: `<firewallName>`）
+- 仮想ネットワーク: Hub VNet
+- サブネット: `AzureFirewallSubnet`
+- パブリック IP: 新規作成（または既存）
+- Firewall Policy: 3.4-1 で作成したものを関連付け
 
-## 4. テンプレート整理（デプロイ可能にするチェックリスト）
+### 3.5 ルート テーブル（UDR）を作成し、Spoke サブネットに関連付け
+- Azure Portal → **ルート テーブル** → 作成（例: `<udrName>`）
+- ルート
+  - 宛先: `0.0.0.0/0`
+  - 次ホップの種類: 仮想アプライアンス
+  - 次ホップ アドレス: `<firewallPrivateIp>`
+- Azure Portal → Spoke VNet → サブネット `<spokeSubnetName>` → **ルート テーブル** を関連付け
 
-`main.bicep` はエクスポート起点のため、次の点を整理してください。
+### 3.6 Azure DNS Private Resolver（Inbound/Outbound Endpoint）
 
-### 4.1 読み取り専用プロパティを削除
-代表例:
-- Public IP の `properties.ipAddress`（割り当て後にのみ値が入るため、作成時に指定できません）
-- Bastion の `properties.dnsName`（作成後に付与される値）
+1) Private Resolver を作成
+- Azure Portal → **Azure DNS Private Resolver** → 作成（例: `<dnsResolverName>`）
+- VNet: DNS VNet（`<privateResolverVnetName>`）
 
-### 4.2 重複定義（依存サイクル）を解消
-典型的な問題:
-- VNet の `subnets: [...]` でサブネットを定義しつつ、別途 `Microsoft.Network/virtualNetworks/subnets` を子リソースとしても定義している
+2) Inbound Endpoint を作成（IP 固定推奨）
+- Private Resolver → **Inbound endpoints** → 追加
+- サブネット: `sub-inbound`
+- IP: `<dnsInboundIp>`
 
-対応方針（どちらかに統一）:
-- **方針A**: VNet リソースの `subnets` 配列にまとめ、子リソース定義を削除
-- **方針B**: VNet は addressSpace のみにして、サブネットは子リソース定義に寄せる
+3) Outbound Endpoint を作成
+- Private Resolver → **Outbound endpoints** → 追加
+- サブネット: `sub-outbound`
 
-### 4.3 「Windows 365 基盤」に不要なリソースを分離
-本番の Windows 365 基盤として不要になりがちなもの（必要なら残す）:
-- AVD HostPool / Workspace / Application Group
-- テスト用 VM / NIC / Disk
-
-付録に参考として残し、基盤デプロイからは外すのが運用上シンプルです。
-
----
-
-## 5. デプロイ手順（Azure CLI）
-
-### 5.1 デプロイの流れ
-```mermaid
-flowchart TB
-  A[変数/プレースホルダーを決定] --> B[main.bicep を整理\n(ROプロパティ削除・重複解消・不要リソース分離)]
-  B --> C[main.bicepparam を作成]
-  C --> D[リソースグループ作成]
-  D --> E[az deployment group create]
-  E --> F[デプロイ後検証\n(Peering/UDR/Firewall/DNS)]
-```
-
-### 5.2 コマンド例（プレースホルダー使用）
-```powershell
-# 1) ログイン
-az login
-
-# 2) サブスクリプション選択
-az account set --subscription <subscriptionId>
-
-# 3) リソースグループ作成
-az group create -n <resourceGroupName> -l <location>
-
-# 4) デプロイ
-az deployment group create \
-  -g <resourceGroupName> \
-  -f .\main.bicep \
-  -p .\main.bicepparam
-```
+### 3.7 Private DNS zone（必要なもの）を作成し、DNS VNet にリンク
+- Azure Portal → **プライベート DNS ゾーン** → 作成（例: `privatelink.<service>.windows.net` など要件に合わせる）
+- 各 Private DNS zone → **仮想ネットワーク リンク** → DNS VNet（`<privateResolverVnetName>`）にリンク
 
 ---
 
-## 6. デプロイ後の確認ポイント
+## 4. DNS の設定（案4 / 案2 の作り分け）
 
-### 6.1 VNet Peering
-- Hub ↔ Spoke
-- Hub ↔ Private Resolver
+## 4.1 案4: Azure Firewall の DNS Proxy を使う（添付1枚目）
 
-### 6.2 UDR（既定ルート）
-- Spoke の `<spokeSubnetName>` に UDR が関連付いていること
-- `0.0.0.0/0` の Next Hop が Firewall（仮想アプライアンス）になっていること
+### Spoke VNet の DNS を Firewall に向ける
+- Azure Portal → Spoke VNet → **DNS サーバー**
+- 「カスタム」 → DNS サーバー: `<firewallPrivateIp>`
 
-### 6.3 DNS
-- Spoke の VNet DNS が Firewall のプライベート IP を向く
-- Firewall Policy の DNS Settings が Private Resolver の Inbound IP を向く（DNS Proxy 有効）
+### Firewall Policy で DNS Proxy を有効化し、転送先を Inbound Endpoint にする
+- Azure Portal → Firewall Policy `<firewallPolicyName>` → **DNS 設定**
+- DNS プロキシ: 有効
+- DNS サーバー（転送先）: `<dnsInboundIp>`
 
-DNS フロー（例）:
-```mermaid
-sequenceDiagram
-  participant VM as Spoke(Cloud PC/NIC)
-  participant FW as Azure Firewall(DNS Proxy)
-  participant IN as DNS Resolver Inbound EP
-  participant DNS as Azure DNS/Internet
+## 4.2 案2: Inbound Endpoint を DNS として直指定（添付2枚目）
 
-  VM->>FW: DNS Query (UDP/TCP 53)
-  FW->>IN: Forwarded DNS Query
-  IN->>DNS: Resolve
-  DNS-->>IN: Response
-  IN-->>FW: Response
-  FW-->>VM: Response
-```
+### Spoke VNet の DNS を Inbound Endpoint に向ける
+- Azure Portal → Spoke VNet → **DNS サーバー**
+- 「カスタム」 → DNS サーバー: `<dnsInboundIp>`
+
+### 戻り経路を揃える（DNS VNet 側の UDR が重要）
+案2は「Spoke →（既定ルートにより）Firewall → DNS VNet → Inbound Endpoint」と流れます。
+このとき DNS VNet 側が peering のシステムルートで Spoke に直帰すると **非対称ルーティング**になり、Firewall でドロップし得ます。
+
+そのため DNS VNet 側にも以下の UDR を入れ、戻りも Firewall 経由にします。
+
+1) ルート テーブルを作成（DNS 戻り用）
+- Azure Portal → **ルート テーブル** → 作成（例: `<udrDnsReturnName>`）
+- ルート
+  - 宛先: `<spokeVnetCidr>`（例: `10.0.1.0/24`）
+  - 次ホップの種類: 仮想アプライアンス
+  - 次ホップ アドレス: `<firewallPrivateIp>`
+
+2) DNS VNet のサブネットに関連付け
+- Azure Portal → DNS VNet → サブネット `sub-inbound` / `sub-outbound` → それぞれに `<udrDnsReturnName>` を関連付け
+
+### Firewall の L4 ルールで DNS(53) を許可
+- Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール**
+- Network rule（または DNAT ではなく Network rule）で、以下を許可
+  - 送信元: `<spokeSubnetCidr>`
+  - 宛先: `<dnsInboundIp>`
+  - プロトコル: TCP/UDP
+  - ポート: 53
 
 ---
 
-## 7. Azure Firewall ルール（見やすい表 + ARM JSON コピペ）
+## 5. Azure Firewall のルール（Portal で設定）
 
-> 注: 以下は `main.bicep` に記載されている内容（Windows 365/Intune/Office/Update など）を、運用向けに整理したものです。送信元 CIDR などは環境に合わせて `<...>` を置き換えてください。
+> 注: Windows 365 の宛先要件は更新される可能性があるため、最終的には Microsoft の公開情報に沿って見直してください。ここでは Portal での作り方と代表例をまとめます。
 
-### 7.1 Application ルール（L7 / FQDN タグ）
+### 5.1 Application ルール（L7 / FQDN タグ）
+
+Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Application rule collection group を作成し、FQDN タグを追加します。
 
 | Rule 名 | FQDN Tag | Protocol | Port | Source | 目的 |
 |---|---|---:|---:|---|---|
@@ -214,183 +235,45 @@ sequenceDiagram
 | Allow Windows Update | `WindowsUpdate` | Https | 443 | `<spokeSubnetCidr>` | Windows Update |
 | AVD (参考) | `WindowsVirtualDesktop` | Https | 443 | `<spokeSubnetCidr>` | AVD 通信（参考） |
 
-#### ARM JSON（Application Rule Collection Group）
-以下は **コピペ用**の最小例です（パラメータ化を前提）。
-```json
-{
-  "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
-  "apiVersion": "2024-07-01",
-  "name": "[format('{0}/DefaultApplicationRuleCollectionGroup', parameters('firewallPolicyName'))]",
-  "location": "[parameters('location')]",
-  "properties": {
-    "priority": 300,
-    "ruleCollections": [
-      {
-        "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
-        "name": "Win365-requirement",
-        "priority": 500,
-        "action": { "type": "Allow" },
-        "rules": [
-          {
-            "ruleType": "ApplicationRule",
-            "name": "Allow Windows 365",
-            "protocols": [{ "protocolType": "Https", "port": 443 }],
-            "fqdnTags": ["Windows365"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "terminateTLS": false
-          },
-          {
-            "ruleType": "ApplicationRule",
-            "name": "Allow Intune",
-            "protocols": [{ "protocolType": "Https", "port": 443 }],
-            "fqdnTags": ["MicrosoftIntune"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "terminateTLS": false
-          },
-          {
-            "ruleType": "ApplicationRule",
-            "name": "Allow Office 365",
-            "protocols": [{ "protocolType": "Https", "port": 443 }],
-            "fqdnTags": [
-              "Office365.Common.Allow.Required",
-              "Office365.Common.Default.Required",
-              "Office365.Common.Default.NotRequired"
-            ],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "terminateTLS": false
-          },
-          {
-            "ruleType": "ApplicationRule",
-            "name": "Allow Windows Update",
-            "protocols": [{ "protocolType": "Https", "port": 443 }],
-            "fqdnTags": ["WindowsUpdate"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "terminateTLS": false
-          },
-          {
-            "ruleType": "ApplicationRule",
-            "name": "AVD (reference)",
-            "protocols": [{ "protocolType": "Https", "port": 443 }],
-            "fqdnTags": ["WindowsVirtualDesktop"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "terminateTLS": false
-          }
-        ]
-      }
-    ]
-  },
-  "dependsOn": [
-    "[resourceId('Microsoft.Network/firewallPolicies', parameters('firewallPolicyName'))]"
-  ]
-}
-```
+### 5.2 Network ルール（L4）
 
-### 7.2 Network ルール（L4）
+Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Network rule collection group を作成し、必要な L4 通信を許可します。
 
 | Rule 名 | Protocol | Dest | Ports | Source | 目的 |
 |---|---|---|---|---|---|
-| Windows Activation | TCP | FQDNs（IoT/Provisioning 系） | 443, 5671 | `<spokeSubnetCidr>` | デバイス/アクティベーション関連 |
 | Registration01 | TCP | `azkms.core.windows.net` | 1688 | `<spokeSubnetCidr>` | KMS |
 | TURN | UDP | `<turnIpCidr>` | 3478 | `<spokeSubnetCidr>` | TURN（音声/映像等） |
 | Entra | TCP | Service Tag: `AzureActiveDirectory` | 443 | `<spokeSubnetCidr>` | Entra ID |
-| dns | TCP/UDP | `<privateResolverVnetCidr>` | 53 | `<spokeSubnetCidr>` | DNS 転送 |
-
-Windows Activation の宛先 FQDN（テンプレート記載の例）:
-```text
-global.azure-devices-provisioning.net
-hm-iot-in-prod-preu01.azure-devices.net
-hm-iot-in-prod-prap01.azure-devices.net
-hm-iot-in-prod-prna01.azure-devices.net
-hm-iot-in-prod-prau01.azure-devices.net
-hm-iot-in-prod-prna02.azure-devices.net
-hm-iot-in-2-prod-prna01.azure-devices.net
-hm-iot-in-3-prod-prna01.azure-devices.net
-hm-iot-in-2-prod-preu01.azure-devices.net
-hm-iot-in-3-prod-preu01.azure-devices.net
-hm-iot-in-4-prod-prna01.azure-devices.net
-```
-
-#### ARM JSON（Network Rule Collection Group）
-```json
-{
-  "type": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
-  "apiVersion": "2024-07-01",
-  "name": "[format('{0}/DefaultNetworkRuleCollectionGroup', parameters('firewallPolicyName'))]",
-  "location": "[parameters('location')]",
-  "properties": {
-    "priority": 200,
-    "ruleCollections": [
-      {
-        "ruleCollectionType": "FirewallPolicyFilterRuleCollection",
-        "name": "Window365L4Required",
-        "priority": 1000,
-        "action": { "type": "Allow" },
-        "rules": [
-          {
-            "ruleType": "NetworkRule",
-            "name": "Windows Activation",
-            "ipProtocols": ["TCP"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "destinationFqdns": [
-              "global.azure-devices-provisioning.net",
-              "hm-iot-in-prod-preu01.azure-devices.net",
-              "hm-iot-in-prod-prap01.azure-devices.net",
-              "hm-iot-in-prod-prna01.azure-devices.net",
-              "hm-iot-in-prod-prau01.azure-devices.net",
-              "hm-iot-in-prod-prna02.azure-devices.net",
-              "hm-iot-in-2-prod-prna01.azure-devices.net",
-              "hm-iot-in-3-prod-prna01.azure-devices.net",
-              "hm-iot-in-2-prod-preu01.azure-devices.net",
-              "hm-iot-in-3-prod-preu01.azure-devices.net",
-              "hm-iot-in-4-prod-prna01.azure-devices.net"
-            ],
-            "destinationPorts": ["443", "5671"]
-          },
-          {
-            "ruleType": "NetworkRule",
-            "name": "Registration01",
-            "ipProtocols": ["TCP"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "destinationFqdns": ["azkms.core.windows.net"],
-            "destinationPorts": ["1688"]
-          },
-          {
-            "ruleType": "NetworkRule",
-            "name": "TURN",
-            "ipProtocols": ["UDP"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "destinationAddresses": ["[parameters('turnIpCidr')]"],
-            "destinationPorts": ["3478"]
-          },
-          {
-            "ruleType": "NetworkRule",
-            "name": "Entra",
-            "ipProtocols": ["TCP"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "destinationAddresses": ["AzureActiveDirectory"],
-            "destinationPorts": ["443"]
-          },
-          {
-            "ruleType": "NetworkRule",
-            "name": "dns",
-            "ipProtocols": ["TCP", "UDP"],
-            "sourceAddresses": ["[parameters('spokeSubnetCidr')]"],
-            "destinationAddresses": ["[parameters('privateResolverVnetCidr')]"],
-            "destinationPorts": ["53"]
-          }
-        ]
-      }
-    ]
-  },
-  "dependsOn": [
-    "[resourceId('Microsoft.Network/firewallPolicies', parameters('firewallPolicyName'))]"
-  ]
-}
-```
+| DNS (案4/案2) | TCP/UDP | `<dnsInboundIp>` または `<privateResolverVnetCidr>` | 53 | `<spokeSubnetCidr>` | DNS 転送 |
 
 ---
 
-## 8. 参考: AVD 作成（この環境では作成不要）
+## 6. 作成後の確認ポイント（Portal で確認）
+
+### 6.1 VNet Peering
+- Hub ↔ Spoke
+- Hub ↔ DNS VNet
+
+### 6.2 UDR（既定ルート / 戻りルート）
+- Spoke サブネットに `0.0.0.0/0 → <firewallPrivateIp>` が付いている
+- （案2の場合）DNS VNet サブネットに `<spokeVnetCidr> → <firewallPrivateIp>` が付いている
+
+### 6.3 DNS
+- Spoke VNet の DNS サーバー設定が想定どおり（案4なら Firewall、案2なら Inbound Endpoint）
+- Private DNS zone のリンクが DNS VNet に張られている
+
+---
+
+## 7. 参考: オンプレ（DNS フォワーダ）から Azure Private DNS を引く場合
+
+オンプレ側の DNS サーバー（フォワーダ）で、必要なドメインに対して **条件付きフォワーダ**を作成します。
+
+- 例: `privatelink.<service>.windows.net`
+- 転送先:
+  - 案4: Firewall のプライベート IP（DNS Proxy が Inbound Endpoint に転送）
+  - 案2: Inbound Endpoint の IP（`<dnsInboundIp>`）
+
+---
 
 Windows 365 の Azure 側インフラとしては、通常 **お客様が AVD HostPool 等を作る必要はありません**。
 ただし、検証や比較のために AVD を作成したい場合は以下を参考にしてください。
