@@ -55,7 +55,7 @@ flowchart LR
 
 ### 1.2 主要な意図（何をしているか）
 - Spoke 側（Windows 365 関連サブネット）からの **既定ルート (0.0.0.0/0)** を Azure Firewall に強制し、外向き通信を制御します。
-- Spoke の DNS を Firewall に向け、Firewall 側の **DNS Proxy** で Private Resolver（Inbound Endpoint）へ転送します。
+- Spoke の DNS を Firewall に向け、Firewall 側の **DNS Proxy** で Azure 既定の DNS へ転送します。
 - Azure Firewall Policy で、Windows 365 / Intune / Office 365 / Windows Update などの **FQDN タグ**を許可します。
 
 ### 1.3 DNS 設計の選択肢（案1〜4）
@@ -287,11 +287,11 @@ FQDN ベースの Network ルール（宛先を FQDN で指定）を使う場合
 ### Firewall Policy で DNS Proxy を有効化し、転送先を Inbound Endpoint にする
 - Azure Portal → Firewall Policy `<firewallPolicyName>` → **DNS 設定**
 - DNS プロキシ: 有効
-- DNS サーバー（転送先）: `<dnsInboundIp>`
+- DNS サーバー（転送先）: `Azure 既定の DNS`
 
 補足:
 - 転送先 DNS は、Private Endpoint（`privatelink.*`）を確実に解決できるように **`<dnsInboundIp>`（Private Resolver Inbound Endpoint）推奨**です。
-- Azure Default を指定すると、Private DNS zone の解決ができずに Private Endpoint 名が引けない構成になりやすいです。
+- Private Endpoint の解決には Private DNS Zone の紐づけが Hub に必要となります。
 
 ---
 
@@ -337,7 +337,7 @@ Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Ne
 
 ### 6.3 DNS
 - Spoke VNet の DNS サーバー設定が想定どおり（案4なら Firewall、案2なら Inbound Endpoint）
-- Private DNS zone のリンクが DNS VNet に張られている
+- Private DNS zone のリンクが Hub VNet に張られている
 
 ---
 
@@ -347,7 +347,7 @@ Azure Portal → Firewall Policy `<firewallPolicyName>` → **ルール** → Ne
 
 - 例: `privatelink.<service>.windows.net`
 - 転送先:
-  - 案4: Firewall のプライベート IP（DNS Proxy が Inbound Endpoint に転送）
+  - 案4: Firewall のプライベート IP（DNS Proxy が Azure 規定の DNS に転送）
   - 案2: Inbound Endpoint の IP（`<dnsInboundIp>`）
 
 ---
