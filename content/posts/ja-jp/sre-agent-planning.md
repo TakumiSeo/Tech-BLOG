@@ -609,7 +609,7 @@ Memory system のコンポーネントは User Memories / Knowledge Base / Docum
 ### 取り出し方（説明）
 `SearchMemory` は4コンポーネントを横断検索するツールです。Custom subagents ではツール追加が必要です。[8-3]
 
-より対象を絞った検索として `SearchNodes` がフィルターをサポートし、`includeNeighbors` を `true` にすると接続されたノード（リソースや関連インシデント等）も返します。[8-8]
+`SearchNodes` も同様に全メモリシステムを検索しますが、追加で `entityType` などのフィルターオプションをサポートし、`includeNeighbors` を `true` にすると検索結果に加えて接続されたノード（リソースや関連インシデント等）も返します。[8-8]
 
 拡張検索パラメーター（事実）:
 
@@ -633,15 +633,18 @@ Knowledge Base は `.md` と `.txt` を扱い、1ファイル最大 16MB です�
 ### メモリ構成と検索
 
 ```mermaid
-flowchart LR
-  SM["SearchMemory"] --> UM["User Memories"]
-  SM --> KB["Knowledge Base"]
-  SM --> DC["Documentation connector"]
-  SM --> SI["Session insights"]
-
-  SN["SearchNodes\nfilters / includeNeighbors"] --> Graph["接続ノードのグラフ"]
-  Graph --> UM
-  Graph --> SI
+flowchart TD
+  subgraph MS["Memory System (4 コンポーネント)"]
+    UM["User Memories"]
+    KB["Knowledge Base"]
+    DC["Documentation connector"]
+    SI["Session insights"]
+  end
+  
+  SM["SearchMemory\n全コンポーネント横断検索"] --> MS
+  
+  SN["SearchNodes\nフィルター (entityType 等)\n+ includeNeighbors オプション"] --> MS
+  SN -.->|includeNeighbors = true の場合| Neighbors["接続ノードも取得\n(リソース/サービス/関連インシデント等)"]
 ```
 
 ### User memories の操作（説明）
