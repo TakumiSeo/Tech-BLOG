@@ -894,15 +894,12 @@ flowchart TD
   subgraph Triggers["サブエージェントの呼び出し方法"]
     IRP["Incident Response Plan\n(インシデント対応計画)"]
     Schedule["Scheduled Tasks\n(スケジュールされたタスク)"]
-    Chat["Chat Handoff\n(チャットからのハンドオフ)"]
+    Main["メイン エージェント\n(Chat Handoff)"]
   end
   
-  Main["メイン エージェント\n(Azure SRE Agent)"]
-  
-  IRP --> Sub
+  IRP --> Sub["サブエージェント"]
   Schedule --> Sub
-  Main -->|ハンドオフ| Sub["サブエージェント"]
-  Chat -.-> Main
+  Main -->|ハンドオフ| Sub
   
   subgraph SubAgentCapabilities["サブエージェントが使用できるもの"]
     direction TB
@@ -915,13 +912,14 @@ flowchart TD
       OtherTools["その他のシステムツール"]
     end
     
-    Skills["スキル\n(AI 機能)"]
+    Skills["スキル"]
     
     subgraph Connectors["コネクタ（外部統合）"]
       Outlook["Outlook\n(メール送信)"]
       Teams["Teams\n(通知送信)"]
       Telemetry["テレメトリソース\n(Datadog/Dynatrace/New Relic)"]
       MCP["カスタム MCP\n(他の SaaS システム)"]
+      OtherConn["その他"]
     end
     
     subgraph Knowledge["ナレッジ（Memory System）"]
@@ -944,8 +942,7 @@ flowchart TD
   classDef subStyle fill:#d4f1d4,stroke:#107c10,stroke-width:2px
   classDef capabilityStyle fill:#f3f2f1,stroke:#605e5c,stroke-width:1px
   
-  class IRP,Schedule,Chat triggerStyle
-  class Main mainStyle
+  class IRP,Schedule,Main triggerStyle
   class Sub subStyle
   class Tools,Skills,Connectors,Knowledge capabilityStyle
 ```
