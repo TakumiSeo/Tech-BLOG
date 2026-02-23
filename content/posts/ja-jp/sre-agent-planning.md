@@ -890,14 +890,64 @@ SRE Agent の Memory system（User memories / Knowledge Base / Session insights�
 ### Main agent / Subagent / Tools の関係
 
 ```mermaid
-flowchart LR
-  Main["メイン エージェント\n(Azure SRE Agent)"] --> Sub["サブエージェント"]
-  Sub --> Tools["ツール（Python）"]
-  Sub --> Conn["コネクタ"]
-  Conn --> Outlook["Outlook / Teams（OAuth）"]
-  Conn --> Telemetry["ナレッジ/テレメトリ ソース"]
-  Conn --> MCP["カスタム MCP コネクタ"]
-  MCP --> Server["MCP サーバー エンドポイント\nHTTPS 上で SSE/HTTP"]
+flowchart TD
+  subgraph Triggers["サブエージェントの呼び出し方法"]
+    IRP["Incident Response Plan\n(インシデント対応計画)"]
+    Schedule["Scheduled Tasks\n(スケジュールされたタスク)"]
+    Chat["Chat Handoff\n(チャットからのハンドオフ)"]
+  end
+  
+  Main["メイン エージェント\n(Azure SRE Agent)"]
+  
+  IRP --> Sub
+  Schedule --> Sub
+  Main -->|ハンドオフ| Sub["サブエージェント"]
+  Chat -.-> Main
+  
+  subgraph SubAgentCapabilities["サブエージェントが使用できるもの"]
+    direction TB
+    
+    subgraph Tools["ツール"]
+      Python["Python ツール\n(カスタムロジック)"]
+      Kusto["Kusto クエリ\n(Log Analytics/App Insights)"]
+      Metrics["Azure Metrics"]
+      DevOps["DevOps ツール\n(GitHub/Azure DevOps)"]
+      OtherTools["その他のシステムツール"]
+    end
+    
+    Skills["スキル\n(AI 機能)"]
+    
+    subgraph Connectors["コネクタ（外部統合）"]
+      Outlook["Outlook\n(メール送信)"]
+      Teams["Teams\n(通知送信)"]
+      Telemetry["テレメトリソース\n(Datadog/Dynatrace/New Relic)"]
+      MCP["カスタム MCP\n(他の SaaS システム)"]
+    end
+    
+    subgraph Knowledge["ナレッジ（Memory System）"]
+      UserMem["User Memories"]
+      KB["Knowledge Base"]
+      DocConn["Documentation Connector"]
+      SessionIns["Session Insights"]
+    end
+  end
+  
+  Sub --> Tools
+  Sub --> Skills
+  Sub --> Connectors
+  Sub --> Knowledge
+  
+  MCP -.->|HTTPS/SSE/HTTP| External["外部 MCP サーバー"]
+  
+  classDef triggerStyle fill:#e1f5ff,stroke:#0078d4,stroke-width:2px
+  classDef mainStyle fill:#fff4ce,stroke:#f59700,stroke-width:3px
+  classDef subStyle fill:#d4f1d4,stroke:#107c10,stroke-width:2px
+  classDef capabilityStyle fill:#f3f2f1,stroke:#605e5c,stroke-width:1px
+  
+  class IRP,Schedule,Chat triggerStyle
+  class Main mainStyle
+  class Sub subStyle
+  class Tools,Skills,Connectors,Knowledge capabilityStyle
 ```
 
 ### Tool が多い前提での整理（提案）
@@ -984,6 +1034,19 @@ Instructions の例:
 サービス名や時間帯が不明な場合は、1つの明確な質問をする。
 ```
 
+Handoff instructions の例:
+
+```text
+このエージェントにハンドオフすべき場合:
+HTTP 500エラーなどのアプリケーションエラーに関するインシデントの統括が必要な場合。Incident Response Plan、ユーザーの直接要求、または他のエージェントから、証跡収集やIssue作成の調整が必要な場合にハンドオフしてください。
+
+入力:
+インシデント情報（アラート内容、影響範囲、検出時刻など）
+
+出力:
+完了報告（収集された証跡、作成されたIssue URL、取られたアクション）
+```
+
 **2) DiagnosticsAgent (Subagent) の設定**
 
 ポータルでの作成: **[Builder > Subagent builder] → [Create > Subagent]**
@@ -1036,34 +1099,16 @@ Instructions の例:
 Handoff instructions の例:
 
 ```text
-他のエージェントがこのエージェントにハンドオフすべき場合:
+ハンドオフすべき場合:
+Azure Monitor（Log Analytics、App Insights、Metrics）からインシデント証跡の収集が必要な場合。ログ/例外のクエリ、主要メトリクス（3〜5個）の収集、KQLと疑わしい原因を含む構造化サマリーを作成します。読み取り専用の診断データ収集に限定。
 
-以下のシナリオでは、Main Agent または他のサブエージェントから DiagnosticsAgent にハンドオフしてください：
+ハンドオフすべきでない場合:
+是正措置、構成変更、RBAC変更、Azure Monitor以外のデータソース、ビジネスインパクト計算、postmortem作成は対象外です。
 
-1. Azure Monitor（Log Analytics、Application Insights、Azure Metrics）からの証跡収集が必要な場合
-   - インシデントに関連するログ/例外のクエリが必要
-   - 問題を示す主要メトリクス（3〜5個）の収集が必要
-   - KQLクエリと疑わしい原因を含む構造化された発見事項の要約が必要
-
-2. 読み取り専用の診断データ収集に限定される場合
-   - 是正措置や構成変更は含まない
-   - 技術的な証跡の収集に焦点を当てる
-
-このエージェントにハンドオフすべきでない場合:
-
-以下の作業は DiagnosticsAgent の範囲外です。別のエージェントにハンドオフしてください：
-- 是正措置やランブックの実行
-- リソース構成の変更
-- RBACやアクセス許可の変更
-- Azure Monitor以外のデータソース（Datadog、Dynatraceなど）
-- ビジネスインパクトの計算や優先度付け
-- 事後分析（postmortem）レポートの作成
-
-ハンドオフ時の情報:
-- 受け取る情報: サービス名、時間帯（UTC）、環境（prod/stg）
-- 実行するタスク: 証跡（ログ、メトリクス、例外）を収集し、構造化された形式で要約
-- 返す情報: 証跡サマリー（発見事項、KQLクエリ、メトリクス、疑わしい原因）
-- ハンドバック先: Main Agent（またはハンドオフ元のエージェント）
+入出力:
+受取: サービス名、時間帯（UTC）、環境
+返却: 証跡サマリー（発見事項、KQLクエリ、メトリクス、疑わしい原因）
+ハンドバック先: Main Agent
 ```
 
 **3) GitHubIssueAgent (Subagent) の設定**
