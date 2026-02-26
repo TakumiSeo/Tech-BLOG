@@ -889,6 +889,8 @@ SRE Agent の Memory system（User memories / Knowledge Base / Session insights�
 
 ### Main agent / Subagent / Tools の関係
 
+サブエージェントは、インシデント対応計画・スケジュールタスク・メインエージェントからのハンドオフの3つの方法で呼び出され、ツール・スキル・コネクタ・ナレッジの4つのカテゴリの機能を使用できます。
+
 ```mermaid
 flowchart TD
   subgraph Triggers["サブエージェントの呼び出し方法"]
@@ -961,6 +963,239 @@ flowchart TD
 スライド要点:
 - “ツールが多い” のは正常（能力を足していくと増える）。設計で重要なのは「どれをいつ使うか」を主語にすること。
 - main agent から直接使えないツールがある（MCP は subagent 経由）。[9-3]
+
+### Agent Units（AAU）の使用量を API で取得する（PowerShell）
+
+ポータル（Network タブ）から確認できるとおり、Agent Units（AAU）の使用量は ARM 経由で取得できます。
+
+エンドポイント（例）:
+- 月次の合計: `GET /subscriptions/<subId>/resourceGroups/<rg>/providers/Microsoft.App/agents/<agentName>/usages?api-version=2025-05-01-preview`
+- 日次の内訳: `GET /subscriptions/<subId>/resourceGroups/<rg>/providers/Microsoft.App/agents/<agentName>/dailyusages?api-version=2025-05-01-preview`
+
+注意:
+- Bearer token（`Authorization: Bearer ...`）は絶対に共有しません。
+- `api-version` が `*-preview` のため、フィールド名や挙動が変わる可能性があります。
+
+#### 直接 GET（おすすめ）
+
+```powershell
+$subscriptionId = "2107faa2-8e88-4c5d-8124-34b8c638de70"
+$resourceGroup  = "rg-dev-rag"
+$agentName      = "rag-are"
+$apiVersion     = "2025-05-01-preview"
+
+# ARM 用アクセストークン（Azure CLI）
+$token = az account get-access-token --resource https://management.azure.com/ --query accessToken -o tsv
+$headers = @{ Authorization = "Bearer $token" }
+
+$baseUri = "https://management.azure.com"
+$monthlyUri = "$baseUri/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.App/agents/$agentName/usages?api-version=$apiVersion"
+$dailyUri   = "$baseUri/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.App/agents/$agentName/dailyusages?api-version=$apiVersion"
+
+$monthly = Invoke-RestMethod -Method GET -Uri $monthlyUri -Headers $headers
+$daily   = Invoke-RestMethod -Method GET -Uri $dailyUri   -Headers $headers
+
+$monthly | ConvertTo-Json -Depth 50
+$daily   | ConvertTo-Json -Depth 50
+```
+
+#### ARM の `/batch` でまとめて取得（ポータルと同じやり方）
+
+```powershell
+$subscriptionId = "2107faa2-8e88-4c5d-8124-34b8c638de70"
+$resourceGroup  = "rg-dev-rag"
+$agentName      = "rag-are"
+$apiVersion     = "2025-05-01-preview"
+
+$token = az account get-access-token --resource https://management.azure.com/ --query accessToken -o tsv
+$headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
+
+$batchUri = "https://management.azure.com/batch?api-version=2015-11-01"
+
+$body = @{
+  requests = @(
+    @{
+      httpMethod = "GET"
+      requestHeaderDetails = @{ commandName = "getMonthlyUsage" }
+      url = "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.App/agents/$agentName/usages?api-version=$apiVersion"
+    }
+    @{
+      httpMethod = "GET"
+      requestHeaderDetails = @{ commandName = "getDailyUsages" }
+      url = "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.App/agents/$agentName/dailyusages?api-version=$apiVersion"
+    }
+  )
+} | ConvertTo-Json -Depth 10
+
+$resp = Invoke-RestMethod -Method POST -Uri $batchUri -Headers $headers -Body $body
+$resp | ConvertTo-Json -Depth 50
+```
+
+#### `date` と `value` だけ抜き出す
+
+日次のレスポンス（例）:
+
+```json
+{
+  "date": "2026-02-23",
+  "name": { "value": "AgentUnits", "localizedValue": "Agent Units" },
+  "value": 81.85395874999999
+}
+```
+
+直接 GET の `$daily` から（`name.value == AgentUnits` で絞り込み）:
+
+```powershell
+$daily.value |
+  Where-Object { $_.name.value -eq "AgentUnits" } |
+  Select-Object -Property date, value
+```
+
+`/batch` の `$resp` から（リクエスト順で `[0]=monthly, [1]=daily` の想定）:
+
+```powershell
+$dailyFromBatch = $resp.responses[1].content
+
+$dailyFromBatch.value |
+  Where-Object { $_.name.value -eq "AgentUnits" } |
+  Select-Object -Property date, value
+```
+
+#### 日次コスト（USD）に変換する
+
+前提（重要）:
+- `dailyusages` の `name.value == "AgentUnits"` が **その日の合計AAU（Always-on + Active）** を返すのか、**Active分だけ**なのかは環境/APIの返し方で変わり得ます（`*-preview`）。
+- 迷ったら、まず「`dailyusages` の合計」と「`usages` の月次合計」が概ね一致するかで当たりを付けます。
+
+次のスクリプトは両方の解釈で日次コストを計算します（AAU 単価は East US 2 の値を入れてください）。
+
+```powershell
+# 入力: `date` と `value` を持つ配列（例: $daily2 = $daily.value | ... | Select-Object date,value）
+$daily2 = $daily.value |
+  Where-Object { $_.name.value -eq "AgentUnits" } |
+  Select-Object -Property date, value
+
+# 設定（要調整）
+$aauUnitPriceUsd = 0.10   # East US 2 の AAU 単価（USD/AAU）に置き換え
+$alwaysOnAgentCount = 1   # Always-on を有効にしているエージェント数
+$alwaysOnHoursPerDay = 24 # 24固定でOK（途中でOFFにした日は実態に合わせる）
+
+$alwaysOnAauPerDay = 4 * $alwaysOnAgentCount * $alwaysOnHoursPerDay
+
+$dailyCost = $daily2 |
+  Sort-Object date |
+  ForEach-Object {
+    $activeAau = [double]$_.value
+    $activeSeconds = $activeAau / 0.25
+
+    # 解釈A: dailyのAgentUnitsが「その日の合計AAU」
+    $totalAau_assumeDailyIsTotal = $activeAau
+    $usd_assumeDailyIsTotal = $totalAau_assumeDailyIsTotal * $aauUnitPriceUsd
+
+    # 解釈B: dailyのAgentUnitsが「Active分だけ」
+    $totalAau_assumeDailyIsActiveOnly = $alwaysOnAauPerDay + $activeAau
+    $usd_assumeDailyIsActiveOnly = $totalAau_assumeDailyIsActiveOnly * $aauUnitPriceUsd
+
+    [pscustomobject]@{
+      date = $_.date
+      activeAau = [math]::Round($activeAau, 2)
+      activeSeconds_est = [math]::Round($activeSeconds, 0)
+      alwaysOnAau_assume = $alwaysOnAauPerDay
+      usd_assumeDailyIsTotal = [math]::Round($usd_assumeDailyIsTotal, 2)
+      usd_assumeDailyIsActiveOnly = [math]::Round($usd_assumeDailyIsActiveOnly, 2)
+    }
+  }
+
+$dailyCost | Format-Table -AutoSize
+
+# 月次合計（解釈A/B それぞれ）
+$dailyCost |
+  Measure-Object -Property usd_assumeDailyIsTotal, usd_assumeDailyIsActiveOnly -Sum |
+  Select-Object -ExpandProperty Sum
+```
+
+#### Azure Workbooks に組み込んで可視化する（ARM + JSONPath）
+
+「dailyusages を取得 → AgentUnits だけ表にする → 日次コスト列を追加 → チャート化」までを Workbooks の中だけで完結できます。
+
+ポイント:
+- 「Log Analytics workspace を選べ」と出る場合は **Logs** データソースを選んでいます。ここでは **Azure Resource Manager (Preview)** を使います。
+
+##### 1) パラメータを用意する
+
+Workbooks を **Edit** モードにして、次のパラメータを追加します。
+
+- `Subscription`（Subscription picker）
+- `ResourceGroup`（Text）
+- `AgentName`（Text）
+- `ApiVersion`（Text）: `2025-05-01-preview`
+- `AauUnitPriceUsd`（Text または Number）: AAU 単価（USD/AAU）
+- `AlwaysOnAgentCount`（Text または Number）: Always-on を有効にしているエージェント数
+- `AlwaysOnHoursPerDay`（Text または Number）: `24`
+
+##### 2) ARM で dailyusages を取得し、JSONPath で表にする
+
+**Add query** でクエリを追加し、次の設定にします。
+
+- **Data source**: `Azure Resource Manager (Preview)`
+- **Http Method**: `GET`
+- **Path**:
+  - `/subscriptions/{Subscription:id}/resourceGroups/{ResourceGroup}/providers/Microsoft.App/agents/{AgentName}/dailyusages`
+- **Parameters**:
+  - `api-version`: `{ApiVersion}`
+
+次に **Result Settings** で **Result Format** を `JSON Path` にします。
+
+- **JSON Path Table**（どちらか）
+  - 推奨（AgentUnits のみに絞る）: `$.value[?(@.name.value=='AgentUnits')]`
+  - うまく絞れない場合: `$.value.[*]`
+
+Columns（例）:
+
+| Column ID | Column JSON Path |
+| --- | --- |
+| date | `$.date` |
+| metric | `$.name.value` |
+| aau | `$.value` |
+
+`metric` 列を出しておくと、AgentUnits 以外が混ざっていないか確認しやすいです。
+
+任意: **Advanced settings** でこのクエリの **名前**を `Daily AAU (raw)` のように付けておきます（次の Merge で参照しやすくするため）。
+
+##### 3) Merge で計算列（日次コスト）を追加する
+
+もう1つ **Add query** を追加して、次の設定にします。
+
+- **Data source**: `Merge`
+- **Add Merge**
+  - **Merge Type**: `Duplicate table`
+  - **Table**: さきほど名前を付けたテーブル（例: `Daily AAU (raw)`）
+
+`Run Merge` を押したあと、ツールバーの **Add new item** で「他列の値から計算する列」を追加します。
+
+計算したい列（例）:
+
+- `activeAau` = `aau`
+- `activeSeconds_est` = `activeAau / 0.25`
+- `alwaysOnAau_assume` = `4 * {AlwaysOnAgentCount} * {AlwaysOnHoursPerDay}`
+- `usd_assumeDailyIsTotal` = `activeAau * {AauUnitPriceUsd}`
+- `usd_assumeDailyIsActiveOnly` = `(activeAau + alwaysOnAau_assume) * {AauUnitPriceUsd}`
+
+補足:
+- `{...}` は Workbooks のパラメータ参照です。UI 上で数値として扱われるように、パラメータ型は `Number` が選べるなら `Number` 推奨です。
+
+##### 4) 可視化（テーブル + 時系列チャート）
+
+- テーブル: `date`, `activeAau`, `usd_assumeDailyIsTotal`, `usd_assumeDailyIsActiveOnly` を表示
+- チャート: Visualization を **Time chart** にして、X 軸を `date`、Y 軸を `usd_assumeDailyIsTotal`（または `usd_assumeDailyIsActiveOnly`）に設定
+
+##### 5) 検算（任意）
+
+迷ったら、別クエリで `usages`（月次合計）も取得しておき、
+`dailyusages(AgentUnits)` の合計と概ね一致するかで解釈A/Bの当たりを付けます。
+
+- Path: `/subscriptions/{Subscription:id}/resourceGroups/{ResourceGroup}/providers/Microsoft.App/agents/{AgentName}/usages`
+- Parameters: `api-version={ApiVersion}`
 
 ### SubAgent の設計方法（他 MS AI ドキュメントの原則を援用）
 

@@ -1,0 +1,366 @@
+{
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json",
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# SRE Agent AAU (dailyusages)\n\nこの Workbook は Azure Resource Manager (ARM) を直接呼び出し、**AgentUnits** をシンプルなテーブル（date/value）として抽出します。\n\n- データ ソース: **ARM** (queryType 12)\n- エンドポイント: `Microsoft.App/agents/<name>/dailyusages`（プレビュー API バージョン）\n\n下の **サブスクリプション / リソース グループ / エージェント / リージョン** を選択してから、クエリを実行してください。"
+      },
+      "name": "text - 0"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "style": "above",
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources",
+        "crossComponentResources": [
+          "value::all"
+        ],
+        "parameters": [
+          {
+            "id": "0a0d1df4-48f6-4c1e-8c76-0b1ea3b132f5",
+            "version": "KqlParameterItem/1.0",
+            "name": "SubscriptionId",
+            "label": "サブスクリプション",
+            "type": 2,
+            "isRequired": true,
+            "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions'\n| project value=subscriptionId, label=name\n| order by label asc\n| extend selected=row_number()==1",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          {
+            "id": "7db0a80d-0e6b-44aa-bd62-3ff777b675cf",
+            "version": "KqlParameterItem/1.0",
+            "name": "ResourceGroup",
+            "label": "リソース グループ",
+            "type": 2,
+            "isRequired": true,
+            "query": "resources\n| where subscriptionId == '{SubscriptionId}'\n| summarize by resourceGroup\n| order by tolower(resourceGroup) asc\n| extend selected=row_number()==1\n| project value=resourceGroup, label=resourceGroup, selected",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          {
+            "id": "c6e2a4ae-62ea-4bbb-8750-400514f54600",
+            "version": "KqlParameterItem/1.0",
+            "name": "AgentName",
+            "label": "エージェント名",
+            "type": 2,
+            "isRequired": true,
+            "query": "resources\n| where type =~ 'microsoft.app/agents'\n| where subscriptionId == '{SubscriptionId}'\n| where resourceGroup == '{ResourceGroup}'\n| project value=name, label=name\n| order by label asc\n| extend selected=row_number()==1",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          {
+            "id": "c30f1d39-7d9f-4f46-9d19-a8c401d5dd2f",
+            "version": "KqlParameterItem/1.0",
+            "name": "Region",
+            "label": "リージョン",
+            "type": 2,
+            "isRequired": true,
+            "value": "japaneast",
+            "jsonData": "[\r\n  {\"label\":\"japaneast\",\"value\":\"japaneast\",\"selected\":true},\r\n  {\"label\":\"japanwest\",\"value\":\"japanwest\"},\r\n  {\"label\":\"eastus\",\"value\":\"eastus\"},\r\n  {\"label\":\"eastus2\",\"value\":\"eastus2\"},\r\n  {\"label\":\"westus2\",\"value\":\"westus2\"},\r\n  {\"label\":\"westeurope\",\"value\":\"westeurope\"},\r\n  {\"label\":\"northeurope\",\"value\":\"northeurope\"},\r\n  {\"label\":\"southeastasia\",\"value\":\"southeastasia\"}\r\n]"
+          },
+          {
+            "id": "b89bcf6b-216b-492c-a088-bc2bd3f3b5c6",
+            "version": "KqlParameterItem/1.0",
+            "name": "ApiVersion",
+            "label": "API バージョン",
+            "type": 1,
+            "isRequired": true,
+            "value": "2025-05-01-preview"
+          },
+          {
+            "id": "2f37f66d-a341-4fc5-9aa1-e8af7a1809d6",
+            "version": "KqlParameterItem/1.0",
+            "name": "ActiveUnitPriceUsdPerAAUHour",
+            "label": "Active 単価 (USD / AAU-時間)",
+            "type": 1,
+            "isRequired": true,
+            "isHiddenWhenLocked": true,
+            "criteriaData": [
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "japaneast",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "japanwest",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "eastus",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "eastus2",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "westus2",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "westeurope",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "northeurope",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "southeastasia",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "operator": "Default",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              }
+            ]
+          },
+          {
+            "id": "d6f2a2bf-3ddc-48d8-a704-615a9871cc50",
+            "version": "KqlParameterItem/1.0",
+            "name": "AlwaysOnUnitPriceUsdPerAAUHour",
+            "label": "Always-on 単価 (USD / AAU-時間)",
+            "type": 1,
+            "isRequired": true,
+            "isHiddenWhenLocked": true,
+            "criteriaData": [
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "japaneast",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "japanwest",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "eastus",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "eastus2",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "westus2",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "westeurope",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "northeurope",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "leftOperand": "Region",
+                  "operator": "==",
+                  "rightValType": "static",
+                  "rightVal": "southeastasia",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              },
+              {
+                "criteriaContext": {
+                  "operator": "Default",
+                  "resultValType": "static",
+                  "resultVal": "0.00"
+                }
+              }
+            ]
+          },
+          {
+            "id": "bd780aac-d56a-40d7-9072-1935d86dcbec",
+            "version": "KqlParameterItem/1.0",
+            "name": "AlwaysOnAAUPerHour",
+            "label": "Always-on AAU / 時間",
+            "type": 1,
+            "isRequired": true,
+            "value": "4"
+          }
+        ]
+      },
+      "name": "parameters - 0"
+    },
+    {
+      "type": 1,
+      "content": {
+          "json": "**選択中リージョン**: {Region}\n\n- Active 単価 (USD / AAU-時間): **{ActiveUnitPriceUsdPerAAUHour}**\n- Always-on 単価 (USD / AAU-時間): **{AlwaysOnUnitPriceUsdPerAAUHour}**\n\n> ※リージョン→単価の対応は、非表示パラメータの `criteriaData` で定義しています。0.00 を実際の単価に置き換えてください。"
+      },
+      "name": "text - 1"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+          "title": "dailyusages (AgentUnits のみ)",
+        "queryType": 12,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "table",
+        "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":null,\"headers\":[],\"method\":\"GET\",\"path\":\"/subscriptions/{SubscriptionId}/resourceGroups/{ResourceGroup}/providers/Microsoft.App/agents/{AgentName}/dailyusages\",\"urlParams\":[{\"key\":\"api-version\",\"value\":\"{ApiVersion}\"}],\"batchDisabled\":true,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.value[?(@.name.value=='AgentUnits')]\",\"columns\":[{\"path\":\"$.date\",\"columnid\":\"date\",\"columnType\":\"datetime\"},{\"path\":\"$.value\",\"columnid\":\"aau\",\"columnType\":\"double\"}]}}]}"
+      },
+      "name": "query - 0"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+          "title": "日次コスト (Active + Always-on)",
+        "queryType": 7,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "date",
+          "yAxis": [
+            "costUsdActive",
+            "costUsdAlwaysOn"
+          ],
+          "showLegend": true,
+          "seriesLabelSettings": [
+            {
+              "seriesName": "costUsdActive",
+                "label": "Active"
+            },
+            {
+              "seriesName": "costUsdAlwaysOn",
+                "label": "Always-on"
+            }
+          ]
+        },
+        "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"b377c721-29e9-4a9a-a7c6-6870d50b9648\",\"mergeType\":\"table\",\"leftTable\":\"query - 0\"}],\"projectRename\":[{\"originalName\":\"[query - 0].date\",\"mergedName\":\"date\",\"fromId\":\"b377c721-29e9-4a9a-a7c6-6870d50b9648\"},{\"originalName\":\"[query - 0].aau\",\"mergedName\":\"aau\",\"fromId\":\"b377c721-29e9-4a9a-a7c6-6870d50b9648\"},{\"originalName\":\"[Added column]\",\"mergedName\":\"costUsdActive\",\"fromId\":null,\"isNewItem\":true,\"newItemData\":[{\"criteriaContext\":{\"operator\":\"Default\",\"rightValType\":\"column\",\"resultValType\":\"expression\",\"resultVal\":\"[\\\"aau\\\"]*{ActiveUnitPriceUsdPerAAUHour}\"}}]},{\"originalName\":\"[Added column]\",\"mergedName\":\"costUsdAlwaysOn\",\"fromId\":null,\"isNewItem\":true,\"newItemData\":[{\"criteriaContext\":{\"operator\":\"Default\",\"rightValType\":\"column\",\"resultValType\":\"expression\",\"resultVal\":\"{AlwaysOnAAUPerHour}*24*{AlwaysOnUnitPriceUsdPerAAUHour}\"}}]}]}"
+      },
+      "name": "query - 1"
+    }
+  ]
+}
