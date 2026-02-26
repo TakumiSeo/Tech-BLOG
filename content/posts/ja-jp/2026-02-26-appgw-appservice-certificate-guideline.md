@@ -45,19 +45,23 @@ PDFの構成イメージは、概ね次の要素で成り立っています。
 
 ```mermaid
 flowchart LR
-  U[Client / Browser] -->|Public DNS: demo.example.com| AG[Application Gateway (WAF)]
-  AG -->|HTTPS 443 (Host name preserved)| AS[App Service (Web App)]
-  AS -->|Inbound| PE[Private Endpoint]
-  KV[Key Vault (cert secret)] -->|polled by MI| AG
-  ASC[App Service Certificate] -->|stored as secret| KV
+  U["Client / Browser"];
+  AS["App Service (Web App)"];
+  ASC["App Service Certificate"];
+  KV["Key Vault (cert secret)"];
 
-  subgraph VNet[Virtual Network]
-    AG
-    PE
-    PDNS[Private DNS zone (split-horizon)]
-  end
+  subgraph VNet["Virtual Network"]
+    AG["Application Gateway (WAF)"];
+    PE["Private Endpoint"];
+    PDNS["Private DNS zone (split-horizon)"];
+  end;
 
-  PDNS -."demo.example.com -> Private IP".-> PE
+  U -->|PublicDNS:demo.example.com| AG;
+  AG -->|HTTPS:443 HostPreserved| AS;
+  AS -->|Inbound| PE;
+  ASC -->|stored_as_secret| KV;
+  KV -->|polled_by_MI| AG;
+  PDNS -.->|demo.example.com->PrivateIP| PE;
 ```
 
 ---
@@ -226,15 +230,15 @@ PDFの「設定の概要」は大きく4ブロックです。
 
 ```mermaid
 flowchart TB
-  subgraph Internet[外部 (Internet)]
-    PUB[Public DNS zone]
-    PUB -->|demo.example.com -> AppGW Public IP| AGPIP[AppGW Public IP]
-  end
+  subgraph Internet["外部 (Internet)"]
+    PUB["Public DNS zone"];
+    PUB -->|demo.example.com -> AppGW Public IP| AGPIP["AppGW Public IP"];
+  end;
 
-  subgraph InVNet[VNet 内 (内部)]
-    PRV[Private DNS zone]
-    PRV -->|demo.example.com -> Private Endpoint IP| PEIP[Private Endpoint IP]
-  end
+  subgraph InVNet["VNet 内 (内部)"]
+    PRV["Private DNS zone"];
+    PRV -->|demo.example.com -> Private Endpoint IP| PEIP["Private Endpoint IP"];
+  end;
 ```
 
 運用メモ（PDFの注意点）
