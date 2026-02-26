@@ -1,14 +1,14 @@
-Title: Application Gateway + App Service の証明書/Easy Auth/DNS（PDF要約と検証）
+Title: Application Gateway + App Service の証明書/Easy Auth/DNS 設計メモ（Microsoft Learn 参照）
 Date: 2026-02-26
 Slug: appgw-appservice-certificate-guideline
 Lang: ja-jp
 Category: notebook
 Tags: azure, application-gateway, app-service, key-vault, certificate, dns, entra-id
-Summary: 「App Service 証明書を Application Gateway と App Service の両方で使う」構成を、ホスト名保持/Easy Auth/正常性プローブ/DNS まで含めて手順化したメモ（Microsoft Learn で要点を検証）。
+Summary: 「App Service 証明書を Application Gateway と App Service の両方で使う」構成を、ホスト名保持/Easy Auth/正常性プローブ/DNS まで含めて手順化したメモ（Microsoft Learn 参照）。
 
 
-本稿は、添付PDF「20251107 ニコン様 AppGW App Service 証明書に関して」の内容を、実装・運用で迷いやすいポイント（証明書、ホスト名、Easy Auth、正常性プローブ、DNS）に沿って整理したものです。
-あわせて、PDF内の重要主張について **Microsoft Learn** の記述と突き合わせ、妥当性を確認しています。
+本稿は、Application Gateway + App Service で「カスタムドメイン + 証明書 + Easy Auth + Private Endpoint」を同時に成立させるための設計メモです。
+実装・運用で迷いやすいポイント（証明書、ホスト名、Easy Auth、正常性プローブ、DNS）に沿って整理し、必要箇所は **Microsoft Learn** の記述も参照します。
 
 ---
 
@@ -24,9 +24,9 @@ Summary: 「App Service 証明書を Application Gateway と App Service の両�
 
 ---
 
-## 2. 想定アーキテクチャ（PDFの図を文章化）
+## 2. 想定アーキテクチャ（全体像）
 
-PDFの構成イメージは、概ね次の要素で成り立っています。
+この構成は、概ね次の要素で成り立っています。
 
 - 入口
   - パブリックDNS（外部向け）: カスタムドメイン → Application Gateway の Public IP
@@ -68,7 +68,7 @@ flowchart LR
 
 ## 3. Application Gateway のコンポーネント整理（何を設定するか）
 
-PDFでは、Application Gateway の必須コンポーネントとして以下を挙げています。
+Application Gateway 側で「最低限どこを触るか」を整理すると、必須コンポーネントは以下です。
 
 - フロントエンド IP
 - リスナー（HTTPS/443）
@@ -81,7 +81,7 @@ PDFでは、Application Gateway の必須コンポーネントとして以下を
 
 ---
 
-## 4. 設計の重要ポイント（PDFの「ポイント」）
+## 4. 設計の重要ポイント
 
 ### 4.1 ポイント1: ホスト名の保持（Host name preservation）
 
@@ -107,7 +107,7 @@ Entra ID 側に登録したリダイレクトURLと不一致でログイン失�
   - **専用の Health Check エンドポイント（例: `/healthz`）を用意**し
   - **そのパスを Easy Auth の認証対象から除外**する
 
-PDFでは、`authsettingsV2` を `az rest` で取得→ `auth-settings.json` を編集→ PUT で反映、という手順例が載っています。
+Easy Auth の設定は `authsettingsV2` を `az rest` で取得→ `auth-settings.json` を編集→ PUT で反映、という形で確認・反映できます。
 併せて、リダイレクトFQDNの整合のために `httpSettings.forwardProxy` を
 `Custom + X-ORIGINAL-HOST` にする例が提示されています。
 
@@ -147,15 +147,15 @@ sequenceDiagram
 
 ---
 
-## 5. 手順まとめ（PDFの手順をそのまま実行可能な形に整理）
+## 5. 手順まとめ（実行可能な形に整理）
 
-PDFの「設定の概要」は大きく4ブロックです。
+設定作業は大きく4ブロックです。
 
 ### 5.1 App Service 証明書の作成
 
 - App Service 証明書（購入/作成）
 - Key Vault に格納
-- ドメイン検証（PDFでは手動検証、DNS TXT を推奨）
+- ドメイン検証（可能なら DNS TXT を推奨）
 - 自動更新（制約がなければ有効推奨）
 
 補足（検証で重要）
@@ -170,7 +170,7 @@ PDFの「設定の概要」は大きく4ブロックです。
 2) カスタムドメイン登録
 - Web App → カスタム ドメイン
 - ドメイン検証
-  - PDFでは段階的検証として CNAME も追加しておく旨が記載
+  - 必要に応じて CNAME も併用
 
 3) 証明書バインド
 - 登録したカスタムドメインに、証明書をバインド
@@ -183,8 +183,8 @@ PDFの「設定の概要」は大きく4ブロックです。
 
 1) HTTPS リスナー
 - HTTPS/443 のリスナーを作り、証明書を設定
-- PDFでは「ポータル既定だと App Service 証明書が表示されない」前提で、
-  Application Gateway の managed identity 付与と、Key Vault シークレット読み取り許可が必要と説明
+- ポータルの操作だけだと証明書選択が詰まりやすいので、
+  Application Gateway の managed identity 付与と、Key Vault シークレット読み取り許可までセットで考えます
 
 補足（ここが一番詰まりやすい）
 - Application Gateway が Key Vault から証明書を読むには、
@@ -241,7 +241,7 @@ flowchart TB
   end;
 ```
 
-運用メモ（PDFの注意点）
+運用メモ（注意点）
 - Application Gateway は DNS 結果をキャッシュするため、
   バックエンドをFQDNで構成していて **後から DNS を更新 / Private DNS をリンク**した場合、
   stop/start による再起動が必要になることがある
@@ -269,9 +269,9 @@ sequenceDiagram
 
 ---
 
-## 6. Microsoft Learn で確認できた「正しい／補足が必要」ポイント
+## 6. Microsoft Learn で明示されている補足ポイント
 
-PDFの記述は概ね妥当でした。特に重要な補足（Learn 側で明示されている事項）をまとめます。
+特に重要な補足（Learn 側で明示されている事項）をまとめます。
 
 - Application Gateway の Key Vault 証明書連携は **v2 SKU** が前提
 - Key Vault 参照の証明書は、PFX（秘密鍵込み）で、Key Vault 上で **Enabled** 状態が必要
