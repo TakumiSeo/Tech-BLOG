@@ -147,6 +147,80 @@ sequenceDiagram
 
 ---
 
+## 4.3 Easy Auth の除外パス設定（GET→編集→PUT）
+
+Application Gateway の正常性プローブ用に `/healthz` のような「認証なしで 200 を返すパス」を用意し、
+Easy Auth 側で **除外パス（素通し）**として登録します。
+
+ここでは、`az rest` を使って **authsettingsV2 を JSON として取り出し → 編集 → PUT で戻す** 例をまとめます。
+
+前提
+- Azure CLI にログイン済み（例: `az login`）
+- 対象 Web App のリソース ID が分かっている
+  - 例: `/subscriptions/<subId>/resourceGroups/<rg>/providers/Microsoft.Web/sites/<siteName>`
+
+### 4.3.1 まず Web App の Auth 設定を取り出す（GET）
+
+```bash
+# 例: PowerShell でも同様に実行できます
+WEBAPP_ID="/subscriptions/<subId>/resourceGroups/<rg>/providers/Microsoft.Web/sites/<siteName>"
+
+az rest \
+  --method GET \
+  --uri "https://management.azure.com${WEBAPP_ID}/config/authsettingsV2?api-version=2022-03-01" \
+  --output json > auth-settings.json
+```
+
+### 4.3.2 Easy Auth の設定を書き換える（JSON編集ポイント）
+
+`auth-settings.json` の中で、少なくとも次の2点を編集します。
+
+1) `globalValidation.excludedPaths` に素通しパス（例: `/healthz`）を追加
+2) `httpSettings.forwardProxy` を `Custom` + `X-ORIGINAL-HOST` にする
+
+例（必要部分のイメージ）
+
+```json
+{
+  "globalValidation": {
+    "excludedPaths": [
+      "/healthz"
+    ],
+    "redirectToProvider": "azureActiveDirectory",
+    "requireAuthentication": true,
+    "unauthenticatedClientAction": "RedirectToLoginPage"
+  },
+  "httpSettings": {
+    "requireHttps": true,
+    "forwardProxy": {
+      "convention": "Custom",
+      "customHostHeaderName": "X-ORIGINAL-HOST"
+    }
+  }
+}
+```
+
+補足
+- Windows ベースのコンテナ（App Service on Windows containers）では、既定ページの `hostingstart.html` を除外したいケースがあります。
+  その場合は `excludedPaths` に `/hostingstart.html` を追加するのも 1 つの方法です。
+
+### 4.3.3 変更した JSON を反映する（PUT）
+
+```bash
+WEBAPP_ID="/subscriptions/<subId>/resourceGroups/<rg>/providers/Microsoft.Web/sites/<siteName>"
+
+az rest \
+  --method PUT \
+  --uri "https://management.azure.com${WEBAPP_ID}/config/authsettingsV2?api-version=2022-03-01" \
+  --headers "Content-Type=application/json" \
+  --body @auth-settings.json
+```
+
+PUT 後は、
+- `/healthz` が未認証で 200 を返すこと
+- Application Gateway のプローブが Healthy になること
+を確認します。
+
 ## 5. 手順まとめ（実行可能な形に整理）
 
 設定作業は大きく4ブロックです。
