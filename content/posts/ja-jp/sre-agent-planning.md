@@ -1481,17 +1481,114 @@ flowchart LR
 
 #### 事前準備（Azure portal での設定 / 事実＋提案を分離）
 
+ここは「このデモをそのまま再現できる」ことを優先し、作るリソース・リージョン・SKU（=プラン）・入力値を明示します。
+
+##### 0) このデモの“前提”を先に固定する（重要）
+
+- **Azure SRE Agent は Preview のため、エージェント自体を作れるリージョンが限られます**（例: East US 2）。[10A-25]
+- SRE Agent 作成には、RBAC のロール割り当て作成権限が必要です（`Microsoft.Authorization/roleAssignments/write` を持つロール）。[10A-26]
+- Subscription 側の前提として、**`Microsoft.App` リソース プロバイダーが登録済み**である必要があります（FAQ に記載）。[10A-28]
+- 企業ネットワーク等でポータルが不安定な場合は、`*.azuresre.ai` の allowlist が必要になるケースがあります。[11-1]
+- 課金は SKU ではなく **AAU ベース**で、作成直後からの監視（Always-on flow）と、チャット/自動実行（Active flow）で区別して説明されています。[10A-27]
+
+このガイドの既定値（そのままコピペ用）:
+
+| 項目 | 既定値（例） | 理由 |
+| --- | --- | --- |
+| リージョン | **East US 2** | SRE Agent の作成リージョンとして推奨例がある[10A-26] |
+| アプリ用 Resource group | `rg-sre-demo-a` | App/Cosmos/監視をまとめる |
+| Agent 用 Resource group | `rg-sre-agent` | Agent はアプリRGと独立して作る説明がある[10A-26] |
+| App Service プラン | **Linux / Basic (B1)** | 低コストでデモを回しやすい（提案） |
+| Cosmos DB スループット | **Manual 400 RU/s**（最小付近） | 429/ホットパーティション再現がしやすい（提案） |
+| Container partition key | `/pk` | デモで pk を固定/分散しやすい（提案） |
+
+> 注意: 価格や SKU の選択は要件（負荷/可用性/運用）で変わります。ここは“壊して観測する”デモの最小構成です。
+
+##### 1) 先に「2つのリソース グループ」を作る（提案）
+
+- `rg-sre-demo-a`（アプリ・Cosmos・監視）
+- `rg-sre-agent`（SRE Agent 本体のリソース）
+
+ポイント:
+- SRE Agent 作成の手順では、**Agent 用の新しい Resource group を作る（アプリRGと独立）**前提で説明されています。[10A-26]
+
+（CLI で作る場合: 提案）
+
+```powershell
+# Azure CLI がログイン済みの前提
+$location = "eastus2"
+
+az group create -n rg-sre-demo-a -l $location
+az group create -n rg-sre-agent  -l $location
+
+# SRE Agent で使うリソースプロバイダー（未登録なら）
+az provider register -n Microsoft.App
+```
+
+##### 2) 監視（Log Analytics / Application Insights）を先に用意する（提案）
+
+このデモは「遅い/タイムアウト」を追うので、最初からログ/トレースが入っている状態にします。
+
+- `rg-sre-demo-a` に **Log Analytics workspace** を作成
+- 同じ `rg-sre-demo-a` に **Application Insights**（workspace-based）を作成し、上の workspace に紐づけ
+
+> 補足: 後からでも設定できますが、最初に作っておくと“本番っぽい”観測の入口になります。
+
 **A) Cosmos DB（NoSQL）を Azure portal で作る（事実）**
 1) Azure portal で **Azure Cosmos DB** を検索し、**Create** から **Azure Cosmos DB for NoSQL** を選ぶ。[10A-2]
 2) **Review + create** → **Create** → **Go to resource** でアカウントを作成する。[10A-3]
+
+（入力値の例: 提案）
+
+| 項目 | 値（例） |
+| --- | --- |
+| Resource group | `rg-sre-demo-a` |
+| Account name | `cosmos-sre-demo-a-<unique>` |
+| Region | East US 2 |
+| API | NoSQL |
+| Free tier | （任意）有効 |
+| Networking | まずは Public endpoint（全許可）で開始（検証しやすさ優先） |
 
 **B) Data Explorer で DB/Container を作る（事実）**
 1) Cosmos アカウントのメニューで **Data Explorer** を開く。[10A-4]
 2) **New Container** を選び、DB と container を作成する（partition key とスループット（Manual/Autoscale）を設定する）。[10A-5][10A-6]
 
+（入力値の例: 提案）
+
+| 項目 | 値（例） |
+| --- | --- |
+| Database id | `appdb` |
+| Container id | `items` |
+| Partition key | `/pk` |
+| Throughput | Manual / 400 RU/s |
+
 **C) App Service を Azure portal で作り、アプリをデプロイする（事実＋提案）**
 1) Azure portal で **App Services** → **+ Create > Web App** で App Service を作成する。[10A-7]
+
+（入力値の例: 提案）
+
+| 項目 | 値（例） |
+| --- | --- |
+| Resource group | `rg-sre-demo-a` |
+| Name | `app-sre-demo-a-<unique>` |
+| Publish | Code |
+| Runtime stack | Node.js 20 LTS または .NET 8 |
+| Operating System | Linux |
+| Region | East US 2 |
+| App Service Plan SKU | Basic (B1) |
+
 2) デモ用アプリは、(提案) Cosmos DB を読む/書くエンドポイント（例: `/healthz` と `/burst`）を持つように用意する。
+   - 参照（提案・公式テンプレ）: 
+     - Node.js: https://github.com/azure-samples/cosmos-db-nosql-nodejs-quickstart
+     - .NET: https://github.com/azure-samples/cosmos-db-nosql-dotnet-quickstart
+   - このデモの狙いは「App Service が遅い/タイムアウト」なので、**負荷は HTTP で App Service に入れ**、アプリ側で Cosmos DB へのアクセスを発生させる。
+   - `/healthz` は 1 回の point read など「軽い」処理、`/burst` は 1 HTTP リクエストで複数回の read/write を行える「重い」処理にしておくと、少ない負荷生成でも 429 を再現しやすい。
+
+（デプロイの最短手順: 提案）
+
+- ローカルでサンプルを動かしてから App Service に載せたい場合は、各サンプル repo の README の手順（`azd up` など）に沿うのが最短です。[10A-23][10A-24]
+- Portal 経由でいく場合は、次の Deployment Center の手順に沿って Git 連携でデプロイします。[10A-8]
+
 3) Portal の案内に沿って進めるなら、App Service の **Deployment Center** から Git リポジトリを設定してデプロイする（例: **Source: External Git** → **Repository/Branch** を指定 → **Save**）。[10A-8]
 4) デプロイ後は App Service の **Overview** で **Browse** を使い、アプリが起動することを確認する（起動に少し時間がかかることがある）。[10A-18]
 
@@ -1502,8 +1599,74 @@ flowchart LR
 4) Portal 上では connection string の値は既定で非表示で、必要に応じて **Show value** / **Show values** で表示できる。[10A-20]
 
 #### 障害の作り方（提案）
-- “429 を出す”には、(提案) 低い RU/s の container に対して短時間に集中アクセスを発生させる。
-- “ホットパーティション”を意図的に作るなら、(提案) 特定の partition key 値に偏ったリクエストを投げ続ける。
+
+目的別に「再現の作法」を分ける（提案）:
+
+**A) 429（全体スループット不足）を再現する**
+- (提案) Container のスループットを **Manual の低め**に設定し（例: 最小付近の RU/s）、短時間にアクセスを集中させる。
+- (提案) リクエストの partition key 値は **分散**させる（= ホットパーティションを起こしにくくする）。
+  - 例: `/burst?mode=spread&items=25` のように、アプリ側で pk をランダム化して複数の論理パーティションに散らす。
+
+**B) ホットパーティションを再現する**
+- (提案) リクエストの partition key 値を **固定**し、同一論理パーティションに負荷を寄せる。
+  - 例: `/burst?mode=hot&pk=hot-1&items=25` のように、常に同じ pk に対して read/write する。
+
+**C) 疑似負荷の投げ方（Windows / PowerShell 例）**
+
+> 前提: アプリに `/burst` があり、内部で複数回 Cosmos を叩く（例: `items` 回 upsert）
+
+1) まず 1 回叩いて疎通（提案）
+
+```powershell
+$baseUrl = "https://<your-app>.azurewebsites.net"
+curl.exe "$baseUrl/healthz"
+curl.exe "$baseUrl/burst?mode=hot&pk=hot-1&items=25"
+```
+
+2) “ホットパーティション”負荷（同一 pk を並列に叩く）（提案）
+
+```powershell
+$baseUrl = "https://<your-app>.azurewebsites.net"
+$seconds = 60
+$parallel = 20
+$end = (Get-Date).AddSeconds($seconds)
+
+while ((Get-Date) -lt $end) {
+  1..$parallel | ForEach-Object {
+    Start-Job -ScriptBlock {
+      param($u)
+      curl.exe -s $u > $null
+    } -ArgumentList "$baseUrl/burst?mode=hot&pk=hot-1&items=25" | Out-Null
+  }
+  Get-Job | Wait-Job | Out-Null
+  Get-Job | Remove-Job | Out-Null
+}
+```
+
+3) “全体スループット不足”負荷（pk を分散して叩く）（提案）
+
+```powershell
+$baseUrl = "https://<your-app>.azurewebsites.net"
+$seconds = 60
+$parallel = 20
+$end = (Get-Date).AddSeconds($seconds)
+
+while ((Get-Date) -lt $end) {
+  1..$parallel | ForEach-Object {
+    $pk = "pk-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
+    Start-Job -ScriptBlock {
+      param($u)
+      curl.exe -s $u > $null
+    } -ArgumentList "$baseUrl/burst?mode=spread&pk=$pk&items=25" | Out-Null
+  }
+  Get-Job | Wait-Job | Out-Null
+  Get-Job | Remove-Job | Out-Null
+}
+```
+
+期待する“見え方”（提案）:
+- ホットパーティション: **Normalized RU Consumption (%) By PartitionKeyRangeID** が一部に偏り、429 が出やすい。
+- 全体スループット不足: 429 は出るが、PartitionKeyRangeID の偏りは相対的に小さくなりやすい（全体の RU 上限で詰まっている）。
 
 #### 切り分け（Azure portal の手順 / 事実）
 
@@ -1545,6 +1708,14 @@ flowchart TD
 - セットアップは「SRE Agent を作成→Cosmos リソースを追加→Preview Upgrade Channel を有効化→会話開始」という流れで説明されている。[10A-17]
 - (提案) チャットの型としては、`My App Service is slow. Check Cosmos throttling/hot partitions.` のように「症状→疑う観点」を明示して投げる。
 
+（作成手順の補足: 事実＋提案）
+
+1) Azure portal で **Azure SRE Agent** を開き、**Create** を選ぶ。[10A-26]
+2) **Agent details** で Agent のリージョンに **East US 2** を選ぶ（例）。[10A-26]
+3) **Choose/Select resource groups** で、監視対象として `rg-sre-demo-a` を選ぶ（チェックボックスで選択）。[10A-26]
+4) 作成後は、Cosmos のページ側の案内に従い、SRE Agent に Cosmos リソースを追加し、Preview Upgrade Channel を有効化する。[10A-17]
+5) まずは Reader mode（読み取り中心）で「何が起きているか」を聞く運用が安全。[10A-28]
+
 #### 参考（デモA）
 - [10A-1] [https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent](https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent) — “AI-powered diagnostic tool … simplify troubleshooting”
 - [10A-2] [https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account](https://learn.microsoft.com/en-us/azure/cosmos-db/quickstart-portal#create-an-account) — “select **Create**, and then **Azure Cosmos DB for NoSQL**.”
@@ -1568,6 +1739,12 @@ flowchart TD
 - [10A-20] [https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings](https://learn.microsoft.com/en-us/azure/app-service/configure-common#configure-connection-strings) — “values for connection strings are hidden … select **Show value** … **Show values**.”
 - [10A-21] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests) — “There's a system-reserved RU limit … increasing … RU/s … has no effect”
 - [10A-22] [https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests](https://learn.microsoft.com/en-us/azure/cosmos-db/troubleshoot-request-rate-too-large#rate-limiting-on-metadata-requests) — “Navigate to **Insights** > **System** > **Metadata Requests By Status Code**.”
+- [10A-23] https://github.com/azure-samples/cosmos-db-nosql-nodejs-quickstart
+- [10A-24] https://github.com/azure-samples/cosmos-db-nosql-dotnet-quickstart
+- [10A-25] [https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent#limitations-of-azure-sre-agent](https://learn.microsoft.com/en-us/azure/cosmos-db/site-reliability-engineering-agent#limitations-of-azure-sre-agent) — “preview is limited to … regions”
+- [10A-26] [https://learn.microsoft.com/en-us/azure/sre-agent/usage#create-an-agent](https://learn.microsoft.com/en-us/azure/sre-agent/usage#create-an-agent) — “Create an agent … create a new resource group … Region: East US 2”
+- [10A-27] [https://learn.microsoft.com/en-us/azure/sre-agent/billing](https://learn.microsoft.com/en-us/azure/sre-agent/billing) — “Always-on flow … Active flow … affects how you're billed”
+- [10A-28] [https://learn.microsoft.com/en-us/azure/sre-agent/faq](https://learn.microsoft.com/en-us/azure/sre-agent/faq) — “starts in Reader mode by default”
 
 ---
 
