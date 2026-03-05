@@ -58,76 +58,68 @@ Summary: お客様提示の「案1〜3」について、Azure Monitor / Azure Mo
 
 ```mermaid
 flowchart TB
-	%% ========= Workloads =========
-	subgraph App[Application]
-		APP[Application]
-	end
+  subgraph Application
+    APP[Application]
+  end
 
-	subgraph AKS[AKS]
-		AKS_NODE[AKS workloads]
-		AKS_CPL[AKS control plane / resource logs]
-	end
+  subgraph AKS
+    AKS_WORKLOADS[AKS workloads]
+    AKS_CONTROL_PLANE[AKS control plane logs]
+  end
 
-	subgraph AzureMon[Azure Monitor]
-		AMW[Azure Monitor workspace<br/>(Prometheus metrics)]
-		LA[Log Analytics workspace<br/>(Azure Monitor Logs)]
-		AMM[Azure Monitor Metrics<br/>(platform metrics)]
-	end
+  subgraph Azure_Monitor
+    AMW[Azure Monitor workspace (Prometheus metrics)]
+    LA[Log Analytics workspace (Logs)]
+    AMM[Azure Monitor Metrics (platform metrics)]
+  end
 
-	subgraph AzureRes[Azure resources]
-		AZR[Storage / Network / other Azure resources]
-	end
+  subgraph Azure_Resources
+    AZR[Storage / Network / other Azure resources]
+  end
 
-	NR[New Relic<br/>(APM)]
+  NR[New Relic (APM)]
 
-	%% ========= Data flows =========
-	APP -->|OTEL| NR
-
-	AKS_NODE -->|Managed Prometheus| AMW
-	AKS_NODE -->|Container Insights<br/>(Logs & Events only)| LA
-	AKS_CPL -->|Diagnostic settings<br/>(control plane logs)| LA
-
-	AZR -->|Platform metrics| AMM
-	AZR -->|Diagnostic settings<br/>(resource logs)| LA
+  APP -->|OTEL| NR
+  AKS_WORKLOADS -->|Managed Prometheus| AMW
+  AKS_WORKLOADS -->|Container Insights (Logs & Events only)| LA
+  AKS_CONTROL_PLANE -->|Diagnostic settings| LA
+  AZR -->|Platform metrics| AMM
+  AZR -->|Diagnostic settings (resource logs)| LA
 ```
 
 ### 図: 案1〜3のデータフロー（概念図）
 
 ```mermaid
 flowchart TB
-	%% ========== Workloads / sources ==========
-	subgraph Workloads[Workloads]
-		AKSWorkload[AKS workloads<br/>(apps / containers)]
-		AKSResource[AKS resource<br/>(control plane/resource logs)]
-		AZR[Other Azure resources<br/>(Storage / Network / etc.)]
-	end
+  subgraph Sources
+    AKS_WORKLOADS[AKS workloads]
+    AKS_RESOURCE_LOGS[AKS resource logs]
+    AZ_RESOURCES[Other Azure resources]
+  end
 
-	%% ========== Azure Monitor data stores ==========
-	subgraph AzMonitor[Azure Monitor]
-		AM_Metrics[Platform metrics<br/>(standard metrics)]
-		LA[Azure Monitor Logs<br/>(Log Analytics workspace)]
-		AMW[Azure Monitor workspace<br/>(Prometheus metrics)]
-	end
+  subgraph Azure_Monitor
+    AM_METRICS[Platform metrics]
+    LA[Log Analytics workspace (Logs)]
+    AMW[Azure Monitor workspace (Prometheus metrics)]
+  end
 
-	AMG[Azure Managed Grafana<br/>(visualization)]
-	NR[New Relic<br/>(external)]
+  AMG[Azure Managed Grafana]
+  NR[New Relic]
 
-	%% ========== Ingestion / export paths ==========
-	AZR -->|Platform metrics (built-in)| AM_Metrics
+  %% Ingestion / export
+  AZ_RESOURCES -->|Platform metrics| AM_METRICS
+  AKS_WORKLOADS -->|Container Insights| LA
+  AKS_RESOURCE_LOGS -->|Diagnostic settings| LA
+  AKS_WORKLOADS -->|Managed Prometheus| AMW
 
-	AKSWorkload -->|Container insights<br/>(logs / events)| LA
-	AKSResource -->|Diagnostic settings<br/>(resource logs export)| LA
+  %% Visualization (Grafana queries)
+  AMG -->|Query| AM_METRICS
+  AMG -->|Query| LA
+  AMG -->|Query| AMW
 
-	AKSWorkload -->|Azure Monitor managed service<br/>for Prometheus (scrape)| AMW
-
-	%% ========== Visualization (Grafana queries data sources) ==========
-	AMG -->|Azure Monitor data source<br/>(query metrics/logs)| AM_Metrics
-	AMG -->|Azure Monitor data source<br/>(query logs)| LA
-	AMG -->|Azure Monitor workspace data source<br/>(Prometheus)| AMW
-
-	%% ========== New Relic paths ==========
-	AKSWorkload -->|OTEL / app telemetry| NR
-	AZR -.->|Diagnostic settings<br/>(partner solution destination)| NR
+  %% New Relic paths
+  AKS_WORKLOADS -->|OTEL| NR
+  AZ_RESOURCES -.->|Diagnostic settings (partner)| NR
 ```
 
 接続の論点（チェックリスト・抜粋）
