@@ -54,6 +54,43 @@ Summary: お客様提示の「案1〜3」について、Azure Monitor / Azure Mo
 
 ここでは「お客様の図（提案1〜3）で描かれている接続」を前提に、**その接続が Azure の機能として成立するか**、成立させる際の注意点を整理します。
 
+### 図: 推奨監視アーキテクチャ（例）
+
+```mermaid
+flowchart TB
+	%% ========= Workloads =========
+	subgraph App[Application]
+		APP[Application]
+	end
+
+	subgraph AKS[AKS]
+		AKS_NODE[AKS workloads]
+		AKS_CPL[AKS control plane / resource logs]
+	end
+
+	subgraph AzureMon[Azure Monitor]
+		AMW[Azure Monitor workspace<br/>(Prometheus metrics)]
+		LA[Log Analytics workspace<br/>(Azure Monitor Logs)]
+		AMM[Azure Monitor Metrics<br/>(platform metrics)]
+	end
+
+	subgraph AzureRes[Azure resources]
+		AZR[Storage / Network / other Azure resources]
+	end
+
+	NR[New Relic<br/>(APM)]
+
+	%% ========= Data flows =========
+	APP -->|OTEL| NR
+
+	AKS_NODE -->|Managed Prometheus| AMW
+	AKS_NODE -->|Container Insights<br/>(Logs & Events only)| LA
+	AKS_CPL -->|Diagnostic settings<br/>(control plane logs)| LA
+
+	AZR -->|Platform metrics| AMM
+	AZR -->|Diagnostic settings<br/>(resource logs)| LA
+```
+
 ### 図: 案1〜3のデータフロー（概念図）
 
 ```mermaid
