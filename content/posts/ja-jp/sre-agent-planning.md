@@ -1231,6 +1231,8 @@ flowchart TD
   Diag -->|証跡収集完了| Main
   Main -->|Issue 作成が必要| GH["GitHubIssueAgent\n(Issue 作成)"]
   GH -->|Issue 作成完了| Main
+  Main -->|Teams 通知が必要| Teams["TeamsNotificationAgent\n(Teams チャネル投稿)"]
+  Teams -->|通知完了| Main
   Main --> Done["完了報告"]
 ```
 
@@ -1242,7 +1244,7 @@ flowchart TD
 |---------|------|
 | **Instructions** | インシデントを受信し、状況を整理して適切なサブエージェントにハンドオフする統括役 |
 | **Tools** | - SearchMemory（Memory system へのアクセス）<br>- 基本的な監視ツール（必要に応じて） |
-| **Handoff subagents** | - DiagnosticsAgent<br>- GitHubIssueAgent |
+| **Handoff subagents** | - DiagnosticsAgent<br>- GitHubIssueAgent<br>- TeamsNotificationAgent |
 
 Instructions の例:
 
@@ -1258,6 +1260,7 @@ Instructions の例:
 ハンドオフの判断ロジック:
 - ログ/メトリクスの証跡が必要な場合 → DiagnosticsAgent にハンドオフ
 - GitHub Issue の作成が必要な場合 → GitHubIssueAgent にハンドオフ
+- Teams チャネルへの通知が必要な場合 → TeamsNotificationAgent にハンドオフ
 
 境界条件:
 - 本番環境への変更は実行しない
@@ -1411,6 +1414,77 @@ Main Agent から証跡がハンドオフされたとき:
 - ハンドバック先: Main Agent
 ```
 
+**4) TeamsNotificationAgent (Subagent) の設定**
+
+ポータルでの作成: **[Builder > Subagent builder] → [Create > Subagent]**
+
+| 設定項目 | 内容 |
+|---------|------|
+| **Subagent name** | `teams-notification-agent` |
+| **Instructions** | Teams チャネルへのインシデント通知専門エージェント |
+| **Handoff instructions** | Main から受け取るインシデント情報・証跡・Issue URL をもとに Teams に投稿 |
+| **Tools** | - Teams（通信コネクタ経由、チャネル投稿）|
+| **Give access to knowledge base** | ON（通知テンプレートへのアクセス） |
+
+Instructions の例:
+
+```text
+役割: インシデントの Teams チャネル通知担当
+
+あなたの仕事:
+1. Main Agent からインシデント情報を受け取る（サービス名、重大度、証跡サマリー、Issue URL など）
+2. 以下を含む、構造化された通知メッセージを Teams チャネルに投稿する:
+   - インシデントタイトル（重大度付き）
+   - 影響範囲の要約
+   - タイムライン（UTC）
+   - 疑わしい原因（1行）
+   - GitHub Issue へのリンク（あれば）
+   - 対応ステータス
+3. 投稿完了を Main Agent に確認する
+
+使用するツール:
+- Teams: 通信コネクタ経由で指定チャネルにメッセージを投稿
+
+投稿テンプレート:
+---
+🚨 **[重大度] インシデント: <タイトル>**
+
+**サービス**: <名前>
+**環境**: <prod/stg>
+**検出時刻（UTC）**: <時刻>
+
+**影響**: <エラー数 / 影響を受けたユーザー数>
+**疑わしい原因**: <1行の仮説>
+
+**証跡**: 証跡収集済み（詳細は GitHub Issue を参照）
+**GitHub Issue**: <URL>
+**ステータス**: 調査中 / 対応中 / 解決済み
+
+cc: @on-call-team
+---
+
+制約:
+- 秘密情報（接続文字列、トークン等）を投稿しない
+- KQL クエリの生データは投稿しない（サマリーのみ）
+- 投稿先チャネルが不明な場合は、Main Agent に確認を求める
+- 重大度が不明な場合は "Sev3（要確認）" として投稿する
+```
+
+Handoff instructions の例:
+
+```text
+ハンドオフすべき場合:
+インシデントの発生・進捗・解決について Teams チャネルへの通知が必要な場合。証跡収集や Issue 作成が完了した後の関係者通知、またはインシデント検出直後の初報通知が必要な場合にハンドオフしてください。
+
+ハンドオフすべきでない場合:
+診断データの収集、GitHub Issue の作成、是正措置の実行、Azure リソースへの変更操作は対象外です。
+
+入出力:
+受取: インシデント情報（サービス名、重大度、影響範囲、証跡サマリー、Issue URL、対応ステータス）
+返却: 投稿確認（投稿先チャネル、投稿日時、メッセージ概要）
+ハンドバック先: Main Agent
+```
+
 **実行の流れ（Incident Response Plan で自動化）:**
 
 1. Azure Monitor Alert が発火 → Incident management が受信
@@ -1419,13 +1493,16 @@ Main Agent から証跡がハンドオフされたとき:
 4. DiagnosticsAgent が証跡を収集し、Main Agent に返す
 5. Main Agent が GitHubIssueAgent に Issue 作成をハンドオフ
 6. GitHubIssueAgent が Issue を作成し、Main Agent に Issue URL を返す
-7. Main Agent がユーザーに完了報告（チャットスレッド）
+7. Main Agent が TeamsNotificationAgent に通知をハンドオフ
+8. TeamsNotificationAgent が Teams チャネルに投稿し、Main Agent に確認を返す
+9. Main Agent がユーザーに完了報告（チャットスレッド）
 
 **設計のポイント：**
 - Main エージェントは「統括・ハンドオフ判断」に徹する（ツールは最小限）
 - 各サブエージェントは「専門ツール」を持ち、明確な役割を持つ
 - Instructions でハンドオフロジックを明示する
 - Handoff instructions で入出力の契約を明確にする
+- TeamsNotificationAgent は Teams 通信コネクタ[9-13]を使い、チャネル投稿に特化する
 - 実際の運用では、Incident Response Plan の設定で Main Agent を起動トリガーとして設定する
 
 ### 参考（第9章）
@@ -1581,8 +1658,216 @@ az provider register -n Microsoft.App
    - 参照（提案・公式テンプレ）: 
      - Node.js: https://github.com/azure-samples/cosmos-db-nosql-nodejs-quickstart
      - .NET: https://github.com/azure-samples/cosmos-db-nosql-dotnet-quickstart
+   - 注意: 上記 Node.js quickstart は **`azd up` を実行すると Cosmos DB を含むインフラも作成**し、デプロイ先も **App Service(Web App) ではなく Container Apps** の構成です（インフラは `infra/main.bicep`）。
+     - 「App Service に載せる Web アプリ部分だけ欲しい」場合は、アプリコード（例: `src/js` または `src/ts`）だけを持ってきて、App Service へは別手順（Deployment Center/Zip Deploy 等）でデプロイするのが分かりやすいです。
+
+   **「`src/js`（または `src/ts`）だけ」を App Service にデプロイする手順（提案 / 一番ラクな一本道）**
+
+   ねらい: 公式 quickstart の“アプリ部分”だけ流用し、インフラ（Cosmos など）は Portal で作ったものを使う。
+
+   0) 方針を決める（提案）
+   - デモを最短で成立させるなら **`src/js`**（JavaScript）推奨（TypeScript ビルド工程が減る）。
+   - “元 repo のサブフォルダだけ”を Deployment Center でそのままデプロイするより、**新しい Git リポジトリを 1 つ作って、そのルートに `src/js` を置く**のが確実です（ビルド/起動の判定がブレにくい）。
+
+   1) 新しいリポジトリを作る（提案）
+   - 例: `sre-demo-a-app` のような空リポジトリを作成。
+
+   2) アプリコードをコピーする（提案）
+   - `azure-samples/cosmos-db-nosql-nodejs-quickstart` を clone。
+   - その中の `src/js`（または `src/ts`）配下のファイル一式を、新リポジトリの **ルート**にコピー。
+     - 例: 新リポジトリ直下に `package.json` / `app.js`（など）が来る状態。
+
+   3) ローカルで起動確認（提案）
+   - Node.js を用意（App Service 側の Runtime stack と合わせる。例: Node 20 LTS）。
+   - ルートで `npm install` → `npm start`（または `npm run dev`）が動くことを確認。
+   - 重要: App Service では `process.env.PORT` が割り当てられるので、アプリが `process.env.PORT || 3000` のように **PORT 環境変数で待ち受け**ることを確認。
+
+   4) `/healthz` と `/burst` を追加（提案）
+   - 本ノートの「`/burst` の入れ方（最小実装例）」を、あなたのアプリの起動ファイル（例: `app.js`）へ追記。
+   - デモ目的なら “UI（socket.io）” は不要なので、まずは `/healthz` と `/burst` の HTTP GET が返るところまででOK。
+
+   5) App Service（Linux / Code）にデプロイ（提案: Deployment Center）
+   - App Service の **Deployment Center** で新リポジトリを接続してデプロイ（Source: External Git / GitHub など）。
+   - デプロイが走ったあと、Overview の Browse で起動確認。
+
+   6) App Service に環境変数を入れる（提案）
+   - 本ノートの `/healthz` `/burst` 実装例を使う場合（キー接続）:
+     - `COSMOS_ENDPOINT`（例: `https://<account>.documents.azure.com:443/`）
+     - `COSMOS_KEY`（Cosmos の Keys で確認）
+     - `COSMOS_DATABASE_ID`（例: `appdb`）
+     - `COSMOS_CONTAINER_ID`（例: `items`）
+   - 入力場所: **Environment variables > Application settings**（Connection strings ではない）。
+
+   7) 動作確認（提案）
+   - `https://<app>.azurewebsites.net/healthz`
+   - `https://<app>.azurewebsites.net/burst?mode=hot&pk=hot-1&items=25`
+   - `https://<app>.azurewebsites.net/burst?mode=spread&items=25`
+  - `items` を増やして重くしたい場合: `https://<app>.azurewebsites.net/burst?mode=hot&pk=hot-1&items=500`
    - このデモの狙いは「App Service が遅い/タイムアウト」なので、**負荷は HTTP で App Service に入れ**、アプリ側で Cosmos DB へのアクセスを発生させる。
    - `/healthz` は 1 回の point read など「軽い」処理、`/burst` は 1 HTTP リクエストで複数回の read/write を行える「重い」処理にしておくと、少ない負荷生成でも 429 を再現しやすい。
+
+   **`/burst` の入れ方（最小実装例: 提案）**
+
+   ここでは「Cosmos SDK を使って point read / upsert を行う」だけの最小例を載せます。
+
+   - 前提: Container の partition key は `/pk`（= item の `pk` プロパティ）
+   - `/healthz`: 1 件の read（or upsert→read）で軽い経路
+   - `/burst`: 1 リクエストの中で `items` 回 upsert（＋任意で read）して重くする
+   - 429 の再現用に、クエリで動きを切り替える
+     - ホットパーティション: `/burst?mode=hot&pk=hot-1&items=25`
+     - 全体スループット不足: `/burst?mode=spread&items=25`（内部で pk を分散）
+
+   注意（重要）:
+   - 本ノートに載せているサンプル実装は、`/burst` の `items` を **最大 500** に制限しています（`items=10000` を付けても 500 扱い）。
+   - 429 を確実に出したい場合は、`items` を極端に上げるより **並列リクエスト数（後述の `$parallel`）を上げる**方が再現性が高いです。
+
+   なお、**SDK クライアントはリクエストごとに新規作成せず**、プロセスで使い回します（負荷試験中の余計なオーバーヘッドを避ける）。
+
+   ***Node.js（Express + @azure/cosmos）例***
+
+   置き場所は「HTTP サーバー（Express）を立てているファイル」に追記すれば OK です（例: `src/index.js` / `src/server.js` / `app.js` など）。
+
+   前提の環境変数（例）:
+   - `COSMOS_ENDPOINT`
+   - `COSMOS_KEY`
+   - `COSMOS_DATABASE_ID`（例: `appdb`）
+   - `COSMOS_CONTAINER_ID`（例: `items`）
+
+   ```js
+   import express from "express";
+   import { CosmosClient } from "@azure/cosmos";
+   import crypto from "crypto";
+
+   const endpoint = process.env.COSMOS_ENDPOINT;
+   const key = process.env.COSMOS_KEY;
+   const databaseId = process.env.COSMOS_DATABASE_ID || "appdb";
+   const containerId = process.env.COSMOS_CONTAINER_ID || "items";
+
+   if (!endpoint || !key) {
+     throw new Error("Missing COSMOS_ENDPOINT / COSMOS_KEY");
+   }
+
+   // 重要: クライアントは 1 度だけ作る
+   const cosmos = new CosmosClient({ endpoint, key });
+   const container = cosmos.database(databaseId).container(containerId);
+
+   const app = express();
+
+   app.get("/healthz", async (_req, res) => {
+     const pk = "health";
+     const id = "health";
+     const item = { id, pk, ts: Date.now(), kind: "health" };
+
+     // upsert → point read（どちらか一方だけでもOK）
+     await container.items.upsert(item);
+     const read = await container.item(id, pk).read();
+
+     res.json({ ok: true, ru: read.requestCharge });
+   });
+
+   app.get("/burst", async (req, res) => {
+     const items = Math.min(parseInt(req.query.items || "25", 10), 500);
+     const mode = (req.query.mode || "hot").toString(); // hot | spread
+     const pkFixed = (req.query.pk || "hot-1").toString();
+
+     const ops = Array.from({ length: items }, async () => {
+       const pk = mode === "spread" ? `pk-${crypto.randomBytes(4).toString("hex")}` : pkFixed;
+       const id = crypto.randomBytes(8).toString("hex");
+       const doc = { id, pk, ts: Date.now(), kind: "burst" };
+
+       const up = await container.items.upsert(doc);
+       const rd = await container.item(id, pk).read();
+       return { ruWrite: up.requestCharge, ruRead: rd.requestCharge };
+     });
+
+     const results = await Promise.all(ops);
+     const ruWrite = results.reduce((a, x) => a + x.ruWrite, 0);
+     const ruRead = results.reduce((a, x) => a + x.ruRead, 0);
+
+     res.json({ ok: true, mode, items, pk: mode === "spread" ? "(randomized)" : pkFixed, ruWrite, ruRead, ruTotal: ruWrite + ruRead });
+   });
+
+   export default app;
+   ```
+
+   ***.NET 8（Minimal API + Microsoft.Azure.Cosmos）例***
+
+   置き場所は基本 `Program.cs` に追記で OK です（サンプルが MVC でも、エンドポイントだけ追加する発想は同じ）。
+
+   前提の環境変数（例）:
+   - `COSMOS_ENDPOINT`
+   - `COSMOS_KEY`
+   - `COSMOS_DATABASE_ID`（例: `appdb`）
+   - `COSMOS_CONTAINER_ID`（例: `items`）
+
+   ```csharp
+   using Microsoft.Azure.Cosmos;
+
+   var builder = WebApplication.CreateBuilder(args);
+   var app = builder.Build();
+
+   var endpoint = builder.Configuration["COSMOS_ENDPOINT"];
+   var key = builder.Configuration["COSMOS_KEY"];
+   var databaseId = builder.Configuration["COSMOS_DATABASE_ID"] ?? "appdb";
+   var containerId = builder.Configuration["COSMOS_CONTAINER_ID"] ?? "items";
+
+   if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(key))
+   {
+     throw new InvalidOperationException("Missing COSMOS_ENDPOINT / COSMOS_KEY");
+   }
+
+   // 重要: CosmosClient は 1 度だけ作る
+   var cosmos = new CosmosClient(endpoint, key, new CosmosClientOptions
+   {
+     ApplicationName = "sre-demo-a",
+     ConnectionMode = ConnectionMode.Direct
+   });
+   var container = cosmos.GetContainer(databaseId, containerId);
+
+   record DemoItem(string id, string pk, long ts, string kind);
+
+   app.MapGet("/healthz", async () =>
+   {
+     var pk = "health";
+     var id = "health";
+     var doc = new DemoItem(id, pk, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "health");
+
+     await container.UpsertItemAsync(doc, new PartitionKey(pk));
+     var read = await container.ReadItemAsync<DemoItem>(id, new PartitionKey(pk));
+
+     return Results.Ok(new { ok = true, ru = read.RequestCharge });
+   });
+
+   app.MapGet("/burst", async (string? mode, string? pk, int? items) =>
+   {
+     var m = string.IsNullOrWhiteSpace(mode) ? "hot" : mode;
+     var fixedPk = string.IsNullOrWhiteSpace(pk) ? "hot-1" : pk;
+     var n = Math.Clamp(items ?? 25, 1, 500);
+
+     var tasks = Enumerable.Range(0, n).Select(async _ =>
+     {
+       var p = m == "spread" ? $"pk-{Guid.NewGuid():N}"[..11] : fixedPk;
+       var id = Guid.NewGuid().ToString("N");
+       var doc = new DemoItem(id, p, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), "burst");
+
+       var up = await container.UpsertItemAsync(doc, new PartitionKey(p));
+       var rd = await container.ReadItemAsync<DemoItem>(id, new PartitionKey(p));
+       return (ruWrite: up.RequestCharge, ruRead: rd.RequestCharge);
+     });
+
+     var results = await Task.WhenAll(tasks);
+     var ruWrite = results.Sum(x => x.ruWrite);
+     var ruRead = results.Sum(x => x.ruRead);
+
+     return Results.Ok(new { ok = true, mode = m, items = n, pk = m == "spread" ? "(randomized)" : fixedPk, ruWrite, ruRead, ruTotal = ruWrite + ruRead });
+   });
+
+   app.Run();
+   ```
+
+   補足（提案）:
+   - コンテナ側に TTL を設定できるなら、`burst` が増やすデータを自然消滅させられます（デモ後のクリーンアップが楽）。
+   - 429 のときは SDK が `CosmosException`（StatusCode=429）を返します。アプリ側で握りつぶさず、HTTP 500/503 などで返すだけでも「遅い/タイムアウト」の症状作りに十分です（リトライを入れると症状が見えづらくなります）。
 
 （デプロイの最短手順: 提案）
 
@@ -1598,12 +1883,18 @@ az provider register -n Microsoft.App
 3) Cosmos DB の接続文字列を connection string として登録でき、App Service は環境変数として提供する（Cosmos DB は `DOCDBCONNSTR_` プレフィックスとして定義されている）。[10A-10][10A-11]
 4) Portal 上では connection string の値は既定で非表示で、必要に応じて **Show value** / **Show values** で表示できる。[10A-20]
 
+補足（提案）:
+- 本ノートの `/healthz` `/burst` 実装例は `COSMOS_ENDPOINT` / `COSMOS_KEY` / `COSMOS_DATABASE_ID` / `COSMOS_CONTAINER_ID` を読む形なので、Portal では **Connection strings ではなく App settings（Environment variables > Application settings）** にこれらの値を入れるのが最短です。
+- Connection strings（`DOCDBCONNSTR_<name>`）で持たせる場合は、アプリ側で接続文字列を読み取り、endpoint/key（または SDK が受けられる形式）へ変換する実装が別途必要になります。
+
 #### 障害の作り方（提案）
 
 目的別に「再現の作法」を分ける（提案）:
 
 **A) 429（全体スループット不足）を再現する**
 - (提案) Container のスループットを **Manual の低め**に設定し（例: 最小付近の RU/s）、短時間にアクセスを集中させる。
+- 注意: Throughput を 10,000 RU/s のように大きくすると、同じ負荷では 429 が出なくなります。その場合は **RU を下げる**か、`/burst` の `items` と並列数（リクエスト数）を増やします。
+- 注意: `items=10000` のように `items` だけを上げても、サンプル実装側で **最大 500 に丸められる**ため、期待した負荷になりません（上限を変えるならアプリコード側の定数を変更）。
 - (提案) リクエストの partition key 値は **分散**させる（= ホットパーティションを起こしにくくする）。
   - 例: `/burst?mode=spread&items=25` のように、アプリ側で pk をランダム化して複数の論理パーティションに散らす。
 
@@ -1621,6 +1912,7 @@ az provider register -n Microsoft.App
 $baseUrl = "https://<your-app>.azurewebsites.net"
 curl.exe "$baseUrl/healthz"
 curl.exe "$baseUrl/burst?mode=hot&pk=hot-1&items=25"
+curl.exe "$baseUrl/burst?mode=hot&pk=hot-1&items=500"
 ```
 
 2) “ホットパーティション”負荷（同一 pk を並列に叩く）（提案）
