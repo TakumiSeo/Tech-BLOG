@@ -54,6 +54,92 @@ Constraint: All factual statements are based on **Microsoft Learn**. No vendor-s
 
 This section assumes the connectivity and roles shown in the customer diagram(s) and highlights what is supported and what to watch for.
 
+### Diagram: Recommended Monitoring Architecture (Example)
+
+```mermaid
+flowchart TB
+  subgraph Application
+    APP[Application]
+  end
+
+  subgraph AKS
+    AKS_WORKLOADS[AKS workloads]
+    AKS_CONTROL_PLANE[AKS control plane logs]
+  end
+
+  subgraph Azure_Monitor
+    AMW[Azure Monitor workspace (Prometheus metrics)]
+    LA[Log Analytics workspace (Logs)]
+    AMM[Azure Monitor Metrics (platform metrics)]
+  end
+
+  subgraph Azure_Resources
+    AZR[Storage / Network / other Azure resources]
+  end
+
+  NR[New Relic (APM)]
+
+  APP -->|OTEL| NR
+  AKS_WORKLOADS -->|Managed Prometheus| AMW
+  AKS_WORKLOADS -->|Container Insights (Logs & Events only)| LA
+  AKS_CONTROL_PLANE -->|Diagnostic settings| LA
+  AZR -->|Platform metrics| AMM
+  AZR -->|Diagnostic settings (resource logs)| LA
+```
+
+### Diagram: Proposal 1-3 Data Flow (Conceptual)
+
+```mermaid
+flowchart TB
+  subgraph Sources
+    AKS_WORKLOADS[AKS workloads]
+    AKS_RESOURCE_LOGS[AKS resource logs]
+    AZ_RESOURCES[Other Azure resources]
+  end
+
+  subgraph Azure_Monitor
+    AM_METRICS[Platform metrics]
+    LA[Log Analytics workspace (Logs)]
+    AMW[Azure Monitor workspace (Prometheus metrics)]
+  end
+
+  AMG[Azure Managed Grafana]
+  NR[New Relic]
+
+  %% Ingestion / export
+  AZ_RESOURCES -->|Platform metrics| AM_METRICS
+  AKS_WORKLOADS -->|Container Insights| LA
+  AKS_RESOURCE_LOGS -->|Diagnostic settings| LA
+  AKS_WORKLOADS -->|Managed Prometheus| AMW
+
+  %% Visualization (Grafana queries)
+  AMG -->|Query| AM_METRICS
+  AMG -->|Query| LA
+  AMG -->|Query| AMW
+
+  %% New Relic paths
+  AKS_WORKLOADS -->|OTEL| NR
+  AZ_RESOURCES -.->|Diagnostic settings (partner)| NR
+```
+
+Connection checklist (excerpt)
+
+| Connection | Azure feature | Key verification points |
+|---|---|---|
+| Azure Managed Grafana → Azure Monitor (metrics/logs) | Azure Managed Grafana Azure Monitor data source | RBAC (read role for Grafana identity) / managed private endpoint (Private Link) if needed |
+| Azure Managed Grafana → Azure Monitor workspace (Prometheus) | Azure Monitor workspace integration (Standard tier) | Assign Monitoring Data Reader to Grafana managed identity / network requirements (private if needed) |
+| AKS (workloads) → Log Analytics | Container insights (Logs and Events, etc.) | Scope collection to avoid duplication (especially when Prometheus is also enabled) |
+| AKS (control plane/resource logs) → Log Analytics | Diagnostic settings (resource log output) | Category selection (kube-audit, etc.) and cost impact; diagnostic settings limit (max 5 per resource) |
+| Azure resource logs → New Relic | Diagnostic settings destination (partner solution) | Conflicts with existing diagnostic settings / limit; duplicate forwarding and extra billing risk |
+
+References (Learn):
+- Azure Managed Grafana and Azure Monitor: https://learn.microsoft.com/azure/azure-monitor/visualize/visualize-use-managed-grafana-how-to
+- Azure Monitor workspace and Azure Managed Grafana: https://learn.microsoft.com/azure/managed-grafana/how-to-connect-azure-monitor-workspace
+- Azure Managed Grafana private connectivity: https://learn.microsoft.com/azure/managed-grafana/how-to-connect-to-data-source-privately
+- Diagnostic settings (destinations/limits): https://learn.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings , https://learn.microsoft.com/azure/azure-monitor/fundamentals/service-limits#diagnostic-settings
+- AKS control plane/resource logs: https://learn.microsoft.com/azure/aks/monitor-aks#aks-control-planeresource-logs
+- Kubernetes monitoring cost optimization (duplication avoidance): https://learn.microsoft.com/azure/azure-monitor/containers/best-practices-containers#cost-optimization
+
 ---
 
 ### Proposal 1: Cost Effective Design (New Relic + Azure Monitor + Managed Prometheus + Azure Managed Grafana)
@@ -185,19 +271,58 @@ AKS control plane logs are Azure Monitor **resource logs** exported via diagnost
 	- References:
 		- https://learn.microsoft.com/azure/azure-monitor/metrics/data-platform-metrics#retention-of-metrics
 		- https://learn.microsoft.com/azure/azure-monitor/essentials/prometheus-metrics-overview
+		- https://learn.microsoft.com/azure/azure-monitor/fundamentals/cost-usage#pricing-model
 
 - When using Managed Prometheus, avoid redundant Prometheus-metrics ingestion into Log Analytics unless you have an explicit reason.
 	- Reference: https://learn.microsoft.com/azure/azure-monitor/containers/best-practices-containers#cost-optimization
 
 ### Q2) Connectivity cautions (Azure Monitor ↔ Azure Managed Grafana / Managed Prometheus ↔ Azure Managed Grafana)
 
-- Azure Managed Grafana typically queries data sources for visualization; ensure:
-	- RBAC: assign the required built-in roles (e.g., Monitoring Data Reader for Azure Monitor workspace)
-	- Network: use managed private endpoints when private connectivity is required
+Azure Managed Grafana is a visualization layer that **queries data sources** rather than storing data itself. The connectivity discussion boils down to **(1) identity/RBAC** and **(2) network reachability**.
+
+#### Q2-1. Azure Managed Grafana → Azure Monitor (metrics/logs)
+
+- **Connection type**: Azure Managed Grafana's **Azure Monitor data source** queries Azure Monitor (metrics/logs).
+- **RBAC considerations**:
+	- Grafana's identity (managed identity, etc.) needs **read permissions** on the target Azure Monitor data.
+	- Scope matters — assign the role at the resource/resource group/subscription level that you want to visualize.
+	- Follow the specific role/assignment guidance in Learn.
+- **Operational note**:
+	- Whether you need "metrics only" or "metrics + logs (Log Analytics)" determines which data source settings and permissions are required.
+
+Reference:
+- https://learn.microsoft.com/azure/azure-monitor/visualize/visualize-use-managed-grafana-how-to
+
+#### Q2-2. Azure Managed Grafana → Azure Monitor workspace (Managed Prometheus store)
+
+- **Connection type**: Managed Prometheus metrics are stored in an **Azure Monitor workspace**, and Azure Managed Grafana connects to it.
+- **Standard tier required**: Azure Monitor workspace integration follows the Standard tier guidance.
+- **RBAC (straightforward)**:
+	- Assign **Monitoring Data Reader** on the Azure Monitor workspace to the Grafana managed identity.
+- **Query limitation**:
+	- PromQL queries are limited to **32 days per query**. For longer-range analysis, split queries or design around this constraint.
+
+References:
+- https://learn.microsoft.com/azure/managed-grafana/how-to-connect-azure-monitor-workspace
+- https://learn.microsoft.com/azure/azure-monitor/essentials/prometheus-metrics-overview
+
+#### Q2-3. Private connectivity (Private Link)
+
+- **Connection type**: Create a **managed private endpoint** in Azure Managed Grafana to reach the target data source via **Private Link**.
+- **Key check**:
+	- The target data source must support Private Link, and the connection approval flow (approval on the data-source side) must be completed.
+
+Reference:
+- https://learn.microsoft.com/azure/managed-grafana/how-to-connect-to-data-source-privately
+
+#### Q2-4. Common pitfalls ("the connection works, but you still get burned")
+
+- **Duplicate ingestion**: When using Managed Prometheus, sending Prometheus metrics to Log Analytics as well is redundant and increases cost/operational burden.
+	- Reference: https://learn.microsoft.com/azure/azure-monitor/containers/best-practices-containers#cost-optimization
+- **Diagnostic settings slots fill up**: Diagnostic settings are limited to **5 per resource**. Adding a partner solution (Proposal 3) can conflict with existing settings — audit them first.
 	- References:
-		- https://learn.microsoft.com/azure/azure-monitor/visualize/visualize-use-managed-grafana-how-to
-		- https://learn.microsoft.com/azure/managed-grafana/how-to-connect-azure-monitor-workspace
-		- https://learn.microsoft.com/azure/managed-grafana/how-to-connect-to-data-source-privately
+		- https://learn.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings
+		- https://learn.microsoft.com/azure/azure-monitor/fundamentals/service-limits#diagnostic-settings
 
 ### Q3) Microsoft Learn references to share
 
@@ -211,9 +336,61 @@ AKS control plane logs are Azure Monitor **resource logs** exported via diagnost
 	- https://learn.microsoft.com/azure/managed-grafana/how-to-connect-azure-monitor-workspace
 - Azure Monitor Metrics (93-day retention; portal 30-day per-chart query; PromQL 32-day max)
 	- https://learn.microsoft.com/azure/azure-monitor/metrics/data-platform-metrics
+- Azure Monitor pricing model (platform metrics free; Prometheus priced by ingestion/query; etc.)
+	- https://learn.microsoft.com/azure/azure-monitor/fundamentals/cost-usage#pricing-model
 - Diagnostic settings (partner solution destination)
 	- https://learn.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings
 - Azure Native New Relic Service (overview/manage/troubleshoot)
 	- https://learn.microsoft.com/azure/partner-solutions/new-relic/overview
 	- https://learn.microsoft.com/azure/partner-solutions/new-relic/manage
 	- https://learn.microsoft.com/azure/partner-solutions/new-relic/troubleshoot
+
+---
+
+## Appendix: Monitoring Design Hearing Sheet (Draft)
+
+The following items are intended to align design assumptions before proceeding. The examples are illustrative; rough estimates are acceptable.
+
+### A. Policy / Operations (Priorities / Team / Goals)
+
+| # | Item | What we want to confirm | Answer |
+|---:|---|---|---|
+| 1 | Monitoring priorities | Among availability, performance, security, cost — what is the priority order? | |
+| 2 | Scope (environments/resources) | How many environments (Prod/Stg/Dev) are in scope? Any resources beyond AKS? | |
+| 3 | SLO/SLI and operational targets | Are there availability targets, response-time targets, MTTD/MTTR goals? | |
+| 4 | Alert operations structure | Notification channels, on-call rotation, escalation rules, after-hours support? | |
+| 5 | Log retention / audit requirements | Required retention per table, audit trail requirements, tamper-protection needs? | |
+| 6 | Query usage patterns | Who queries which tables, and how often? | |
+| 7 | Cost targets and current spending | Current monthly spend (New Relic/Azure Monitor/Grafana) and reduction target (% or amount)? | |
+| 11 | Monitoring data consumers / permissions | Access scope per role (ops/dev/audit); isolation and least-privilege requirements? | |
+| 12 | Incident workflow integration | Ticket system (ITSM), first-responder assignment, Runbook / auto-remediation availability? | |
+| 13 | Dashboard requirements | Required KPIs per audience (NOC/ops/dev/management); existing assets (Grafana/Workbook)? | |
+| 14 | Duplicate forwarding policy | Is dual forwarding to Log Analytics and New Relic acceptable? If so, for which data? | |
+| 15 | Alert quality policy | Noise tolerance, suppression windows (maintenance), aggregation/correlation rules, severity definitions? | |
+
+### B. Technical / Configuration (Collection Policy / Security / Network / Standardization)
+
+| # | Item | What we want to confirm | Answer |
+|---:|---|---|---|
+| 8 | AKS log policy | Is kube-audit mandatory? Can we switch to kube-audit-admin? Can we migrate to ContainerLogV2? | |
+| 9 | Security / network constraints | Is Private Link mandatory? Data residency constraints? Managed Identity availability? | |
+| 10 | Standardization / automation policy | Will Azure Policy / IaC (Bicep/Terraform) be used to enforce and templatize settings? | |
+| 16 | Workspace design | Single vs per-environment vs per-subscription workspace strategy; region placement; cross-boundary rules? | |
+| 17 | Network path constraints (detail) | Internet egress allowed? Proxy required? Firewall allowlisting approach (FQDN / fixed destination, etc.)? | |
+| 18 | Collection scope granularity | Number of target clusters, node pools, target Namespaces/Workloads, log categories to exclude? | |
+| 19 | Change management | Approval flow for monitoring config changes, IaC deployment cadence, rollback requirements? | |
+
+### C. Additional Numeric Items (for Cost Estimation)
+
+| Item | Example | Answer |
+|---|---|---|
+| Daily ingestion volume (total) | 100 GB/day | |
+| Ingestion per major table | ContainerLogV2 = 40 GB/day, etc. | |
+| Expected query count for Basic/Aux tables | 20/day | |
+| Average scan volume per query | 2 GB/query | |
+| Comparison period (before/after) | Last 3 months | |
+| Cluster scale (approx.) | Cluster count / node count (normal & peak) / pod count / namespace count | |
+| Log load (approx.) | logs/sec per node, peak hours, avg log line size (KB), multi-line presence | |
+| Metrics scale (approx.) | Target count (node/pod/ingress, etc.), scrape interval, estimated active series | |
+| Query / dashboard load | Concurrent users, dashboard auto-refresh interval, alert evaluation frequency | |
+| Table design assumptions | Analytics/Basic/Aux usage policy (target tables, retention periods) | |
