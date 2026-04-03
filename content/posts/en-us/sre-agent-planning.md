@@ -9,7 +9,7 @@ Summary: Post-GA review of Azure SRE Agent docs covering the 3-layer access cont
 
 
 This note uses **only facts grounded in Microsoft Learn** and reorganizes them into a PPT-friendly structure: “speaker notes (what I say) + slide takeaways.”
-![Architecture](images/sre-agent-planning/architecture.drawio.svg)
+![Architecture](/images/sre-agent-planning/architecture.drawio.svg)
 How I cite:
 - In the main body, I only place reference IDs like `[chapter-number]` (I don’t paste URLs inline).
 - At the end of each chapter, I list **References (numbered / URL + short quote)**.

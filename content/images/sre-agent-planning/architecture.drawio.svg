@@ -1,0 +1,359 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 860" width="1200" height="860" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#0066CC"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#DD344C"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9B59B6"/>
+    </marker>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-color="#00000020"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="860" fill="#FAFAFA" rx="8"/>
+
+  <!-- Title -->
+  <text x="600" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">Azure SRE Agent — Architecture Overview</text>
+
+  <!-- ===== ROW 1: Users (top-right) ===== -->
+  <g transform="translate(880, 55)">
+    <rect x="0" y="0" width="300" height="90" rx="8" fill="#FDF2E9" stroke="#E67E22" stroke-width="1.5"/>
+    <text x="150" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#E67E22">User Roles (Layer 1)</text>
+    <!-- Admin -->
+    <g transform="translate(25, 30)">
+      <circle cx="25" cy="15" r="12" fill="#E74C3C" opacity="0.15"/>
+      <text x="25" y="19" text-anchor="middle" font-size="18">👤</text>
+      <text x="25" y="48" text-anchor="middle" font-size="9" fill="#555">Administrator</text>
+    </g>
+    <!-- Standard -->
+    <g transform="translate(120, 30)">
+      <circle cx="25" cy="15" r="12" fill="#3498DB" opacity="0.15"/>
+      <text x="25" y="19" text-anchor="middle" font-size="18">👤</text>
+      <text x="25" y="48" text-anchor="middle" font-size="9" fill="#555">Standard User</text>
+    </g>
+    <!-- Reader -->
+    <g transform="translate(215, 30)">
+      <circle cx="25" cy="15" r="12" fill="#95A5A6" opacity="0.15"/>
+      <text x="25" y="19" text-anchor="middle" font-size="18">👤</text>
+      <text x="25" y="48" text-anchor="middle" font-size="9" fill="#555">Reader</text>
+    </g>
+  </g>
+
+  <!-- ===== ROW 1: Alert Sources ===== -->
+  <g transform="translate(20, 55)">
+    <rect x="0" y="0" width="830" height="90" rx="8" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="415" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#F57F17">Alert Sources</text>
+
+    <!-- Azure Monitor -->
+    <g transform="translate(40, 28)">
+      <rect x="0" y="0" width="90" height="48" rx="6" fill="#E3F2FD" stroke="#1565C0" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-size="11" fill="#1565C0" font-weight="bold">📊</text>
+      <text x="45" y="38" text-anchor="middle" font-size="9" fill="#1565C0">Azure Monitor</text>
+    </g>
+    <!-- PagerDuty -->
+    <g transform="translate(175, 28)">
+      <rect x="0" y="0" width="90" height="48" rx="6" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">🔔</text>
+      <text x="45" y="38" text-anchor="middle" font-size="9" fill="#2E7D32">PagerDuty</text>
+    </g>
+    <!-- ServiceNow -->
+    <g transform="translate(310, 28)">
+      <rect x="0" y="0" width="90" height="48" rx="6" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">🎫</text>
+      <text x="45" y="38" text-anchor="middle" font-size="9" fill="#2E7D32">ServiceNow</text>
+    </g>
+    <!-- Grafana -->
+    <g transform="translate(445, 28)">
+      <rect x="0" y="0" width="110" height="48" rx="6" fill="#E3F2FD" stroke="#1565C0" stroke-width="1"/>
+      <text x="55" y="20" text-anchor="middle" font-size="11" fill="#1565C0" font-weight="bold">📈</text>
+      <text x="55" y="38" text-anchor="middle" font-size="9" fill="#1565C0">Managed Grafana</text>
+    </g>
+    <!-- Datadog -->
+    <g transform="translate(600, 28)">
+      <rect x="0" y="0" width="90" height="48" rx="6" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+      <text x="45" y="20" text-anchor="middle" font-size="11" fill="#2E7D32" font-weight="bold">🐶</text>
+      <text x="45" y="38" text-anchor="middle" font-size="9" fill="#2E7D32">Datadog</text>
+    </g>
+    <!-- Custom -->
+    <g transform="translate(735, 28)">
+      <rect x="0" y="0" width="70" height="48" rx="6" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1" stroke-dasharray="4,2"/>
+      <text x="35" y="20" text-anchor="middle" font-size="11" fill="#7B1FA2">⚡</text>
+      <text x="35" y="38" text-anchor="middle" font-size="9" fill="#7B1FA2">Custom</text>
+    </g>
+  </g>
+
+  <!-- Arrow: Alert Sources → SRE Agent -->
+  <line x1="435" y1="148" x2="435" y2="178" stroke="#0066CC" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="460" y="167" font-size="9" fill="#0066CC">Alerts</text>
+
+  <!-- Arrow: Users → SRE Agent Chat -->
+  <line x1="1030" y1="148" x2="1030" y2="178" stroke="#DD344C" stroke-width="2" marker-end="url(#arrow-red)"/>
+  <text x="1045" y="167" font-size="9" fill="#DD344C">RBAC</text>
+
+  <!-- ===== ROW 2: SRE Agent Core ===== -->
+  <g transform="translate(20, 180)">
+    <rect x="0" y="0" width="1160" height="290" rx="10" fill="#E8F4FD" stroke="#0078D4" stroke-width="2" filter="url(#shadow)"/>
+    <text x="580" y="22" text-anchor="middle" font-size="14" font-weight="bold" fill="#0078D4">Azure SRE Agent</text>
+
+    <!-- Incident Management -->
+    <g transform="translate(30, 35)">
+      <rect x="0" y="0" width="220" height="240" rx="6" fill="#BBDEFB" stroke="#1976D2" stroke-width="1"/>
+      <text x="110" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#1565C0">Incident Management</text>
+
+      <rect x="10" y="28" width="200" height="38" rx="4" fill="#E3F2FD" stroke="#64B5F6" stroke-width="1"/>
+      <text x="110" y="44" text-anchor="middle" font-size="10" fill="#1565C0">Response Plans</text>
+      <text x="110" y="58" text-anchor="middle" font-size="8" fill="#666">(default: Autonomous)</text>
+
+      <rect x="10" y="75" width="200" height="38" rx="4" fill="#E3F2FD" stroke="#64B5F6" stroke-width="1"/>
+      <text x="110" y="91" text-anchor="middle" font-size="10" fill="#1565C0">Scheduled Tasks</text>
+      <text x="110" y="105" text-anchor="middle" font-size="8" fill="#666">(default: Autonomous)</text>
+
+      <rect x="10" y="122" width="200" height="38" rx="4" fill="#E3F2FD" stroke="#64B5F6" stroke-width="1"/>
+      <text x="110" y="138" text-anchor="middle" font-size="10" fill="#1565C0">Chat Interface</text>
+      <text x="110" y="152" text-anchor="middle" font-size="8" fill="#666">(default: Review)</text>
+
+      <rect x="10" y="169" width="95" height="60" rx="4" fill="#E8EAF6" stroke="#7986CB" stroke-width="1"/>
+      <text x="57" y="195" text-anchor="middle" font-size="10" fill="#3F51B5">Memory</text>
+      <text x="57" y="208" text-anchor="middle" font-size="10" fill="#3F51B5">System</text>
+
+      <rect x="115" y="169" width="95" height="60" rx="4" fill="#E8EAF6" stroke="#7986CB" stroke-width="1"/>
+      <text x="162" y="195" text-anchor="middle" font-size="10" fill="#3F51B5">Extensions</text>
+      <text x="162" y="208" text-anchor="middle" font-size="10" fill="#3F51B5">(Subagents)</text>
+    </g>
+
+    <!-- Run Modes (Layer 2) -->
+    <g transform="translate(280, 35)">
+      <rect x="0" y="0" width="250" height="110" rx="6" fill="#FFF3E0" stroke="#EF6C00" stroke-width="1.5"/>
+      <text x="125" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#E65100">Run Modes (Layer 2)</text>
+
+      <g transform="translate(15, 28)">
+        <rect x="0" y="0" width="100" height="65" rx="4" fill="#FFECB3" stroke="#FF8F00" stroke-width="1"/>
+        <text x="50" y="22" text-anchor="middle" font-size="10" font-weight="bold" fill="#E65100">Review</text>
+        <text x="50" y="38" text-anchor="middle" font-size="8" fill="#666">Plan → Consent</text>
+        <text x="50" y="50" text-anchor="middle" font-size="8" fill="#666">→ Execute</text>
+      </g>
+
+      <g transform="translate(135, 28)">
+        <rect x="0" y="0" width="100" height="65" rx="4" fill="#FFECB3" stroke="#FF8F00" stroke-width="1"/>
+        <text x="50" y="22" text-anchor="middle" font-size="10" font-weight="bold" fill="#E65100">Autonomous</text>
+        <text x="50" y="38" text-anchor="middle" font-size="8" fill="#666">Plan → Execute</text>
+        <text x="50" y="50" text-anchor="middle" font-size="8" fill="#666">(no consent)</text>
+      </g>
+    </g>
+
+    <!-- Access Control: 3 Layers summary -->
+    <g transform="translate(280, 155)">
+      <rect x="0" y="0" width="250" height="120" rx="6" fill="#F5F5F5" stroke="#9E9E9E" stroke-width="1" stroke-dasharray="5,3"/>
+      <text x="125" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#616161">Access Control (3 Layers)</text>
+
+      <rect x="10" y="28" width="230" height="24" rx="3" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1"/>
+      <text x="125" y="44" text-anchor="middle" font-size="9" fill="#BF360C">Layer 1: User Roles — Admin / Standard / Reader</text>
+
+      <rect x="10" y="58" width="230" height="24" rx="3" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1"/>
+      <text x="125" y="74" text-anchor="middle" font-size="9" fill="#BF360C">Layer 2: Run Modes — Review / Autonomous</text>
+
+      <rect x="10" y="88" width="230" height="24" rx="3" fill="#FFE0B2" stroke="#EF6C00" stroke-width="1"/>
+      <text x="125" y="104" text-anchor="middle" font-size="9" fill="#BF360C">Layer 3: Agent Perms — MI RBAC + OBO</text>
+    </g>
+
+    <!-- Identity & Permissions -->
+    <g transform="translate(560, 35)">
+      <rect x="0" y="0" width="280" height="240" rx="6" fill="#FDECEF" stroke="#C0392B" stroke-width="1.5"/>
+      <text x="140" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#C0392B">Identity &amp; Permissions (Layer 3)</text>
+
+      <!-- Entra ID -->
+      <g transform="translate(20, 30)">
+        <rect x="0" y="0" width="110" height="65" rx="4" fill="#FCE4EC" stroke="#E57373" stroke-width="1"/>
+        <text x="55" y="25" text-anchor="middle" font-size="20">🔐</text>
+        <text x="55" y="48" text-anchor="middle" font-size="10" fill="#C62828">Entra ID</text>
+      </g>
+
+      <!-- Managed Identity -->
+      <g transform="translate(150, 30)">
+        <rect x="0" y="0" width="110" height="65" rx="4" fill="#FCE4EC" stroke="#E57373" stroke-width="1"/>
+        <text x="55" y="25" text-anchor="middle" font-size="20">🪪</text>
+        <text x="55" y="48" text-anchor="middle" font-size="10" fill="#C62828">Managed Identity</text>
+      </g>
+
+      <!-- OBO Flow -->
+      <g transform="translate(20, 110)">
+        <rect x="0" y="0" width="240" height="50" rx="4" fill="#FFEBEE" stroke="#E53935" stroke-width="1"/>
+        <text x="120" y="20" text-anchor="middle" font-size="10" font-weight="bold" fill="#B71C1C">OBO (On-Behalf-Of) Flow</text>
+        <text x="120" y="36" text-anchor="middle" font-size="8" fill="#666">Temporary elevation → auto-revoked after action</text>
+      </g>
+
+      <!-- Permission Levels -->
+      <g transform="translate(20, 175)">
+        <rect x="0" y="0" width="110" height="50" rx="4" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+        <text x="55" y="20" text-anchor="middle" font-size="10" font-weight="bold" fill="#2E7D32">Reader</text>
+        <text x="55" y="36" text-anchor="middle" font-size="8" fill="#666">Read-only access</text>
+      </g>
+      <g transform="translate(150, 175)">
+        <rect x="0" y="0" width="110" height="50" rx="4" fill="#FFF3E0" stroke="#FF9800" stroke-width="1"/>
+        <text x="55" y="20" text-anchor="middle" font-size="10" font-weight="bold" fill="#E65100">Privileged</text>
+        <text x="55" y="36" text-anchor="middle" font-size="8" fill="#666">Read + Write access</text>
+      </g>
+    </g>
+
+    <!-- Extensions detail -->
+    <g transform="translate(870, 35)">
+      <rect x="0" y="0" width="260" height="240" rx="6" fill="#E8EAF6" stroke="#5C6BC0" stroke-width="1"/>
+      <text x="130" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#283593">Extensions &amp; Integrations</text>
+
+      <rect x="15" y="30" width="230" height="38" rx="4" fill="#C5CAE9" stroke="#7986CB" stroke-width="1"/>
+      <text x="130" y="48" text-anchor="middle" font-size="9" fill="#1A237E">Custom Subagents (code-first)</text>
+      <text x="130" y="60" text-anchor="middle" font-size="8" fill="#666">Azure Functions / Foundry hosted</text>
+
+      <rect x="15" y="78" width="230" height="38" rx="4" fill="#C5CAE9" stroke="#7986CB" stroke-width="1"/>
+      <text x="130" y="96" text-anchor="middle" font-size="9" fill="#1A237E">Built-in Skills</text>
+      <text x="130" y="108" text-anchor="middle" font-size="8" fill="#666">Troubleshoot, diagnose, remediate</text>
+
+      <rect x="15" y="126" width="230" height="38" rx="4" fill="#C5CAE9" stroke="#7986CB" stroke-width="1"/>
+      <text x="130" y="144" text-anchor="middle" font-size="9" fill="#1A237E">Knowledge Sources</text>
+      <text x="130" y="156" text-anchor="middle" font-size="8" fill="#666">Azure Resource Graph, logs, metrics</text>
+
+      <rect x="15" y="174" width="230" height="50" rx="4" fill="#C5CAE9" stroke="#7986CB" stroke-width="1"/>
+      <text x="130" y="192" text-anchor="middle" font-size="9" fill="#1A237E">Memory System</text>
+      <text x="130" y="204" text-anchor="middle" font-size="8" fill="#666">Persistent context across incidents</text>
+      <text x="130" y="216" text-anchor="middle" font-size="8" fill="#666">(manual + auto-captured)</text>
+    </g>
+  </g>
+
+  <!-- Arrow: SRE Agent → Resources -->
+  <line x1="600" y1="472" x2="600" y2="505" stroke="#9B59B6" stroke-width="2" marker-end="url(#arrow-purple)"/>
+  <text x="615" y="493" font-size="9" fill="#9B59B6" font-weight="bold">Layer 3: MI RBAC + OBO</text>
+
+  <!-- ===== ROW 3: Managed Resource Groups ===== -->
+  <g transform="translate(20, 510)">
+    <rect x="0" y="0" width="1160" height="120" rx="10" fill="#E8F4FD" stroke="#0078D4" stroke-width="2" filter="url(#shadow)"/>
+    <text x="580" y="20" text-anchor="middle" font-size="13" font-weight="bold" fill="#0078D4">Managed Resource Groups (Scope)</text>
+
+    <!-- Resources -->
+    <g transform="translate(30, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">🌐</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">App Service</text>
+    </g>
+    <g transform="translate(140, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">☸️</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">AKS</text>
+    </g>
+    <g transform="translate(250, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">🖥️</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">Virtual Machine</text>
+    </g>
+    <g transform="translate(360, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">🗄️</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">Cosmos DB</text>
+    </g>
+    <g transform="translate(470, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">📋</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">Log Analytics</text>
+    </g>
+    <g transform="translate(580, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">📦</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">Storage</text>
+    </g>
+    <g transform="translate(690, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">🗃️</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">SQL Database</text>
+    </g>
+    <g transform="translate(800, 32)">
+      <rect x="0" y="0" width="90" height="72" rx="6" fill="#E3F2FD" stroke="#42A5F5" stroke-width="1"/>
+      <text x="45" y="28" text-anchor="middle" font-size="22">📊</text>
+      <text x="45" y="52" text-anchor="middle" font-size="9" fill="#1565C0">Azure Monitor</text>
+    </g>
+    <g transform="translate(920, 32)">
+      <rect x="0" y="0" width="230" height="72" rx="6" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="1" stroke-dasharray="4,2"/>
+      <text x="115" y="28" text-anchor="middle" font-size="18">➕</text>
+      <text x="115" y="52" text-anchor="middle" font-size="9" fill="#7B1FA2">Other Azure Resources</text>
+      <text x="115" y="65" text-anchor="middle" font-size="8" fill="#999">(add RGs to agent scope)</text>
+    </g>
+  </g>
+
+  <!-- ===== ROW 4: Key Flow Legend ===== -->
+  <g transform="translate(20, 660)">
+    <rect x="0" y="0" width="1160" height="185" rx="8" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1"/>
+    <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="bold" fill="#555">Incident Response Flow</text>
+
+    <!-- Flow diagram -->
+    <g transform="translate(50, 38)">
+      <!-- Step 1 -->
+      <rect x="0" y="0" width="130" height="45" rx="6" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5"/>
+      <text x="65" y="18" text-anchor="middle" font-size="9" font-weight="bold" fill="#F57F17">1. Alert Fired</text>
+      <text x="65" y="33" text-anchor="middle" font-size="8" fill="#666">Azure Monitor / 3rd party</text>
+
+      <line x1="133" y1="22" x2="168" y2="22" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- Step 2 -->
+      <rect x="170" y="0" width="130" height="45" rx="6" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.5"/>
+      <text x="235" y="18" text-anchor="middle" font-size="9" font-weight="bold" fill="#1565C0">2. Incident Created</text>
+      <text x="235" y="33" text-anchor="middle" font-size="8" fill="#666">SRE Agent receives</text>
+
+      <line x1="303" y1="22" x2="338" y2="22" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- Step 3 -->
+      <rect x="340" y="0" width="140" height="45" rx="6" fill="#FFF3E0" stroke="#EF6C00" stroke-width="1.5"/>
+      <text x="410" y="18" text-anchor="middle" font-size="9" font-weight="bold" fill="#E65100">3. Response Plan</text>
+      <text x="410" y="33" text-anchor="middle" font-size="8" fill="#666">Matched by filter rules</text>
+
+      <line x1="483" y1="22" x2="518" y2="22" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- Step 4 -->
+      <rect x="520" y="0" width="120" height="45" rx="6" fill="#FCE4EC" stroke="#E53935" stroke-width="1.5"/>
+      <text x="580" y="18" text-anchor="middle" font-size="9" font-weight="bold" fill="#C62828">4. Run Mode</text>
+      <text x="580" y="33" text-anchor="middle" font-size="8" fill="#666">Review / Autonomous</text>
+
+      <line x1="643" y1="22" x2="678" y2="22" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- Step 5 -->
+      <rect x="680" y="0" width="130" height="45" rx="6" fill="#E8F5E9" stroke="#388E3C" stroke-width="1.5"/>
+      <text x="745" y="18" text-anchor="middle" font-size="9" font-weight="bold" fill="#2E7D32">5. Diagnose</text>
+      <text x="745" y="33" text-anchor="middle" font-size="8" fill="#666">Logs, metrics, ARG</text>
+
+      <line x1="813" y1="22" x2="848" y2="22" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- Step 6 -->
+      <rect x="850" y="0" width="130" height="45" rx="6" fill="#E8EAF6" stroke="#5C6BC0" stroke-width="1.5"/>
+      <text x="915" y="18" text-anchor="middle" font-size="9" font-weight="bold" fill="#283593">6. Remediate</text>
+      <text x="915" y="33" text-anchor="middle" font-size="8" fill="#666">MI RBAC / OBO actions</text>
+    </g>
+
+    <!-- Legend -->
+    <g transform="translate(50, 100)">
+      <text x="0" y="12" font-size="10" font-weight="bold" fill="#555">Legend:</text>
+
+      <line x1="60" y1="8" x2="90" y2="8" stroke="#0066CC" stroke-width="2"/>
+      <text x="95" y="12" font-size="9" fill="#555">Alert flow</text>
+
+      <line x1="180" y1="8" x2="210" y2="8" stroke="#DD344C" stroke-width="2"/>
+      <text x="215" y="12" font-size="9" fill="#555">User RBAC (Layer 1)</text>
+
+      <line x1="340" y1="8" x2="370" y2="8" stroke="#EF6C00" stroke-width="2"/>
+      <text x="375" y="12" font-size="9" fill="#555">Run mode (Layer 2)</text>
+
+      <line x1="500" y1="8" x2="530" y2="8" stroke="#9B59B6" stroke-width="2"/>
+      <text x="535" y="12" font-size="9" fill="#555">Agent permissions (Layer 3)</text>
+
+      <rect x="700" y="0" width="16" height="16" rx="3" fill="none" stroke="#7B1FA2" stroke-width="1" stroke-dasharray="4,2"/>
+      <text x="722" y="12" font-size="9" fill="#555">Extensible / Optional</text>
+    </g>
+
+    <!-- Updated date -->
+    <text x="1100" y="170" text-anchor="end" font-size="8" fill="#999">Updated: 2026-04-03 | Based on MS Learn docs (2026-03-28)</text>
+  </g>
+</svg>
