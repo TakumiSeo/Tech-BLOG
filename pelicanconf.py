@@ -112,6 +112,7 @@ RELATIVE_URLS = False
 STATIC_PATHS = ["images", "extra"]
 EXTRA_PATH_METADATA: dict[str, dict[str, str]] = {
     "extra/root-index.html": {"path": "index.html"},
+    "extra/staticwebapp.config.json": {"path": "staticwebapp.config.json"},
 }
 
 # Utilities

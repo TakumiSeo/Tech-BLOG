@@ -1,14 +1,15 @@
-Title: SRE Agent Deck Planning Notes
-Date: 2026-01-27
-Slug: SRE-Agent-Planning
+﻿Title: Azure SRE Agent Post-GA Notes — Access Control, Run Modes, Extensions, and PoC Evaluation
+Date: 2026-03-13
+Modified: 2026-04-03
+Slug: sre-agent-planning
 Lang: en-us
 Category: notebook
-Tags: azure, SRE Agent, AIOps
-Summary: Study notes for building an overview deck about Azure SRE Agent.
+Tags: azure, sre-agent, aiops, observability, incident-management
+Summary: Post-GA review of Azure SRE Agent docs covering the 3-layer access control model, run modes, extensibility (subagents, connectors, MCP), and a PoC evaluation framework.
 
 
 This note uses **only facts grounded in Microsoft Learn** and reorganizes them into a PPT-friendly structure: “speaker notes (what I say) + slide takeaways.”
-
+![Architecture](images/sre-agent-planning/architecture.drawio.svg)
 How I cite:
 - In the main body, I only place reference IDs like `[chapter-number]` (I don’t paste URLs inline).
 - At the end of each chapter, I list **References (numbered / URL + short quote)**.
@@ -35,7 +36,7 @@ How I cite:
 ### References (Chapter 0)
 - [0-1] [https://learn.microsoft.com/en-us/azure/sre-agent/overview](https://learn.microsoft.com/en-us/azure/sre-agent/overview) — “AI-powered monitoring, troubleshooting, and remediation capabilities.”
 - [0-2] [https://learn.microsoft.com/en-us/azure/sre-agent/usage](https://learn.microsoft.com/en-us/azure/sre-agent/usage) — “Make sure that your user account has the `Microsoft.Authorization/roleAssignments/write` permissions”
-- [0-3] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “consists of three main components”
+- [0-3] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "Access control works across three layers"
 - [0-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity](https://learn.microsoft.com/en-us/azure/sre-agent/agent-managed-identity) — “Azure SRE Agent has its own managed identity”
 - [0-5] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “generates an execution plan and waits for your consent”
 - [0-6] [https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks](https://learn.microsoft.com/en-us/azure/sre-agent/scheduled-tasks) — “automate workflows such as monitoring, maintenance, and security checks”
@@ -113,42 +114,43 @@ flowchart TD
 
 ---
 
-## 3. Security model (three components + boundary)
+## 3. Access control (three layers)
 
 ### What I should explain (speaker notes)
-SRE Agent permissions can be explained with three components: (1) the user’s role for SRE Agent, (2) the agent’s own managed identity, and (3) the run modes.[3-1]
+As of the 2026-03-28 docs update, SRE Agent access control is described as **three layers**: (1) User roles, (2) Run modes, and (3) Agent permissions.[3-1]
 
-This decomposition maps cleanly to “who (RBAC),” “as what (agent identity),” and “within what guardrails (run mode + consent/credentials).”[3-6]
+| Layer | What it controls | Where to configure |
+| --- | --- | --- |
+| User roles | What users can do with the agent | Azure IAM on the agent resource |
+| Run modes | Whether the agent asks before acting | Per response plan and per scheduled task |
+| Agent permissions | What the agent can access on Azure (includes managed identity RBAC + OBO fallback) | RBAC roles on resource groups |
+
+> **Update from initial version**: The previous version described a "three components + boundary" model. The latest docs restructure this as three distinct layers, with OBO integrated into the Agent permissions layer.[3-1][3-2]
 
 ### Slide takeaways (separation of duties)
-- There are three user roles for SRE Agent: Admin / Standard User / Reader.[3-2]
-- The agent’s managed identity can have Reader or Privileged permission levels.[3-3]
-- “Autonomous” isn’t unconditional; it’s limited to the incident management plan context.[3-4]
-- The boundary rule (“agent permissions take precedence”) is the direct answer to privilege-escalation concerns.[3-5]
+- Three built-in user roles: Administrator / Standard User / Reader.[3-3]
+- The agent creator automatically gets Administrator.[3-4]
+- Standard User can request actions but only Administrator can approve them.[3-3]
+- Portal enforces permissions at two levels: no-access screen for missing roles, and 403 backend errors for unauthorized operations.[3-5]
+- Role assignment via CLI: `az role assignment create --role "SRE Agent Standard User"` [3-6]
 
-Additional notes (speaker notes):
-- I explain the key points as: “RBAC controls user capabilities,” “MI can be Reader/Privileged,” “run modes affect how consent/credentials are handled,” and “agent scope/permissions take precedence to prevent privilege escalation.”[3-7]
-
-### The 3 components
+### The 3 layers
 
 ```mermaid
 flowchart LR
-  RBAC["User roles\n(Admin/Standard/Reader)"] --> UX["What user can do\nin portal/chat"]
-  MI["Agent managed identity\npermission level: Reader/Privileged"] --> ACT["What agent can do\nin Azure"]
-  RM["Run modes\nConsent / Credentials"] --> FLOW["How actions are executed"]
-
-  ACT --> BND["Boundary:\nagent scope/permissions take precedence"]
-  FLOW --> BND
+  RBAC["Layer 1: User roles\n(Admin/Standard/Reader)"] --> UX["What user can do\nin portal/chat"]
+  RM["Layer 2: Run modes\n(Review/Autonomous)"] --> FLOW["Whether agent asks\nbefore acting"]
+  MI["Layer 3: Agent permissions\n(MI RBAC + OBO fallback)"] --> ACT["What agent can do\non Azure resources"]
 ```
 
 ### References (Chapter 3)
-- [3-1] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “consists of three main components”
-- [3-2] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “Three primary roles (*SRE Agent Admin*, *SRE Agent Standard User*, and *SRE Agent Reader*)”
-- [3-3] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “either *Reader* or *Privileged* access”
-- [3-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “you can only enable autonomous mode in the context of an incident management plan”
-- [3-5] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview) — “Agent permissions take precedence … to prevent privilege escalation”
-- [3-6] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview#key-concepts](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview#key-concepts) — “The security model consists of three main components.”
-- [3-7] [https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview#security-model-at-a-glance](https://learn.microsoft.com/en-us/azure/sre-agent/roles-permissions-overview#security-model-at-a-glance) — “RBAC … permission levels … run modes … agent permissions take precedence.”
+- [3-1] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "Access control works across three layers"
+- [3-2] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "User roles / Run modes / Agent permissions"
+- [3-3] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "SRE Agent Reader / Standard User / Administrator"
+- [3-4] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "The user who creates the agent automatically gets the SRE Agent Administrator role"
+- [3-5] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "the backend blocks the action with a 403 error"
+- [3-6] [https://learn.microsoft.com/en-us/azure/sre-agent/user-roles](https://learn.microsoft.com/en-us/azure/sre-agent/user-roles) — "az role assignment create"
+
 
 ---
 
@@ -199,20 +201,24 @@ sequenceDiagram
 
 ---
 
-## 5. Run modes (separating Consent and Credentials)
+## 5. Run modes (Review vs Autonomous)
 
 ### What happens (speaker notes)
-For write actions, SRE Agent treats (a) consent for the execution plan and (b) temporary access to credentials (when permissions are insufficient) as separate concepts.[5-1]
+SRE Agent run modes determine **whether the agent asks for approval before taking action**. Run modes are configured at two levels: per response plan and per scheduled task.[5-1]
 
-The default is Review mode: the agent generates an execution plan, waits for consent, and then executes actions.[5-5]
+| Setting level | Default | Options |
+| --- | --- | --- |
+| Agent-level fallback | Review | Review / Autonomous |
+| Response plan | Autonomous | Review / Autonomous |
+| Scheduled task | Autonomous | Review / Autonomous |
 
-Review mode generates an execution plan and waits for consent before executing.[5-2]
+> **Update from initial version**: The GA docs clarify that response plans and scheduled tasks default to **Autonomous**, while the agent-level fallback defaults to **Review**. The previous version described autonomous mode as limited to incident management plan context only.[5-2]
 
-If credentials permission is needed, temporary credentials are used via OBO and revoked after completion.[5-3]
+**Review mode**: The agent generates an execution plan and waits for user consent before executing.[5-3]
 
-Autonomous mode is treated as “implicit consent,” but it is not unlimited: it’s limited to the incident management plan context.[5-4]
+**Autonomous mode**: The agent proceeds without explicit consent. The scope of what it can actually do is still limited by Layer 3 (Agent permissions — MI RBAC + OBO).[5-4]
 
-Autonomy cannot be enabled for “any context”; the scope is intentionally restricted to keep actions within a safer boundary.[5-6]
+When the agent's managed identity lacks required permissions, it falls back to the OBO flow: requesting temporary credentials from the user, which are revoked after completion.[5-5]
 
 ### Flow (Review mode)
 
@@ -230,12 +236,11 @@ flowchart TD
 ```
 
 ### References (Chapter 5)
-- [5-1] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “Consent / Credentials”
-- [5-2] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “generates an execution plan and waits for your consent”
-- [5-3] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “Any access to user credentials are revoked once the action is complete.”
-- [5-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — “implicit consent”
-- [5-5] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode) — “Default is review mode … generate an execution plan and wait for consent before executing.”
-- [5-6] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes#review-vs-autonomous-mode) — “Autonomy is not available in every context … restricted scope.”
+- [5-1] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — "Run modes determine whether the agent asks for approval"
+- [5-2] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — "response plans default to Autonomous; scheduled tasks default to Autonomous"
+- [5-3] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — "generates an execution plan and waits for your consent"
+- [5-4] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — "autonomous mode — agent permissions still limit what it can do"
+- [5-5] [https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes](https://learn.microsoft.com/en-us/azure/sre-agent/agent-run-modes) — "Any access to user credentials are revoked once the action is complete."
 
 ---
 
