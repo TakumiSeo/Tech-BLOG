@@ -1,4 +1,4 @@
-# General Guidelines
+﻿# General Guidelines
 
 This repository provides GitHub Copilot custom agents for answering user queries and generating research reports using trusted sources.
 
@@ -16,20 +16,26 @@ This repository provides GitHub Copilot custom agents for answering user queries
 ## Directory Structure
 
 ```
+├── content/
+│   └── posts/
+│       ├── ja-jp/
+│       │   └── <slug>.md
+│       └── en-us/
+│           └── <slug>.md
 ├── downloads/
 │   ├── download-file.pdf
 │   └── download-file.meta.json
-├── research/
-│   └── YYYY-MM-DD-slug.md
 └── AGENTS.md
 ```
 
-## Research Report File Conventions
+## Blog Post Output Conventions
 
-- File names must follow the format `YYYY-MM-DD-<slug>.md`.
-- Do not include inferences or opinions in research content. Provide facts only.
-- Research results are primarily intended for use as data, not for human reading. Avoid excessive decoration or verbose explanations.
-- Note that, when `ask` agent mode is used, no report file will be created. Only `research` and `websearch` agent modes generate report files.
+- All agent modes (`ask`, `research`, `websearch`) output blog posts to `content/posts/ja-jp/`.
+- File names must follow the format `<slug>.md` (no date prefix). The `slug` should be descriptive and lowercase with hyphens.
+- Every post MUST include Pelican frontmatter. Read `.github/skills/pelican-frontmatter/SKILL.md` for the specification.
+- Do not include inferences or opinions in content. Provide facts only.
+- When the user explicitly requests bilingual output, also generate the English version in `content/posts/en-us/<slug>.md` with the same `Slug` and `Date`.
+- If only Japanese output is requested (or no language is specified), generate only the ja-jp version.
 
 ## Citation Requirements
 
