@@ -102,20 +102,24 @@ graph TD
 SaaS 製品はビジネス機能と重要度の 2 軸で分類し、ガバナンスの粒度を変えることが推奨されています[^2]。
 
 ```mermaid
-quadrantChart
-    title SaaS 分類マトリクス
-    x-axis "Horizontal（汎用）" --> "Vertical（業界特化）"
-    y-axis "Long-Tail（少額多数）" --> "Core（高額少数）"
-    quadrant-1 "高額・業界特化"
-    quadrant-2 "高額・汎用"
-    quadrant-3 "少額・汎用"
-    quadrant-4 "少額・業界特化"
-    "Microsoft 365": [0.25, 0.85]
-    "Salesforce": [0.35, 0.80]
-    "Slack": [0.30, 0.45]
-    "Zoom": [0.20, 0.40]
-    "業界ERP": [0.80, 0.90]
-    "ニッチSaaS群": [0.75, 0.20]
+graph TD
+    classDef core fill:#0078D4,stroke:#005A9E,color:#fff
+    classDef longtail fill:#50E6FF,stroke:#0078D4,color:#000
+    classDef example fill:#fff,stroke:#0078D4,color:#000
+
+    subgraph "Core（高額少数）— ハイタッチ管理"
+        direction LR
+        H1[汎用 Core]:::core --> H1a[Microsoft 365]:::example
+        H1 --> H1b[Salesforce]:::example
+        H2[業界特化 Core]:::core --> H2a[業界 ERP]:::example
+    end
+
+    subgraph "Long-Tail（少額多数）— ポリシーベース管理"
+        direction LR
+        L1[汎用 Long-Tail]:::longtail --> L1a[Slack]:::example
+        L1 --> L1b[Zoom]:::example
+        L2[業界特化 Long-Tail]:::longtail --> L2a[ニッチ SaaS 群]:::example
+    end
 ```
 
 | 分類 | ガバナンス方針 |
