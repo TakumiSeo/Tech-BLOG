@@ -205,4 +205,116 @@
       </root>
     </mxGraphModel>
   </diagram>
+
+  <!-- ===== Network Architecture: Hub-VNet PoC ===== -->
+  <diagram id="network-architecture" name="Network Architecture">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ===== Azure JapanEast Region ===== -->
+        <mxCell id="region-japaneast" value="Azure JapanEast" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;dashed=0;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="1760" height="760" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Hub-VNet ===== -->
+        <mxCell id="hub-vnet" value="Hub-VNet&#xa;10.10.0.0/20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;dashed=0;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="160" width="1580" height="600" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Subnet-client-001 ===== -->
+        <mxCell id="subnet-client" value="Subnet-client-001&#xa;10.10.0.0/25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="260" width="300" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- ClientVM icon -->
+        <mxCell id="clientvm" value="ClientVM&#xa;10.10.0.4" style="shape=mxgraph.azure.virtual_machine;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="555" y="360" width="60" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- NSG icon for Client subnet -->
+        <mxCell id="nsg-client" value="NSG" style="shape=mxgraph.azure.network_security_group;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="570" width="40" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== AzureFirewallSubnet ===== -->
+        <mxCell id="subnet-fw" value="AzureFirewallSubnet&#xa;10.10.1.0/26" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="260" width="300" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- Azure Firewall icon -->
+        <mxCell id="azure-fw" value="Azure Firewall&#xa;10.10.1.4" style="shape=mxgraph.azure.firewall;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="935" y="380" width="60" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Subnet-appgw-001 ===== -->
+        <mxCell id="subnet-appgw" value="Subnet-appgw-001&#xa;10.10.2.0/26" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="260" width="300" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- Application Gateway icon -->
+        <mxCell id="appgw" value="AppGW&#xa;10.10.2.4" style="shape=mxgraph.azure.application_gateway;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1315" y="360" width="60" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- NSG icon for AppGW subnet -->
+        <mxCell id="nsg-appgw" value="NSG" style="shape=mxgraph.azure.network_security_group;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="570" width="40" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Subnet-vm-001 ===== -->
+        <mxCell id="subnet-vm" value="Subnet-vm-001&#xa;10.10.3.0/25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="260" width="300" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- VM icon -->
+        <mxCell id="appvm" value="AppVM&#xa;10.10.3.4" style="shape=mxgraph.azure.virtual_machine;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1695" y="360" width="60" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- NSG icon for VM subnet -->
+        <mxCell id="nsg-vm" value="NSG" style="shape=mxgraph.azure.network_security_group;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="570" width="40" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Key Vault (Subscription A) -->
+        <mxCell id="keyvault" value="Key Vault&#xa;Subscription A" style="shape=mxgraph.azure.key_vaults;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1850" y="680" width="50" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Azure EastUS2 Region (SRE Agent) ===== -->
+        <mxCell id="region-eastus2" value="Azure EastUS2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;dashed=0;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="320" width="200" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- SRE Agent -->
+        <mxCell id="sre-agent" value="Azure SRE Agent" style="shape=mxgraph.azure.cognitive_services;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="120" y="390" width="60" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Connections ===== -->
+        <!-- SRE Agent → ClientVM (Run Command via Azure mgmt API) -->
+        <mxCell id="e-agent-client" value="Run Command&#xa;(Azure mgmt API)" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#ED7100;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="sre-agent" target="clientvm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ClientVM → Firewall (UDR forced tunneling) -->
+        <mxCell id="e-client-fw" value="UDR:0.0.0.0/0" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#505050;strokeWidth=1;dashed=1;" edge="1" parent="1" source="clientvm" target="azure-fw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Firewall → AppGW -->
+        <mxCell id="e-fw-appgw" value="HTTPS:443" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#0066CC;strokeWidth=2;" edge="1" parent="1" source="azure-fw" target="appgw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AppGW → AppVM -->
+        <mxCell id="e-appgw-vm" value="HTTP:80" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#ED7100;strokeWidth=2;" edge="1" parent="1" source="appgw" target="appvm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>

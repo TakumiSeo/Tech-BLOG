@@ -1,0 +1,176 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="poc-network" name="PoC Network Topology">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="SRE Agent PoC — Network Topology&#xa;Client → FW → AppGW → FW → IIS (Complete Version)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="500" y="10" width="900" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vnet" value="Hub-VNet (vnet-sre-general-poc) — 10.10.0.0/20" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;dashed=0;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="1880" height="1100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sn-client" value="Subnet-client-001 — 10.10.0.0/25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=11;" vertex="1" parent="vnet">
+          <mxGeometry x="40" y="70" width="420" height="400" as="geometry"/>
+        </mxCell>
+        <mxCell id="clientvm" value="ClientVM&#xa;clientvm-sgpoc" style="shape=mxgraph.azure.virtual_machine;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="sn-client">
+          <mxGeometry x="160" y="60" width="60" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="pip-c" value="PIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=9;" vertex="1" parent="sn-client">
+          <mxGeometry x="250" y="80" width="40" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="nsg-c" value="NSG: nsg-client-sre-general-poc&#xa;Allow RDP from myIP" style="text;html=1;align=left;fontSize=9;fillColor=none;strokeColor=none;fontColor=#666666;" vertex="1" parent="sn-client">
+          <mxGeometry x="20" y="240" width="280" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="udr-c" value="UDR: udr-client-sre-general-poc&#xa;• 10.10.2.10/32 → Azure Firewall" style="text;html=1;align=left;fontSize=9;fillColor=#FFF2CC;strokeColor=#D6B656;rounded=1;" vertex="1" parent="sn-client">
+          <mxGeometry x="20" y="290" width="300" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sn-fw" value="AzureFirewallSubnet — 10.10.1.0/26" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=11;" vertex="1" parent="vnet">
+          <mxGeometry x="560" y="70" width="400" height="400" as="geometry"/>
+        </mxCell>
+        <mxCell id="azfw" value="Azure Firewall&#xa;azfw-sre-general-poc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=10;fontStyle=1;" vertex="1" parent="sn-fw">
+          <mxGeometry x="100" y="50" width="160" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="pip-fw" value="PIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=9;" vertex="1" parent="sn-fw">
+          <mxGeometry x="280" y="70" width="40" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="fw-policy" value="Firewall Policy: azfw-policy-sre-general-poc&#xa;• Allow-Client-To-AppGW (Net:100)&#xa;• Allow-AppGW-To-AppVM (Net:110)&#xa;• Allow-AppVM-To-Google (App:100)" style="text;html=1;align=left;fontSize=9;fillColor=#FFF2CC;strokeColor=#D6B656;rounded=1;" vertex="1" parent="sn-fw">
+          <mxGeometry x="20" y="200" width="360" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="fw-snat" value="SNAT skip (RFC 1918 private dest)" style="text;html=1;align=left;fontSize=8;fillColor=none;strokeColor=none;fontColor=#999999;" vertex="1" parent="sn-fw">
+          <mxGeometry x="20" y="290" width="250" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sn-appgw" value="Subnet-appgw-001 — 10.10.2.0/26 (delegated)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=11;" vertex="1" parent="vnet">
+          <mxGeometry x="1060" y="70" width="440" height="400" as="geometry"/>
+        </mxCell>
+        <mxCell id="appgw" value="Application Gateway&#xa;appgw-sre-general-poc&#xa;Private IP: 10.10.2.10" style="shape=mxgraph.azure.application_gateway;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="sn-appgw">
+          <mxGeometry x="160" y="50" width="60" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="appgw-be" value="Backend FQDN: appvm.sre-general-poc.internal" style="text;html=1;align=center;fontSize=9;fillColor=none;strokeColor=none;fontColor=#0078D4;" vertex="1" parent="sn-appgw">
+          <mxGeometry x="40" y="135" width="340" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="nsg-a" value="NSG: nsg-appgw-sre-general-poc&#xa;Allow HTTP from Client subnet" style="text;html=1;align=left;fontSize=9;fillColor=none;strokeColor=none;fontColor=#666666;" vertex="1" parent="sn-appgw">
+          <mxGeometry x="20" y="220" width="300" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="udr-a" value="UDR: udr-appgw-sre-general-poc&#xa;• 0.0.0.0/0 → Internet&#xa;• Client subnet (10.10.0.0/25) → AzFW&#xa;• VM subnet (10.10.3.0/25) → AzFW" style="text;html=1;align=left;fontSize=9;fillColor=#FFF2CC;strokeColor=#D6B656;rounded=1;" vertex="1" parent="sn-appgw">
+          <mxGeometry x="20" y="270" width="310" height="65" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sn-vm" value="Subnet-vm-001 — 10.10.3.0/25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=11;" vertex="1" parent="vnet">
+          <mxGeometry x="560" y="580" width="400" height="380" as="geometry"/>
+        </mxCell>
+        <mxCell id="appvm" value="AppVM (IIS)&#xa;appvm-sgpoc" style="shape=mxgraph.azure.virtual_machine;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="sn-vm">
+          <mxGeometry x="130" y="50" width="60" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="pip-v" value="PIP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=9;" vertex="1" parent="sn-vm">
+          <mxGeometry x="220" y="70" width="40" height="25" as="geometry"/>
+        </mxCell>
+        <mxCell id="nsg-v" value="NSG: nsg-vm-sre-general-poc&#xa;Allow 80/TCP from AppGW subnet" style="text;html=1;align=left;fontSize=9;fillColor=none;strokeColor=none;fontColor=#666666;" vertex="1" parent="sn-vm">
+          <mxGeometry x="20" y="210" width="280" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="udr-v" value="UDR: udr-vm-sre-general-poc&#xa;• AppGW subnet (10.10.2.0/26) → AzFW&#xa;• 0.0.0.0/0 → AzFW" style="text;html=1;align=left;fontSize=9;fillColor=#FFF2CC;strokeColor=#D6B656;rounded=1;" vertex="1" parent="sn-vm">
+          <mxGeometry x="20" y="260" width="310" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dns" value="Private DNS Zone&#xa;sre-general-poc.internal" style="shape=mxgraph.azure.dns;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="vnet">
+          <mxGeometry x="80" y="640" width="60" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="dns-rec" value="A records:&#xa;appgw → 10.10.2.10&#xa;appvm → (AppVM private IP)" style="text;html=1;align=left;fontSize=9;fillColor=none;strokeColor=none;fontColor=#666666;" vertex="1" parent="vnet">
+          <mxGeometry x="160" y="640" width="230" height="45" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="internet" value="Internet&#xa;(google.com)" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="2060" y="700" width="160" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="law" value="Log Analytics&#xa;law-sre-general-poc" style="shape=mxgraph.azure.log_analytics;whiteSpace=wrap;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="160" y="1280" width="60" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="legend" value="Traffic Flows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2020" y="100" width="320" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="la" value="A Client → FW → AppGW" style="text;html=1;align=left;fontSize=10;fontColor=#DD344C;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="35" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lb" value="B AppGW → FW → AppVM" style="text;html=1;align=left;fontSize=10;fontColor=#ED7100;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="65" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lc" value="C AppVM → FW → Internet" style="text;html=1;align=left;fontSize=10;fontColor=#0066CC;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="95" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="lm" value="Monitoring: FW → Log Analytics" style="text;html=1;align=left;fontSize=10;fontColor=#E7157B;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="125" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ld" value="DNS: Private DNS ↔ VNet" style="text;html=1;align=left;fontSize=10;fontColor=#7AA116;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="155" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ls" value="All intra-VNet legs: no SNAT (RFC 1918)" style="text;html=1;align=left;fontSize=9;fontColor=#999999;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="185" width="300" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ea1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#DD344C;strokeWidth=2;" edge="1" parent="1" source="clientvm" target="azfw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ea1l" value="A1 HTTP:80" style="edgeLabel;html=1;fontSize=9;fontColor=#DD344C;fontStyle=1;" vertex="1" connectable="0" parent="ea1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ea2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#DD344C;strokeWidth=2;" edge="1" parent="1" source="azfw" target="appgw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ea2l" value="A2 HTTP:80" style="edgeLabel;html=1;fontSize=9;fontColor=#DD344C;fontStyle=1;" vertex="1" connectable="0" parent="ea2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eb1" style="edgeStyle=curved;curved=1;strokeColor=#ED7100;strokeWidth=2;" edge="1" parent="1" source="appgw" target="azfw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eb1l" value="B1 HTTP:80" style="edgeLabel;html=1;fontSize=9;fontColor=#ED7100;fontStyle=1;" vertex="1" connectable="0" parent="eb1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="eb2" style="edgeStyle=curved;curved=1;strokeColor=#ED7100;strokeWidth=2;" edge="1" parent="1" source="azfw" target="appvm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="eb2l" value="B2 HTTP:80" style="edgeLabel;html=1;fontSize=9;fontColor=#ED7100;fontStyle=1;" vertex="1" connectable="0" parent="eb2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ec1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#0066CC;strokeWidth=2;dashed=1;" edge="1" parent="1" source="appvm" target="azfw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ec1l" value="C1 HTTPS" style="edgeLabel;html=1;fontSize=9;fontColor=#0066CC;fontStyle=1;" vertex="1" connectable="0" parent="ec1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ec2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#0066CC;strokeWidth=2;dashed=1;" edge="1" parent="1" source="azfw" target="internet">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ec2l" value="C2 HTTPS:443" style="edgeLabel;html=1;fontSize=9;fontColor=#0066CC;fontStyle=1;" vertex="1" connectable="0" parent="ec2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="emon" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#E7157B;strokeWidth=1;dashed=1;" edge="1" parent="1" source="azfw" target="law">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="emonl" value="Diagnostic Logs" style="edgeLabel;html=1;fontSize=9;fontColor=#E7157B;" vertex="1" connectable="0" parent="emon">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="edns" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#7AA116;strokeWidth=1;dashed=1;" edge="1" parent="1" source="dns" target="appgw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ednsl" value="FQDN resolve" style="edgeLabel;html=1;fontSize=9;fontColor=#7AA116;" vertex="1" connectable="0" parent="edns">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
