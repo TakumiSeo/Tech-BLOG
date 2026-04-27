@@ -1,0 +1,94 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="sre-agent-positioning" name="SRE Agent Positioning">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="SRE Agent の立ち位置 — 環境ライフサイクル × 相性" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="2320" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Timeline arrow -->
+        <mxCell id="timeline" value="" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="120" as="sourcePoint" />
+            <mxPoint x="2320" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="timeline-label" value="環境ライフサイクル（時系列）" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=13;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="80" width="360" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 1: Pre-provisioning -->
+        <mxCell id="phase1" value="① 環境払い出し前&#xa;（設計・要件定義・IaC 作成）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#808080;verticalAlign=top;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="160" width="520" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="phase1-fit" value="SRE Agent 相性: △ （限定的）" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=14;fontStyle=1;fontColor=#888888;" vertex="1" parent="1">
+          <mxGeometry x="100" y="200" width="480" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="phase1-task" value="主なタスク&#xa;• 要件定義 / アーキテクチャ設計&#xa;• 依頼申請書 → IaC テンプレ生成&#xa;• 命名規則 / タグ設計&#xa;• セキュリティ / ネットワーク設計" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B0B0B0;align=left;verticalAlign=top;fontSize=12;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="240" width="480" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="phase1-tool" value="推奨ツール&#xa;▶ GitHub Copilot / Copilot in Azure（IaC 生成・レビュー）&#xa;▶ Bicep / Terraform ツールチェーン&#xa;▶ Azure Policy / Landing Zone&#xa;※ SRE Agent は「動いているリソース」向けのため&#xa;   設計・生成フェーズでは本領を発揮しない" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;align=left;verticalAlign=top;fontSize=12;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="100" y="390" width="480" height="190" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 2: Post-provisioning incident -->
+        <mxCell id="phase2" value="② 環境払い出し後&#xa;（障害調査・復旧・日次運用）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F6E7;strokeColor=#107C10;verticalAlign=top;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="160" width="840" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="phase2-fit" value="SRE Agent 相性: ◎ （主戦場）" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=16;fontStyle=1;fontColor=#107C10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="200" width="800" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="phase2-task" value="主なタスク&#xa;• メトリクス・ログのスパイク / 異常検知&#xa;• インシデントのトリアージ・切り分け&#xa;• 影響範囲の特定（関係各所ヒアリング前の一次判断）&#xa;• ランブック実行・復旧アクション&#xa;• リリース情報と構成の突合（リスク・変更影響分析）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=12;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="660" y="240" width="800" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="phase2-tool" value="SRE Agent が提供する価値&#xa;▶ Azure Monitor / Log Analytics / App Insights を横串で参照&#xa;▶ インシデント管理（PagerDuty / ServiceNow）と連携した自動トリアージ&#xa;▶ カスタム Runbook / サブエージェントで組織固有の手順を実行&#xa;▶ 調査ごとに学習、チームの制度的知識を蓄積（Never-leaving knowledge）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C6E7C6;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=12;spacingLeft=10;spacingTop=6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="410" width="800" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 3: Regular ops -->
+        <mxCell id="phase3" value="③ 定期運用タスク&#xa;（点検・棚卸し・レポーティング）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;verticalAlign=top;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="160" width="800" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="phase3-fit" value="SRE Agent 相性: ○ （適している）" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=15;fontStyle=1;fontColor=#D97706;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="200" width="760" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="phase3-task" value="主なタスク&#xa;• シークレット / 証明書の期限抽出と通知&#xa;• リソースのコンプラ / タグ棚卸し&#xa;• 月次メトリクス・コストレポート&#xa;• リリース情報調査と構成影響レビュー&#xa;• 定期的なヘルスチェック" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D97706;align=left;verticalAlign=top;fontSize=12;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="240" width="760" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="phase3-tool" value="SRE Agent の使い方&#xa;▶ スケジュールド タスクで定期実行（例: 毎朝 / 週次）&#xa;▶ カスタム Runbook で Key Vault / App Gateway の期限を抽出&#xa;▶ 結果を Teams / チケット起票へ連携&#xa;▶ 「定型・反復」ゆえに自動化メリット大、ただし即応性は ② ほど重要でない" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeColor=#D97706;align=left;verticalAlign=top;fontSize=12;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="410" width="760" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- Bottom: Tool positioning summary -->
+        <mxCell id="summary-title" value="ツール使い分けサマリ" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="2320" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tool-copilot" value="GitHub Copilot / Copilot in Azure&#xa;&#xa;「作る」領域&#xa;• IaC（Bicep / Terraform）コード生成&#xa;• レビュー / リファクタ&#xa;• ドキュメント / 設計書作成&#xa;&#xa;対象: 開発者・プラットフォームエンジニア" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;align=left;verticalAlign=top;fontSize=13;fontStyle=1;spacingLeft=12;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="690" width="720" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tool-sreagent" value="Azure SRE Agent&#xa;&#xa;「運用する」領域&#xa;• インシデント トリアージ / 自動化&#xa;• スケジュールド タスク（定期点検）&#xa;• Azure リソースに対する診断・操作&#xa;• 運用知識の蓄積と再利用&#xa;&#xa;対象: SRE / 運用チーム" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F6E7;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=13;fontStyle=1;spacingLeft=12;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="840" y="690" width="720" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tool-boundary" value="境界の目安&#xa;&#xa;▶ 「環境を新しく作る / 変更を設計する」&#xa;   → GitHub Copilot 系&#xa;&#xa;▶ 「動いている環境で判断・実行する」&#xa;   → SRE Agent&#xa;&#xa;▶ 両者は排他ではなく補完関係&#xa;   （Copilot で作った IaC を SRE Agent が運用）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=left;verticalAlign=top;fontSize=13;spacingLeft=12;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="690" width="720" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- Connector between Copilot and SRE Agent showing handoff -->
+        <mxCell id="handoff" value="IaC / 構成を引き継ぐ" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;dashed=1;fontSize=12;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="800" y="820" as="sourcePoint" />
+            <mxPoint x="840" y="820" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

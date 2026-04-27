@@ -1,0 +1,121 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="azure-vm-fundamentals" name="Azure VM Fundamentals">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Azure Virtual Machine 構成要素" style="text;html=1;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Resource Group container -->
+        <mxCell id="rg" value="Resource Group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;dashed=0;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="1840" height="1240" as="geometry" />
+        </mxCell>
+
+        <!-- VNet container -->
+        <mxCell id="vnet" value="Virtual Network (10.0.0.0/16)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF3FB;strokeColor=#0078D4;dashed=0;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="1160" height="720" as="geometry" />
+        </mxCell>
+
+        <!-- Subnet container -->
+        <mxCell id="subnet" value="Subnet (10.0.1.0/24)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0F0;strokeColor=#505050;dashed=1;verticalAlign=top;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="160" y="200" width="1080" height="620" as="geometry" />
+        </mxCell>
+
+        <!-- NIC1 -->
+        <mxCell id="nic1" value="NIC 1&#xa;Private IP (Static / Dynamic)" style="shape=mxgraph.azure.network_interface;html=1;labelPosition=right;align=left;spacingLeft=10;verticalLabelPosition=middle;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="220" y="280" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- NIC2 -->
+        <mxCell id="nic2" value="NIC 2 (任意)&#xa;複数 NIC をアタッチ可能" style="shape=mxgraph.azure.network_interface;html=1;labelPosition=right;align=left;spacingLeft=10;verticalLabelPosition=middle;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="220" y="400" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Public IP -->
+        <mxCell id="pip" value="Public IP" style="shape=mxgraph.azure.public_ip_address;html=1;labelPosition=right;align=left;spacingLeft=10;verticalLabelPosition=middle;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="220" y="520" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- VM icon -->
+        <mxCell id="vm" value="Virtual Machine&#xa;(Windows / Linux)&#xa;サイズは後から変更可 (再起動要)" style="shape=mxgraph.azure.virtual_machine;html=1;labelPosition=right;align=left;spacingLeft=15;verticalLabelPosition=middle;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="380" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- OS Disk -->
+        <mxCell id="osdisk" value="OS ディスク&#xa;(永続 / Managed Disk)" style="shape=mxgraph.azure.managed_disks;html=1;labelPosition=right;align=left;spacingLeft=10;verticalLabelPosition=middle;verticalAlign=middle;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="260" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Data Disk -->
+        <mxCell id="datadisk" value="データディスク&#xa;(永続 / ユーザーデータ保存先)" style="shape=mxgraph.azure.managed_disks;html=1;labelPosition=right;align=left;spacingLeft=10;verticalLabelPosition=middle;verticalAlign=middle;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="380" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Temp Disk -->
+        <mxCell id="tempdisk" value="一時ディスク&#xa;(仮想ホストに紐づく / 割り当て解除で消失)" style="shape=mxgraph.azure.disks;html=1;labelPosition=right;align=left;spacingLeft=10;verticalLabelPosition=middle;verticalAlign=middle;fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="960" y="500" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Connections: NIC1 <-> VM -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#ED7100;endArrow=classic;" edge="1" parent="1" source="nic1" target="vm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- NIC2 <-> VM -->
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#ED7100;endArrow=classic;" edge="1" parent="1" source="nic2" target="vm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- PIP -> NIC1 -->
+        <mxCell id="e3" value="割り当て" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#0066CC;endArrow=classic;fontSize=10;" edge="1" parent="1" source="pip" target="nic1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- VM -> OS Disk -->
+        <mxCell id="e4" value="アタッチ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#7AA116;endArrow=classic;fontSize=10;" edge="1" parent="1" source="vm" target="osdisk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- VM -> Data Disk -->
+        <mxCell id="e5" value="追加アタッチ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#7AA116;endArrow=classic;fontSize=10;" edge="1" parent="1" source="vm" target="datadisk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- VM -> Temp Disk -->
+        <mxCell id="e6" value="ホスト提供" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#999999;dashed=1;endArrow=classic;fontSize=10;" edge="1" parent="1" source="vm" target="tempdisk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- IP Address note -->
+        <mxCell id="ipnote" value="【IP アドレスの注意】&#xa;・Private IP は静的割り当て可能&#xa;・OS 内部からの IP 変更は NG&#xa;　必ず Azure 側の設定で変更する" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#C19C00;fontSize=11;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="160" y="640" width="340" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Billing note -->
+        <mxCell id="billing" value="【課金】&#xa;・分単位で課金&#xa;・OS シャットダウンでは課金は止まらない&#xa;・Azure Portal で『割り当て解除 (Deallocate)』が必要&#xa;・割り当て解除で一時ディスクの内容は消失" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4E4;strokeColor=#C1272D;fontSize=12;fontStyle=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="140" width="560" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- Size note -->
+        <mxCell id="sizenote" value="【サイズの選択】&#xa;・デプロイ後もサイズ変更可能 (再起動が必須)&#xa;・クラウドはスモールスタートが鉄則&#xa;・容量/性能はアタッチするストレージに依存" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F5E6;strokeColor=#1F8A1F;fontSize=12;fontStyle=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="350" width="560" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Storage note -->
+        <mxCell id="storagenote" value="【ストレージの使い分け】&#xa;・OS ディスク : OS 本体 (永続)&#xa;・データディスク : アプリデータ保存先 (永続)&#xa;・一時ディスク : 仮想ホスト依存、再配置・Deallocate で消失&#xa;　→ 永続データは必ずデータディスクに配置" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;fontStyle=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="540" width="560" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- OS note -->
+        <mxCell id="osnote" value="【サポート OS】&#xa;・Windows Server&#xa;・Linux (Red Hat Enterprise Linux, Ubuntu など)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F0FB;strokeColor=#6B2CBF;fontSize=12;fontStyle=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="750" width="560" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="凡例&#xa;━━ オレンジ: NIC 接続&#xa;━━ 青: Public IP 割り当て&#xa;━━ 緑: ディスクアタッチ (永続)&#xa;- - グレー: 一時ディスク (揮発)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#505050;fontSize=11;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="900" width="400" height="130" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

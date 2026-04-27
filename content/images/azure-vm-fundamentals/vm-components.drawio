@@ -1,0 +1,47 @@
+<mxfile host="65bd71144e">
+    <diagram id="azure-vm-components" name="Azure VM Components">
+        <mxGraphModel dx="449" dy="616" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="Azure Virtual Machine の構成要素" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="30" width="600" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="vmbox" value="Virtual Machine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;verticalAlign=top;fontStyle=1;fontSize=16;dashed=0;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="100" width="880" height="560" as="geometry"/>
+                </mxCell>
+                <mxCell id="compute" value="コンピュート&#xa;(CPU / メモリ)" style="shape=mxgraph.azure.virtual_machine;html=1;labelPosition=bottom;align=center;verticalLabelPosition=bottom;verticalAlign=top;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="180" width="90" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="nic" value="NIC&lt;br&gt;(ネットワーク インターフェイス カード)" style="shape=mxgraph.azure.network_interface;html=1;labelPosition=bottom;align=center;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="330" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ip" value="IP アドレス&#xa;(Public / Private)" style="shape=mxgraph.azure.public_ip_address;html=1;labelPosition=bottom;align=center;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="410" y="480" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="osdisk" value="OS ディスク" style="shape=mxgraph.azure.managed_disks;html=1;labelPosition=bottom;align=center;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="330" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="datadisk" value="データ ディスク" style="shape=mxgraph.azure.managed_disks;html=1;labelPosition=bottom;align=center;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="330" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0078D4;endArrow=none;endFill=0;rounded=0;" parent="1" source="compute" target="nic" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" value="アタッチ" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0078D4;endArrow=none;endFill=0;rounded=0;fontSize=11;" parent="1" source="nic" target="ip" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e3" value="アタッチ" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#7AA116;endArrow=none;endFill=0;rounded=0;fontSize=11;" parent="1" source="compute" target="osdisk" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" value="アタッチ" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#7AA116;endArrow=none;endFill=0;rounded=0;fontSize=11;" parent="1" source="compute" target="datadisk" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
