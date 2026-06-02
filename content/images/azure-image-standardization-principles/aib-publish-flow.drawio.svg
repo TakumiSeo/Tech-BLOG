@@ -25,8 +25,8 @@
   <!-- boxes -->
   <g>
     <rect x="20" y="180" width="190" height="96" rx="8" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
-    <text x="115" y="222" font-size="13" text-anchor="middle" fill="#222">月次トリガー</text>
-    <text x="115" y="242" font-size="13" text-anchor="middle" fill="#222">(Scheduler)</text>
+    <text x="115" y="222" font-size="13" text-anchor="middle" fill="#222">スケジュール / 手動起動</text>
+    <text x="115" y="242" font-size="13" text-anchor="middle" fill="#222">(CI/CD・Scheduler)</text>
   </g>
   <g>
     <rect x="260" y="180" width="190" height="96" rx="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
