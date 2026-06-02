@@ -377,60 +377,60 @@ Windows では `PowerShell` でスクリプトを当て、`WindowsUpdate` で最
 
 ---
 
-[^1]: Cloud Adoption Framework の概要, https://learn.microsoft.com/azure/cloud-adoption-framework/overview
+[^1]: Cloud Adoption Framework の概要, <https://learn.microsoft.com/azure/cloud-adoption-framework/overview>
 
-[^2]: Manage virtual machine compliance（Azure アーキテクチャ センター）, https://learn.microsoft.com/azure/architecture/example-scenario/security/virtual-machine-compliance
+[^2]: Manage virtual machine compliance（Azure アーキテクチャ センター）, <https://learn.microsoft.com/azure/architecture/example-scenario/security/virtual-machine-compliance>
 
-[^3]: Securely govern your cloud estate（CAF Secure: Govern）, https://learn.microsoft.com/azure/cloud-adoption-framework/secure/govern
+[^3]: Securely govern your cloud estate（CAF Secure: Govern）, <https://learn.microsoft.com/azure/cloud-adoption-framework/secure/govern>
 
-[^4]: Manage your cloud operations（CAF Manage）, https://learn.microsoft.com/azure/cloud-adoption-framework/manage/ready-cloud-operations
+[^4]: Manage your cloud operations（CAF Manage）, <https://learn.microsoft.com/azure/cloud-adoption-framework/manage/ready-cloud-operations>
 
-[^5]: Perform your cloud adoption securely — Adopt the principle of integrity（CAF Secure）, https://learn.microsoft.com/azure/cloud-adoption-framework/secure/adopt#adopt-the-principle-of-integrity
+[^5]: Perform your cloud adoption securely — Adopt the principle of integrity（CAF Secure）, <https://learn.microsoft.com/azure/cloud-adoption-framework/secure/adopt#adopt-the-principle-of-integrity>
 
-[^6]: Azure Policy の概要, https://learn.microsoft.com/azure/governance/policy/overview
+[^6]: Azure Policy の概要, <https://learn.microsoft.com/azure/governance/policy/overview>
 
-[^7]: Azure VM の Trusted Launch, https://learn.microsoft.com/azure/virtual-machines/trusted-launch
+[^7]: Azure VM の Trusted Launch, <https://learn.microsoft.com/azure/virtual-machines/trusted-launch>
 
-[^8]: Microsoft SBOM tool, https://github.com/microsoft/sbom-tool
+[^8]: Microsoft SBOM tool, <https://github.com/microsoft/sbom-tool>
 
-[^9]: Azure Compute Gallery の概要, https://learn.microsoft.com/azure/virtual-machines/azure-compute-gallery
+[^9]: Azure Compute Gallery の概要, <https://learn.microsoft.com/azure/virtual-machines/azure-compute-gallery>
 
-[^10]: Azure Policy サンプル: allowed image publishers, https://github.com/Azure/azure-policy/tree/master/samples/Compute/allowed-image-publishers
+[^10]: Azure Policy サンプル: allowed image publishers, <https://github.com/Azure/azure-policy/tree/master/samples/Compute/allowed-image-publishers>
 
-[^11]: Azure Policy のマシン構成機能, https://learn.microsoft.com/azure/governance/machine-configuration/overview
+[^11]: Azure Policy のマシン構成機能, <https://learn.microsoft.com/azure/governance/machine-configuration/overview>
 
-[^12]: Azure Update Manager の概要, https://learn.microsoft.com/azure/update-manager/overview
+[^12]: Azure Update Manager の概要, <https://learn.microsoft.com/azure/update-manager/overview>
 
-[^13]: Azure VM Image Builder の概要, https://learn.microsoft.com/azure/virtual-machines/image-builder-overview
+[^13]: Azure VM Image Builder の概要, <https://learn.microsoft.com/azure/virtual-machines/image-builder-overview>
 
-[^14]: 管理グループ（Azure ランディング ゾーンの設計領域）, https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-management-groups
+[^14]: 管理グループ（Azure ランディング ゾーンの設計領域）, <https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/design-area/resource-org-management-groups>
 
-[^15]: Microsoft クラウド セキュリティ ベンチマークの概要, https://learn.microsoft.com/security/benchmark/azure/introduction
+[^15]: Microsoft クラウド セキュリティ ベンチマークの概要, <https://learn.microsoft.com/security/benchmark/azure/introduction>
 
-[^16]: Azure Monitor Agent の概要, https://learn.microsoft.com/azure/azure-monitor/agents/azure-monitor-agent-overview
+[^16]: Azure Monitor Agent の概要, <https://learn.microsoft.com/azure/azure-monitor/agents/azure-monitor-agent-overview>
 
-[^17]: Microsoft Defender for Servers プランの有効化, https://learn.microsoft.com/azure/defender-for-cloud/tutorial-enable-servers-plan
+[^17]: Microsoft Defender for Servers プランの有効化, <https://learn.microsoft.com/azure/defender-for-cloud/tutorial-enable-servers-plan>
 
-[^18]: Azure VM のバックアップの概要, https://learn.microsoft.com/azure/backup/backup-azure-vms-introduction
+[^18]: Azure VM のバックアップの概要, <https://learn.microsoft.com/azure/backup/backup-azure-vms-introduction>
 
-[^19]: Azure Hybrid Benefit（Windows VM のライセンス）, https://learn.microsoft.com/azure/virtual-machines/windows/hybrid-use-benefit-licensing
+[^19]: Azure Hybrid Benefit（Windows VM のライセンス）, <https://learn.microsoft.com/azure/virtual-machines/windows/hybrid-use-benefit-licensing>
 
-[^20]: Azure VM Image Builder のネットワーク オプション, https://learn.microsoft.com/azure/virtual-machines/linux/image-builder-networking
+[^20]: Azure VM Image Builder のネットワーク オプション, <https://learn.microsoft.com/azure/virtual-machines/linux/image-builder-networking>
 
-[^21]: Azure Update Manager のプレ イベントとポスト イベントの概要, https://learn.microsoft.com/azure/update-manager/pre-post-scripts-overview
+[^21]: Azure Update Manager のプレ イベントとポスト イベントの概要, <https://learn.microsoft.com/azure/update-manager/pre-post-scripts-overview>
 
-[^22]: チュートリアル: Runbook を使った Webhook でプレ / ポスト イベントを実行する（Azure Update Manager）, https://learn.microsoft.com/azure/update-manager/tutorial-webhooks-using-runbooks
+[^22]: チュートリアル: Runbook を使った Webhook でプレ / ポスト イベントを実行する（Azure Update Manager）, <https://learn.microsoft.com/azure/update-manager/tutorial-webhooks-using-runbooks>
 
-[^23]: Azure Image Builder の Bicep / ARM テンプレート（properties.customize / distribute / autoRun / networking）, https://learn.microsoft.com/azure/virtual-machines/linux/image-builder-json
+[^23]: Azure Image Builder の Bicep / ARM テンプレート（properties.customize / distribute / autoRun / networking）, <https://learn.microsoft.com/azure/virtual-machines/linux/image-builder-json>
 
-[^24]: Default outbound access in Azure, https://learn.microsoft.com/azure/virtual-network/ip-services/default-outbound-access
+[^24]: Default outbound access in Azure, <https://learn.microsoft.com/azure/virtual-network/ip-services/default-outbound-access>
 
-[^25]: Azure Image Builder triggers, https://learn.microsoft.com/azure/virtual-machines/image-builder-triggers-how-to
+[^25]: Azure Image Builder triggers, <https://learn.microsoft.com/azure/virtual-machines/image-builder-triggers-how-to>
 
-[^26]: Soft Delete in Azure Compute Gallery, https://learn.microsoft.com/azure/virtual-machines/soft-delete-gallery
+[^26]: Soft Delete in Azure Compute Gallery, <https://learn.microsoft.com/azure/virtual-machines/soft-delete-gallery>
 
-[^27]: Microsoft Defender Vulnerability Management のサーバー向け機能, https://learn.microsoft.com/defender-vulnerability-management/defender-vulnerability-management-capabilities#vulnerability-management-capabilities-for-servers
+[^27]: Microsoft Defender Vulnerability Management のサーバー向け機能, <https://learn.microsoft.com/defender-vulnerability-management/defender-vulnerability-management-capabilities#vulnerability-management-capabilities-for-servers>
 
-[^28]: Vulnerabilities in my organization（CVE detection logic）, https://learn.microsoft.com/defender-vulnerability-management/tvm-weaknesses#cve-detection-logic
+[^28]: Vulnerabilities in my organization（CVE detection logic）, <https://learn.microsoft.com/defender-vulnerability-management/tvm-weaknesses#cve-detection-logic>
 
-[^29]: Defender for Cloud の規制コンプライアンス標準, https://learn.microsoft.com/azure/defender-for-cloud/concept-regulatory-compliance-standards#available-compliance-standards
+[^29]: Defender for Cloud の規制コンプライアンス標準, <https://learn.microsoft.com/azure/defender-for-cloud/concept-regulatory-compliance-standards#available-compliance-standards>
