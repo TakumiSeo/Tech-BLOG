@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="900" viewBox="0 0 1800 900" font-family="Meiryo, sans-serif">
+<rect x="0" y="0" width="1800" height="900" fill="#FFFFFF"/>
+<defs><marker id="ar_orange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#ED7100"/></marker><marker id="ar_green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#248814"/></marker><marker id="ar_red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#DD344C"/></marker><marker id="ar_storage" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#7AA116"/></marker><marker id="ar_magenta" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#E7157B"/></marker><marker id="ar_gray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#888888"/></marker></defs>
+<text x="34" y="46" font-size="19" font-weight="bold" fill="#222">イメージ標準化とパッチ運用の全体像 — ビルド時 → 運用時 → 統制</text>
+<rect x="20" y="70" width="1760" height="200" rx="10" ry="10" fill="#F2F8FF" stroke="#0078D4" stroke-width="1.5"/>
+<text x="34" y="94" font-size="13" font-weight="bold" fill="#0078D4">① ビルド時 — ゴールデンイメージ パイプライン (§3 / §6.1)</text>
+<rect x="20" y="300" width="1760" height="160" rx="10" ry="10" fill="#F7F7F7" stroke="#888888" stroke-width="1.5"/>
+<text x="34" y="324" font-size="13" font-weight="bold" fill="#888888">② 統制・可視化 — Azure Policy / Defender for Cloud (§4.11 / §5.3)</text>
+<rect x="20" y="500" width="1760" height="380" rx="10" ry="10" fill="#F1F8F0" stroke="#248814" stroke-width="1.5"/>
+<text x="34" y="524" font-size="13" font-weight="bold" fill="#248814">③ 運用時 — ランタイム パッチ自動化 (§4.12 / §6.2)</text>
+<polyline points="240,192 280,192" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="510,192 550,192" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="720,192 760,192" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="990,192 1030,192" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="635,150 635,120 395,120 395,150" fill="none" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ar_red)"/>
+<polyline points="1440,150 1440,120 395,120" fill="none" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ar_red)"/>
+<polyline points="1135,235 1135,285 150,285 150,590" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#ar_green)"/>
+<polyline points="260,637 300,637" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="540,637 580,637" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="880,637 920,637" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#ar_orange)"/>
+<polyline points="1240,637 1280,637" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#ar_green)"/>
+<polyline points="1460,637 1500,637" fill="none" stroke="#E7157B" stroke-width="2"  marker-end="url(#ar_magenta)"/>
+<polyline points="1080,685 1080,755" fill="none" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ar_red)"/>
+<polyline points="1160,685 1160,725 1430,725 1430,755" fill="none" stroke="#7AA116" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ar_storage)"/>
+<polyline points="515,435 515,560 420,560 420,590" fill="none" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ar_red)"/>
+<polyline points="1040,435 1040,560 1370,560 1370,590" fill="none" stroke="#E7157B" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#ar_magenta)"/>
+<rect x="40" y="150" width="200" height="85" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="140.0" y="188" font-size="12" text-anchor="middle" fill="#333">Marketplace</text>
+<text x="140.0" y="206" font-size="12" text-anchor="middle" fill="#333">最新ベースイメージ</text>
+<rect x="280" y="150" width="230" height="85" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="395.0" y="180" font-size="12" text-anchor="middle" fill="#333">VM Image Builder</text>
+<text x="395.0" y="197" font-size="12" text-anchor="middle" fill="#333">ハードニング / エージェント /</text>
+<text x="395.0" y="214" font-size="12" text-anchor="middle" fill="#333">CA 証明書</text>
+<rect x="550" y="150" width="170" height="85" rx="8" ry="8" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<text x="635.0" y="188" font-size="12" text-anchor="middle" fill="#333">自動テスト</text>
+<text x="635.0" y="206" font-size="12" text-anchor="middle" fill="#333">(合否判定)</text>
+<rect x="760" y="150" width="230" height="85" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="875.0" y="188" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Azure Compute Gallery</text>
+<text x="875.0" y="206" font-size="12" text-anchor="middle" fill="#333">発行・レプリケート</text>
+<rect x="1030" y="150" width="210" height="85" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="1135.0" y="188" font-size="12" text-anchor="middle" fill="#333">DevOps が VM を展開</text>
+<text x="1135.0" y="206" font-size="12" text-anchor="middle" fill="#333">(承認イメージのみ)</text>
+<rect x="1290" y="150" width="300" height="85" rx="8" ry="8" fill="#FFFFFF" stroke="#666666" stroke-width="2" stroke-dasharray="6,4"/>
+<text x="1440.0" y="180" font-size="12" text-anchor="middle" fill="#333">緊急 CVE: 同一パイプラインを</text>
+<text x="1440.0" y="197" font-size="12" text-anchor="middle" fill="#333">オンデマンド起動 /</text>
+<text x="1440.0" y="214" font-size="12" text-anchor="middle" fill="#333">excludeFromLatest で旧版除外</text>
+<rect x="300" y="355" width="430" height="80" rx="8" ry="8" fill="#FDE7E9" stroke="#DD344C" stroke-width="2"/>
+<text x="515.0" y="391" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Azure Policy</text>
+<text x="515.0" y="408" font-size="12" text-anchor="middle" fill="#333">承認イメージ強制 / マシン構成でドリフト検知</text>
+<rect x="820" y="355" width="440" height="80" rx="8" ry="8" fill="#FCE4EC" stroke="#E7157B" stroke-width="2"/>
+<text x="1040.0" y="391" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Microsoft Defender for Cloud</text>
+<text x="1040.0" y="408" font-size="12" text-anchor="middle" fill="#333">規制コンプライアンス評価・準拠の可視化</text>
+<rect x="40" y="590" width="220" height="95" rx="8" ry="8" fill="#F5F5F5" stroke="#666666" stroke-width="2"/>
+<text x="150.0" y="625" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">稼働中 VM</text>
+<text x="150.0" y="642" font-size="12" text-anchor="middle" fill="#333">Windows / Linux</text>
+<text x="150.0" y="659" font-size="12" text-anchor="middle" fill="#333">(Prod / QA / Dev / Test)</text>
+<rect x="300" y="590" width="240" height="95" rx="8" ry="8" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<text x="420.0" y="625" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Azure Update Manager</text>
+<text x="420.0" y="642" font-size="12" text-anchor="middle" fill="#333">メンテナンス構成</text>
+<text x="420.0" y="659" font-size="12" text-anchor="middle" fill="#333">(ゲスト パッチ スケジュール)</text>
+<rect x="580" y="590" width="300" height="95" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="730.0" y="625" font-size="12" text-anchor="middle" fill="#333">プレ メンテナンス イベント →</text>
+<text x="730.0" y="642" font-size="12" text-anchor="middle" fill="#333">Event Grid →</text>
+<text x="730.0" y="659" font-size="12" text-anchor="middle" fill="#333">Automation Runbook</text>
+<rect x="920" y="590" width="320" height="95" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="1080.0" y="625" font-size="12" text-anchor="middle" fill="#333">凍結確認 / 対象解決 /</text>
+<text x="1080.0" y="642" font-size="12" text-anchor="middle" fill="#333">オンデマンド バックアップ +</text>
+<text x="1080.0" y="659" font-size="12" text-anchor="middle" fill="#333">スナップショット (Instant Restore)</text>
+<rect x="1280" y="590" width="180" height="95" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="1370.0" y="625" font-size="12" text-anchor="middle" fill="#333">パッチ適用</text>
+<text x="1370.0" y="642" font-size="12" text-anchor="middle" fill="#333">(メンテナンス</text>
+<text x="1370.0" y="659" font-size="12" text-anchor="middle" fill="#333">ウィンドウ)</text>
+<rect x="1500" y="590" width="220" height="95" rx="8" ry="8" fill="#FCE4EC" stroke="#E7157B" stroke-width="2"/>
+<text x="1610.0" y="625" font-size="12" text-anchor="middle" fill="#333">通知</text>
+<text x="1610.0" y="642" font-size="12" text-anchor="middle" fill="#333">(Logic App / Webhook /</text>
+<text x="1610.0" y="659" font-size="12" text-anchor="middle" fill="#333">アラート)</text>
+<rect x="920" y="755" width="320" height="70" rx="8" ry="8" fill="#FDE7E9" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4"/>
+<text x="1080.0" y="786" font-size="12" text-anchor="middle" fill="#333">凍結中 / 失敗時: Cancellation API で</text>
+<text x="1080.0" y="803" font-size="12" text-anchor="middle" fill="#333">スケジュールをキャンセル</text>
+<rect x="1300" y="755" width="260" height="70" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="1430.0" y="786" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Azure Backup</text>
+<text x="1430.0" y="803" font-size="12" text-anchor="middle" fill="#333">Recovery Services Vault</text>
+<rect x="724" y="173" width="23" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="728" y="185" font-size="11" fill="#444">合格</text>
+<rect x="496" y="102" width="23" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="500" y="114" font-size="11" fill="#444">失敗</text>
+<rect x="896" y="102" width="81" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="900" y="114" font-size="11" fill="#444">再ビルド (OOB)</text>
+<rect x="556" y="266" width="52" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="560" y="278" font-size="11" fill="#444">VM を展開</text>
+<rect x="544" y="618" width="52" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="548" y="630" font-size="11" fill="#444">発行イベント</text>
+<rect x="1244" y="618" width="23" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1248" y="630" font-size="11" fill="#444">続行</text>
+<rect x="1082" y="713" width="59" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1086" y="725" font-size="11" fill="#444">凍結 / 失敗</text>
+<rect x="1226" y="706" width="81" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1230" y="718" font-size="11" fill="#444">Backup Now</text>
+<rect x="426" y="541" width="73" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="430" y="553" font-size="11" fill="#444">評価・ドリフト検知</text>
+<rect x="1176" y="541" width="52" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1180" y="553" font-size="11" fill="#444">準拠を可視化</text>
+</svg>

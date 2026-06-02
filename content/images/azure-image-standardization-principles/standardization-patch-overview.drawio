@@ -1,0 +1,63 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="standardization-patch-overview" name="Standardization + Patch Overview">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1840" pageHeight="920" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="イメージ標準化とパッチ運用の全体像 — ビルド時 → 運用時 → 統制" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=19;" vertex="1" parent="1">
+          <mxGeometry x="34" y="24" width="1100" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="laneA" value="① ビルド時 — ゴールデンイメージ パイプライン (§3 / §6.1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2F8FF;strokeColor=#0078D4;verticalAlign=top;align=left;fontStyle=1;fontSize=13;spacingLeft=12;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="20" y="70" width="1760" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneB" value="② 統制・可視化 — Azure Policy / Defender for Cloud (§4.11 / §5.3)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F7F7;strokeColor=#888888;verticalAlign=top;align=left;fontStyle=1;fontSize=13;spacingLeft=12;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="1760" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="laneC" value="③ 運用時 — ランタイム パッチ自動化 (§4.12 / §6.2)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8F0;strokeColor=#248814;verticalAlign=top;align=left;fontStyle=1;fontSize=13;spacingLeft=12;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="20" y="500" width="1760" height="380" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a1" value="Marketplace&#10;最新ベースイメージ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="150" width="200" height="85" as="geometry"/></mxCell>
+        <mxCell id="a2" value="VM Image Builder&#10;ハードニング / エージェント /&#10;CA 証明書" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1"><mxGeometry x="280" y="150" width="230" height="85" as="geometry"/></mxCell>
+        <mxCell id="a3" value="自動テスト&#10;(合否判定)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="550" y="150" width="170" height="85" as="geometry"/></mxCell>
+        <mxCell id="a4" value="Azure Compute Gallery&#10;発行・レプリケート" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9F3E6;strokeColor=#248814;fontSize=12;" vertex="1" parent="1"><mxGeometry x="760" y="150" width="230" height="85" as="geometry"/></mxCell>
+        <mxCell id="a5" value="DevOps が VM を展開&#10;(承認イメージのみ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1030" y="150" width="210" height="85" as="geometry"/></mxCell>
+        <mxCell id="aoob" value="緊急 CVE: 同一パイプラインを&#10;オンデマンド起動 /&#10;excludeFromLatest で旧版除外" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1290" y="150" width="300" height="85" as="geometry"/></mxCell>
+
+        <mxCell id="b1" value="Azure Policy&#10;承認イメージ強制 / マシン構成でドリフト検知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7E9;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1"><mxGeometry x="300" y="355" width="430" height="80" as="geometry"/></mxCell>
+        <mxCell id="b2" value="Microsoft Defender for Cloud&#10;規制コンプライアンス評価・準拠の可視化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#E7157B;fontSize=12;" vertex="1" parent="1"><mxGeometry x="820" y="355" width="440" height="80" as="geometry"/></mxCell>
+
+        <mxCell id="c1" value="稼働中 VM&#10;Windows / Linux&#10;(Prod / QA / Dev / Test)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1"><mxGeometry x="40" y="590" width="220" height="95" as="geometry"/></mxCell>
+        <mxCell id="c2" value="Azure Update Manager&#10;メンテナンス構成&#10;(ゲスト パッチ スケジュール)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="300" y="590" width="240" height="95" as="geometry"/></mxCell>
+        <mxCell id="c3" value="プレ メンテナンス イベント →&#10;Event Grid →&#10;Automation Runbook" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1"><mxGeometry x="580" y="590" width="300" height="95" as="geometry"/></mxCell>
+        <mxCell id="c4" value="凍結確認 / 対象解決 /&#10;オンデマンド バックアップ +&#10;スナップショット (Instant Restore)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9F3E6;strokeColor=#248814;fontSize=12;" vertex="1" parent="1"><mxGeometry x="920" y="590" width="320" height="95" as="geometry"/></mxCell>
+        <mxCell id="c5" value="パッチ適用&#10;(メンテナンス ウィンドウ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9F3E6;strokeColor=#248814;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1280" y="590" width="180" height="95" as="geometry"/></mxCell>
+        <mxCell id="c6" value="通知&#10;(Logic App / Webhook / アラート)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#E7157B;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1500" y="590" width="220" height="95" as="geometry"/></mxCell>
+        <mxCell id="ccancel" value="凍結中 / 失敗時: Cancellation API で&#10;スケジュールをキャンセル" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#FDE7E9;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1"><mxGeometry x="920" y="755" width="320" height="70" as="geometry"/></mxCell>
+        <mxCell id="cbk" value="Azure Backup&#10;Recovery Services Vault" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9F3E6;strokeColor=#248814;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1300" y="755" width="260" height="70" as="geometry"/></mxCell>
+
+        <mxCell id="ea1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="a1" target="a2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="a2" target="a3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea3" value="合格" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;fontSize=11;" edge="1" parent="1" source="a3" target="a4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="a4" target="a5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ea5" value="失敗 → 差し戻し" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#DD344C;fontSize=11;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="a3" target="a2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eoob" value="再ビルド (OOB)" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#DD344C;fontSize=11;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="aoob" target="a2"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="ehand" value="VM を展開" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#248814;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="a5" target="c1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="ec1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="c1" target="c2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ec2" value="発行イベント" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;fontSize=11;" edge="1" parent="1" source="c2" target="c3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ec3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="c3" target="c4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ec4" value="続行" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#248814;fontSize=11;" edge="1" parent="1" source="c4" target="c5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ec5" value="通知" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#E7157B;fontSize=11;" edge="1" parent="1" source="c5" target="c6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ecancel" value="凍結 / 失敗" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#DD344C;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="c4" target="ccancel"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ebk" value="Backup Now" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#7AA116;fontSize=11;exitX=0.75;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="c4" target="cbk"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="eg1" value="評価・ドリフト検知" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#DD344C;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="b1" target="c2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="eg2" value="準拠を可視化" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#E7157B;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="b2" target="c5"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
