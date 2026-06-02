@@ -1,0 +1,53 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="aib-publish-flow" name="AIB Golden Image Publish Flow">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="VM Image Builder によるゴールデンイメージ発行の自動化" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="900" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="n1" value="月次トリガー&#10;(Scheduler)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n2" value="Marketplace&#10;最新ベースイメージ取得" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n3" value="VM Image Builder&#10;カスタマイズ&#10;(ハードニング/エージェント/CA証明書)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n4" value="タトゥーイング&#10;+ SBOM 生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="760" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n5" value="自動テスト&#10;(一時 VM をデプロイして検証)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n6" value="Azure Compute Gallery&#10;へ発行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9F3E6;strokeColor=#248814;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n7" value="必要リージョンへ&#10;レプリケート" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9F3E6;strokeColor=#248814;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="200" width="190" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n8" value="DevOps が VM 展開&#10;/ Azure Policy で承認イメージ強制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7E9;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1720" y="200" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oob" value="緊急パッチ (OOB) は月次と独立にオンデマンドで同一パイプラインを起動&#10;(脆弱版は excludeFromLatest=true で除外)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#FFFFFF;strokeColor=#DD344C;fontSize=11;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="520" y="360" width="430" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="n1" target="n2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="n2" target="n3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="n3" target="n4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#ED7100;" edge="1" parent="1" source="n4" target="n5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="合格" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#248814;fontSize=11;" edge="1" parent="1" source="n5" target="n6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#248814;" edge="1" parent="1" source="n6" target="n7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#0078D4;" edge="1" parent="1" source="n7" target="n8"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="efb" value="失敗 → 差し戻し" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#DD344C;fontSize=11;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="n5" target="n3"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
