@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="760" viewBox="0 0 1700 760" font-family="Meiryo, sans-serif">
+<rect x="0" y="0" width="1700" height="760" fill="#FFFFFF"/>
+<defs><marker id="arrow_orange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#ED7100"/></marker><marker id="arrow_green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#248814"/></marker><marker id="arrow_red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#DD344C"/></marker><marker id="arrow_storage" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#7AA116"/></marker><marker id="arrow_magenta" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#E7157B"/></marker><marker id="arrow_gray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#666666"/></marker></defs>
+<text x="40" y="40" font-size="18" font-weight="bold" fill="#222">運用で自動的に行われること — スケジュール パッチ適用とプレイベント自動バックアップ</text>
+<polyline points="260,125 300,125" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#arrow_orange)"/>
+<polyline points="520,125 560,125" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#arrow_orange)"/>
+<polyline points="780,125 820,125" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#arrow_orange)"/>
+<polyline points="1040,125 1080,125" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#arrow_orange)"/>
+<polyline points="875,170 875,240 150,240 150,300" fill="none" stroke="#ED7100" stroke-width="2"  marker-end="url(#arrow_orange)"/>
+<polyline points="260,345 300,345" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#arrow_green)"/>
+<polyline points="520,345 560,345" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#arrow_green)"/>
+<polyline points="780,345 820,345" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#arrow_green)"/>
+<polyline points="1040,345 1080,345" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#arrow_green)"/>
+<polyline points="1320,345 1360,345" fill="none" stroke="#248814" stroke-width="2"  marker-end="url(#arrow_green)"/>
+<polyline points="150,390 150,510 300,510" fill="none" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow_red)"/>
+<polyline points="930,390 930,510 540,510" fill="none" stroke="#DD344C" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow_red)"/>
+<polyline points="670,390 670,600" fill="none" stroke="#7AA116" stroke-width="2"  marker-end="url(#arrow_storage)"/>
+<polyline points="912,600 912,560 1200,560 1200,390" fill="none" stroke="#7AA116" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow_storage)"/>
+<polyline points="1030,650 1100,650" fill="none" stroke="#7AA116" stroke-width="2"  marker-end="url(#arrow_storage)"/>
+<polyline points="410,390 410,580 1155,580 1155,600" fill="none" stroke="#666666" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow_gray)"/>
+<polyline points="1470,390 1470,470" fill="none" stroke="#E7157B" stroke-width="2"  marker-end="url(#arrow_magenta)"/>
+<rect x="40" y="80" width="220" height="90" rx="8" ry="8" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<text x="150.0" y="112" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Azure Update Manager</text>
+<text x="150.0" y="130" font-size="12" text-anchor="middle" fill="#333">メンテナンス構成</text>
+<text x="150.0" y="146" font-size="12" text-anchor="middle" fill="#333">(ゲスト パッチ スケジュール)</text>
+<rect x="300" y="80" width="220" height="90" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="410.0" y="121" font-size="12" text-anchor="middle" fill="#333">プレ メンテナンス イベント</text>
+<text x="410.0" y="138" font-size="12" text-anchor="middle" fill="#333">(メンテナンス開始前に発行)</text>
+<rect x="560" y="80" width="220" height="90" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="670.0" y="121" font-size="12" text-anchor="middle" fill="#333">Event Grid</text>
+<text x="670.0" y="138" font-size="12" text-anchor="middle" fill="#333">システム トピック → Webhook</text>
+<rect x="820" y="80" width="220" height="90" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="930.0" y="121" font-size="12" text-anchor="middle" fill="#333">Automation Runbook</text>
+<text x="930.0" y="138" font-size="12" text-anchor="middle" fill="#333">(PowerShell)</text>
+<rect x="1080" y="80" width="240" height="90" rx="8" ry="8" fill="#F5F5F5" stroke="#666666" stroke-width="2"/>
+<text x="1200.0" y="112" font-size="12" text-anchor="middle" fill="#333">Azure Resource Graph</text>
+<text x="1200.0" y="130" font-size="12" text-anchor="middle" fill="#333">対象 VM を解決 (CorrelationId)</text>
+<text x="1200.0" y="146" font-size="12" text-anchor="middle" fill="#333">Managed Identity (Reader)</text>
+<rect x="40" y="300" width="220" height="90" rx="8" ry="8" fill="#FFF2CC" stroke="#D6B656" stroke-width="2"/>
+<text x="150.0" y="341" font-size="12" text-anchor="middle" fill="#333">① 凍結 (ブラックアウト) 確認</text>
+<text x="150.0" y="358" font-size="12" text-anchor="middle" fill="#333">変更凍結期間かどうか</text>
+<rect x="300" y="300" width="220" height="90" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="410.0" y="341" font-size="12" text-anchor="middle" fill="#333">② 対象 VM を解決</text>
+<text x="410.0" y="358" font-size="12" text-anchor="middle" fill="#333">(CorrelationId / Subscription)</text>
+<rect x="560" y="300" width="220" height="90" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="670.0" y="341" font-size="12" text-anchor="middle" fill="#333">③ オンデマンド バックアップ</text>
+<text x="670.0" y="358" font-size="12" text-anchor="middle" fill="#333">Backup Now (VM ごと)</text>
+<rect x="820" y="300" width="220" height="90" rx="8" ry="8" fill="#E6F2FA" stroke="#0078D4" stroke-width="2"/>
+<text x="930.0" y="341" font-size="12" text-anchor="middle" fill="#333">④ バックアップ完了を監視</text>
+<text x="930.0" y="358" font-size="12" text-anchor="middle" fill="#333">(ジョブ状態を確認)</text>
+<rect x="1080" y="300" width="240" height="90" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="1200.0" y="332" font-size="12" text-anchor="middle" fill="#333">⑤ スナップショット取得</text>
+<text x="1200.0" y="350" font-size="12" text-anchor="middle" fill="#333">(Instant Restore =</text>
+<text x="1200.0" y="366" font-size="12" text-anchor="middle" fill="#333">復旧ポイント確保)</text>
+<rect x="1360" y="300" width="220" height="90" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="1470.0" y="341" font-size="12" text-anchor="middle" fill="#333">⑥ パッチ適用へ続行</text>
+<text x="1470.0" y="358" font-size="12" text-anchor="middle" fill="#333">(メンテナンス ウィンドウで適用)</text>
+<rect x="300" y="470" width="240" height="80" rx="8" ry="8" fill="#FDE7E9" stroke="#DD344C" stroke-width="2"/>
+<text x="420.0" y="498" font-size="12" text-anchor="middle" fill="#333">スケジュールをキャンセル</text>
+<text x="420.0" y="514" font-size="12" text-anchor="middle" fill="#333">(Cancellation API /</text>
+<text x="420.0" y="532" font-size="12" text-anchor="middle" fill="#333">現在の実行のみ)</text>
+<rect x="1360" y="470" width="220" height="80" rx="8" ry="8" fill="#FCE4EC" stroke="#E7157B" stroke-width="2"/>
+<text x="1470.0" y="498" font-size="12" text-anchor="middle" fill="#333">通知</text>
+<text x="1470.0" y="514" font-size="12" text-anchor="middle" fill="#333">(Logic App / Webhook /</text>
+<text x="1470.0" y="532" font-size="12" text-anchor="middle" fill="#333">アラート)</text>
+<rect x="560" y="600" width="470" height="100" rx="8" ry="8" fill="#E9F3E6" stroke="#248814" stroke-width="2"/>
+<text x="795.0" y="629" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">Azure Backup</text>
+<text x="795.0" y="646" font-size="12" text-anchor="middle" fill="#333">Recovery Services Vault</text>
+<text x="795.0" y="663" font-size="12" text-anchor="middle" fill="#333">(保護対象 VM と同一リージョン)</text>
+<text x="795.0" y="680" font-size="12" text-anchor="middle" fill="#333">Managed Identity (Backup Operator)</text>
+<rect x="1100" y="600" width="220" height="100" rx="8" ry="8" fill="#F5F5F5" stroke="#666666" stroke-width="2"/>
+<text x="1210.0" y="638" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">保護対象 VM</text>
+<text x="1210.0" y="654" font-size="12" text-anchor="middle" fill="#333">Windows / Linux</text>
+<text x="1210.0" y="672" font-size="12" text-anchor="middle" fill="#333">(Prod / QA / Dev / Test)</text>
+<rect x="40" y="600" width="300" height="100" rx="8" ry="8" fill="#FFFFFF" stroke="#666666" stroke-width="2" stroke-dasharray="6,4"/>
+<text x="190.0" y="638" font-size="12" text-anchor="middle" fill="#333" font-weight="bold">制約</text>
+<text x="190.0" y="654" font-size="12" text-anchor="middle" fill="#333">プレイベント合計 ≤ 20 分</text>
+<text x="190.0" y="672" font-size="12" text-anchor="middle" fill="#333">キャンセル期限 = 開始 − 10 分</text>
+<rect x="536" y="106" width="23" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="540" y="118" font-size="11" fill="#444">発行</text>
+<rect x="796" y="106" width="59" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="800" y="118" font-size="11" fill="#444">Webhook</text>
+<rect x="1056" y="106" width="37" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1060" y="118" font-size="11" fill="#444">対象解決</text>
+<rect x="516" y="222" width="66" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="520" y="234" font-size="11" fill="#444">プレイベント開始</text>
+<rect x="276" y="326" width="37" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="280" y="338" font-size="11" fill="#444">凍結なし</text>
+<rect x="796" y="326" width="37" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="800" y="338" font-size="11" fill="#444">完了待ち</text>
+<rect x="1056" y="326" width="23" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1060" y="338" font-size="11" fill="#444">完了</text>
+<rect x="151" y="458" width="73" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="155" y="470" font-size="11" fill="#444">凍結中はキャンセル</text>
+<rect x="696" y="491" width="88" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="700" y="503" font-size="11" fill="#444">失敗 / タイムアウト</text>
+<rect x="672" y="458" width="81" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="676" y="470" font-size="11" fill="#444">Backup Now</text>
+<rect x="996" y="541" width="117" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1000" y="553" font-size="11" fill="#444">Instant Restore</text>
+<rect x="976" y="628" width="88" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="980" y="640" font-size="11" fill="#444">保護対象をバックアップ</text>
+<rect x="696" y="561" width="44" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="700" y="573" font-size="11" fill="#444">対象 VM</text>
+<rect x="1474" y="418" width="23" height="16" rx="2" ry="2" fill="#FFFFFF" opacity="0.95"/>
+<text x="1478" y="430" font-size="11" fill="#444">通知</text>
+</svg>
