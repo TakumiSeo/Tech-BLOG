@@ -359,19 +359,116 @@ Windows では `PowerShell` でスクリプトを当て、`WindowsUpdate` で最
 
 ## 8. まとめ — 設計前チェックリスト
 
-- [ ] 標準化を L1（中身）/ L2（配布）/ L3（統制・可視化）の 3 レイヤで設計しているか
-- [ ] Pets / Cattle を区別し、リフレッシュ戦略を分けているか
-- [ ] ベースは Marketplace 最新 + カスタマイズになっているか
-- [ ] AIB の起動方式（月次スケジュール / SourceImage trigger / OOB 手動起動）を正しく分けているか
-- [ ] Trusted Launch（Secure Boot / vTPM）を Day1 で検討したか
-- [ ] イメージ タトゥーイングと SBOM で追跡性を確保しているか
-- [ ] Compute Gallery の image version、`targetRegions`、`excludeFromLatest`、EoL を設計しているか
-- [ ] 発行前の自動テストと、月次リフレッシュ + OOB 緊急パッチを用意したか
-- [ ] Azure Policy で承認イメージを強制し、マシン構成でドリフトを検知しているか
-- [ ] Defender for Cloud / Defender Vulnerability Management で準拠状況と CVE を可視化しているか
-- [ ] Azure Update Manager でランタイム パッチを自動化したか
-- [ ] Audit → Deny の昇格を準備度ベースで判断する計画があるか
-- [ ] （CIS Hardened Image 利用時）その版・更新サイクル・費用・サポート条件を確認し、L2 / L3 の標準化に載せているか
+最後に、設計前レビューで確認する項目を細かく分解します。ここでは「Yes / No」で答えられる粒度に寄せ、未決ならヒアリング・設計タスクとして残せる形にします。
+
+### 8.1 スコープと前提
+
+- [ ] 今回の対象が **VM ゴールデンイメージ**であり、コンテナ / AKS ノード / AVD / VM Applications は対象外または別設計であることを明記したか
+- [ ] 標準化を **L1（中身）/ L2（配布）/ L3（統制・可視化）** の 3 レイヤに分けて説明できるか
+- [ ] 対象の管理グループ / サブスクリプション / 環境（本番・検証・開発）を確認したか
+- [ ] 新規 VM のみを対象にするのか、既存 VM も対象にするのかを決めたか
+- [ ] 対象 VM を **Pets / Cattle** に分類し、リフレッシュしやすい VM と個別管理が必要な VM を分けたか
+- [ ] 準拠基準（MCSB / CIS / STIG など）と、その版・適用範囲を確認したか
+
+### 8.2 L1: イメージの中身
+
+- [ ] ベースは **Marketplace 最新 + カスタマイズ**を起点にする方針になっているか
+- [ ] 対象 OS の publisher / offer / sku / generation を確認したか
+- [ ] OS ハードニングで適用する基準と除外項目を定義したか
+- [ ] 標準搭載するエージェント（Azure Monitor Agent / Defender for Servers / バックアップ関連）を決めたか
+- [ ] 社内 CA ルート証明書など、全 VM に共通で必要な証明書・構成を整理したか
+- [ ] アプリケーションコードや環境別設定をゴールデンイメージへ焼き込まない方針になっているか
+- [ ] パスワード、SAS トークン、接続文字列、秘密鍵などのシークレットをイメージや inline script に含めない設計になっているか
+- [ ] Trusted Launch（Secure Boot / vTPM / Boot Integrity Monitoring）の要否と、OS / VM サイズ互換性を確認したか
+- [ ] イメージ タトゥーイングで記録する項目（元イメージ、OS 版、カスタムイメージ版、発行日など）を定義したか
+- [ ] Windows ではレジストリ、Linux では `/etc/` 配下のファイル等、タトゥー情報の保存場所を決めたか
+- [ ] SBOM の生成タイミング、形式（例: SPDX）、保管場所、保持期間を決めたか
+
+### 8.3 AIB ビルド パイプライン
+
+- [ ] AIB Image Template の `source` / `customize` / `distribute` / `identity` の責務を説明できるか
+- [ ] `source` に PlatformImage / ManagedImage / SharedImageVersion のどれを使うか決めたか
+- [ ] `customize` の各ステップを、実行順序どおりに整理したか
+- [ ] Shell / PowerShell / File / WindowsUpdate / WindowsRestart のどの customizer を使うか決めたか
+- [ ] 外部スクリプトを `scriptUri` で参照する場合、アクセス方式（公開 / Managed Identity）を決めたか
+- [ ] `scriptUri` を使うスクリプトの `sha256Checksum` を生成・管理する手順を用意したか
+- [ ] Windows Update customizer を使う場合、`searchCriteria` / `filters` / `updateLimit` を定義したか
+- [ ] 再起動が必要な Windows カスタマイズに `WindowsRestart` を入れるか確認したか
+- [ ] Linux には Linux 用 restart customizer がない前提で、再起動が必要な処理をどう扱うか確認したか
+- [ ] ビルド / 検証 VM が必要な送信先へ到達できるよう、サブネット、NSG、NAT Gateway / Firewall 等を設計したか
+- [ ] Isolated Builds を使う場合、ACI 用サブネット、委任、ビルド VM サブネットとの通信要件を確認したか
+- [ ] AIB の起動方式を、外部スケジューラ / CI/CD / 手動実行 / SourceImage trigger / OOB 実行に分けて整理したか
+- [ ] `autoRun` はテンプレート作成時の 1 回実行であり、継続的な月次スケジュールとは別物だと確認したか
+
+### 8.4 自動テストと発行判定
+
+- [ ] 発行前に一時 VM をデプロイして検証する手順を用意したか
+- [ ] 起動確認、ログイン確認、エージェント起動、証明書配置、セキュリティ設定などのテスト項目を定義したか
+- [ ] ハードニングがアプリ互換性に与える影響を検証する観点を入れたか
+- [ ] テスト失敗時に発行せず、カスタマイズ工程へ差し戻すフローになっているか
+- [ ] テスト結果、ビルドログ、生成された SBOM、タトゥー情報を追跡できるか
+- [ ] 月次ビルドと OOB ビルドで、同じ自動テストを実行する方針になっているか
+
+### 8.5 L2: Compute Gallery の配布・版管理
+
+- [ ] Gallery / Image definition / Image version の命名規約を定義したか
+- [ ] OS 種別、世代、セキュリティ機能、用途別に Image definition をどう分けるか決めたか
+- [ ] Image version の採番を AIB 自動採番にするか、明示バージョンにするか決めたか
+- [ ] 配布先リージョンを洗い出したか
+- [ ] `targetRegions` の `name` / `replicaCount` / `storageAccountType` を設計したか
+- [ ] レプリカ数とストレージ種別が、同時展開数・可用性・コストに合っているか確認したか
+- [ ] 古いバージョンの EoL（end of life date）設定方針を決めたか
+- [ ] `excludeFromLatest` を使う条件（脆弱版、廃止予定版、OOB 対応時など）を決めたか
+- [ ] 誤削除対策として Compute Gallery soft delete（プレビュー）の利用要否を確認したか
+- [ ] DevOps チームが参照すべき Gallery / Image definition / Image version を明確にしたか
+
+### 8.6 L3: 利用統制・可視化
+
+- [ ] Marketplace イメージの直接利用を許可するか禁止するか決めたか
+- [ ] Compute Gallery 発行イメージのみを許可する Azure Policy を Audit で観測できるか
+- [ ] Audit での観測期間、例外洗い出し、修正完了条件を決めたか
+- [ ] Deny へ昇格する準備条件（承認イメージ供給、例外手続き、既存パイプライン改修、利用者周知）を定義したか
+- [ ] Azure Policy の割り当てスコープ（管理グループ / サブスクリプション / リソース グループ）を決めたか
+- [ ] Azure Policy の assignment description に、利用者向けの手順や内部ドキュメントへのリンクを載せるか決めたか
+- [ ] Azure Policy のマシン構成で監査する OS 設定を決めたか
+- [ ] マシン構成の remediation を自動適用するか、監査のみで始めるか決めたか
+- [ ] Defender for Cloud で割り当てる規制コンプライアンス標準（MCSB / CIS など）を決めたか
+- [ ] Defender for Servers / Microsoft Defender Vulnerability Management で Critical CVE を検知・優先度付けする運用を決めたか
+
+### 8.7 ランタイム パッチと OOB
+
+- [ ] 稼働中 VM のランタイム パッチは Azure Update Manager で管理する方針になっているか
+- [ ] Azure Update Manager の評価、スケジュール、メンテナンス構成、準拠状況の確認方法を決めたか
+- [ ] パッチ対象 VM の分類（OS、環境、重要度、メンテナンス ウィンドウ）を決めたか
+- [ ] プレイベント / ポストイベントを使うか決めたか
+- [ ] プレイベントでバックアップ、復旧ポイント、スナップショット取得を行うか決めたか
+- [ ] Event Grid → Webhook → Automation Runbook の起動経路を設計したか
+- [ ] 凍結（ブラックアウト）期間中にパッチを止める判定をどこで行うか決めたか
+- [ ] 失敗・タイムアウト時にキャンセル ウィンドウ内で止める手順を用意したか
+- [ ] パッチ結果の通知先（Logic App / Webhook / アラートなど）を決めたか
+- [ ] OOB 緊急パッチで、影響を受ける Image version を特定する手順を用意したか
+- [ ] OOB 時に旧版へ `excludeFromLatest=true` を設定する手順を用意したか
+- [ ] OOB 用のオンデマンド AIB ビルド、テスト、発行、レプリケーション手順を用意したか
+- [ ] OOB 対応後も、通常の月次リフレッシュを継続する方針になっているか
+
+### 8.8 既存 CIS Hardened Image 利用時
+
+- [ ] 現在使っている CIS Hardened Image の publisher / offer / sku / version を棚卸ししたか
+- [ ] その CIS Hardened Image の更新頻度と、最新追従方法を確認したか
+- [ ] CIS Hardened Image をそのまま使うのではなく、Compute Gallery の標準発行プロセスに載せるか決めたか
+- [ ] 追加する自組織設定（エージェント、証明書、監視、バックアップ等）を整理したか
+- [ ] CIS の Level / プロファイルと、アプリ互換性検証の範囲を決めたか
+- [ ] Defender for Cloud / Azure Policy のマシン構成で、CIS 由来の設定が運用中にドリフトしていないか測る設計になっているか
+- [ ] Marketplace の利用条件、費用、サポート条件、更新主体を確認したか
+
+### 8.9 コスト・運用準備
+
+- [ ] Compute Gallery のリージョン数、レプリカ数、ストレージ種別に応じたコストを見積もったか
+- [ ] AIB のビルド、ストレージ、データ転送に関わるコストを見積もったか
+- [ ] Defender for Cloud / Defender for Servers の有効化範囲とコストを確認したか
+- [ ] Azure Hybrid Benefit を適用する OS / SQL ワークロードを確認したか
+- [ ] 運用手順書に、通常ビルド、OOB、AUM パッチ、例外申請、ロールバックの手順を分けて記載したか
+- [ ] 変更履歴、承認履歴、ビルド成果物、SBOM、テスト結果を監査時に提示できる形で保管するか決めたか
 
 イメージ標準化は「きれいなイメージを 1 つ作る」ことではなく、**作り続け・配り続け・守らせ続ける仕組み**を CAF の Govern / Manage / Secure の原則に沿って構築することだと言えます。
 
