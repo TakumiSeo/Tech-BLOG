@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="update-review-chain" name="Azure Update Review Chain">
-        <mxGraphModel dx="649" dy="616" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1800" math="0" shadow="0">
+                <mxGraphModel dx="649" dy="616" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="2100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -25,7 +25,7 @@
                 <mxCell id="agentE" value="② Agent E — UpdateScanner（Orchestrator + 照合）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F6E7;strokeColor=#107C10;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
                     <mxGeometry x="40" y="280" width="900" height="820" as="geometry"/>
                 </mxCell>
-                <mxCell id="agentE-yaml" value="name: update_scanner&#xa;tools:&#xa;  - azure_cli         # ARG query&#xa;  - azure_monitor&#xa;handoff:&#xa;  - update_fetcher    # F&#xa;  - report_renderer   # C（再利用）&#xa;  - notifier          # D（再利用）&#xa;enable_skills: true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                <mxCell id="agentE-yaml" value="name: update_scanner&#xa;tools:&#xa;  - azure_cli         # ARG query&#xa;  - azure_monitor&#xa;handoff:&#xa;  - update_fetcher    # F&#xa;  - report_renderer   # C（再利用）&#xa;  - notifier          # D（再利用）&#xa;allowed_skills:&#xa;  - update-impact-assessment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
                     <mxGeometry x="70" y="320" width="840" height="180" as="geometry"/>
                 </mxCell>
                 <mxCell id="agentE-role" value="役割：照合オーケストレータ&#xa;&#xa;1. Azure Resource Graph で現状構成を取得&#xa;   (SKU / version / region / extensions / policy)&#xa;2. Agent F に handoff (mode=list) → Update 一覧を取得&#xa;3. 一次スクリーニング：service-scope × tag で候補を抽出&#xa;4. 候補 URL のみ Agent F に handoff (mode=detail)&#xa;   → 詳細 Markdown を取得（全件詳細は取らない）&#xa;5. 詳細本文と「現状構成」を突合&#xa;   - Retirement/Breaking → Red&#xa;   - Feature/GA → Yellow（検討候補）&#xa;   - 無影響 → Green&#xa;6. リスク / コスト削減 / 効率化コメント生成&#xa;7. 統合 JSON を作成し Agent C にハンドオフ&#xa;&#xa;書込み権限：なし（読取のみ）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F6E7;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
@@ -43,7 +43,7 @@
                 <mxCell id="agentF" value="③ Agent F — UpdateFetcher（外部情報取得）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7EA;strokeColor=#DD344C;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
                     <mxGeometry x="960" y="280" width="900" height="820" as="geometry"/>
                 </mxCell>
-                <mxCell id="agentF-yaml" value="name: update_fetcher&#xa;tools:&#xa;  - ExecutePythonCode   # Utility&#xa;    # search-azure-updates.py  (1 段目)&#xa;    # fetch-url.py             (2 段目)&#xa;handoff_description: |&#xa;  mode=list   : API 一覧を JSON で返す&#xa;  mode=detail : URL 群を Markdown で返す&#xa;enable_skills: true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                <mxCell id="agentF-yaml" value="name: update_fetcher&#xa;tools:&#xa;  - ExecutePythonCode   # Utility&#xa;    # search-azure-updates.py  (1 段目)&#xa;    # fetch-url.py             (2 段目)&#xa;handoff_description: |&#xa;  mode=list   : API 一覧を JSON で返す&#xa;  mode=detail : URL 群を Markdown で返す&#xa;# Skill は使用しない（Tool のみで完結）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
                     <mxGeometry x="990" y="320" width="840" height="180" as="geometry"/>
                 </mxCell>
                 <mxCell id="agentF-role" value="役割：Azure Update 取得の専門家（2 段階フェッチ）&#xa;&#xa;【1 段目 - mode=list】search-azure-updates.py&#xa;  1. Release Communications API をコール&#xa;     https://www.microsoft.com/releasecommunications&#xa;     /api/v2/azure  （認証不要）&#xa;  2. 過去 N 日 + $filter (retirement 等) で絞込&#xa;  3. タグ付け: RETIREMENT / BREAKING /&#xa;             GA / PREVIEW / FEATURE&#xa;  4. 一覧 JSON (title, url, date, tags) を E に返却&#xa;&#xa;【2 段目 - mode=detail】fetch-url.py&#xa;  5. E が絞った候補 URL 群のみ受領&#xa;  6. Selenium (headless) で JS レンダリング&#xa;  7. markdownify で本文 Markdown 化&#xa;  8. 詳細 Markdown を E に返却&#xa;&#xa;書込み権限：なし（外部 HTTPS 読取のみ）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7EA;strokeColor=#DD344C;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
@@ -135,6 +135,30 @@
                 </mxCell>
                 <mxCell id="bp" value="📌 設計ポイント&#xa;&#xa;▶ 現状の「動的な」リソース情報は KB に入れず、Azure Resource Graph で都度取得（陳腐化回避）&#xa;▶ KB には「静的な」設計意図・ガードレール・サービスカテゴリ一覧のみを置く（guardrails / cost-baseline / service-scope / architecture）&#xa;▶ 外部 API 取得は Agent F に分離。Azure Update 以外（Service Health / Advisor / Marketplace）への拡張が容易&#xa;▶ 既存の C (ReportRenderer) / D (Notifier) を再利用。新規実装は E / F のみ&#xa;▶ Retirement / Breaking の検出は自動化し、チケット起票は Review で人が確認してから発火&#xa;▶ 照合ロジックの妥当性（誤検知率 / 取りこぼし率）を PoC 評価指標に組み込む → アジェンダ 3 に接続" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;align=left;verticalAlign=top;fontSize=12;fontStyle=1;spacingLeft=12;spacingTop=10;" parent="1" vertex="1">
                     <mxGeometry x="40" y="1140" width="2720" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="skills-box" value="⑦ Skills（詳細）— allowed_skills で参照される再利用可能な手順 + ツール束" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0FA;strokeColor=#5E5EC8;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="1430" width="2720" height="600" as="geometry"/>
+                </mxCell>
+                <mxCell id="skills-note" value="Skill = SKILL.md（手順） + アタッチされた Tools + 補助ファイル の三点セット。&#xa;Agent F は Skill 不使用（Tool のみで完結：search-azure-updates.py / fetch-url.py）。Update 照合手順は Agent E が保持。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#555555;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1470" width="2680" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-impact" value="🧩 update-impact-assessment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E5EC8;verticalAlign=top;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1520" width="2680" height="490" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-impact-md" value="📄 SKILL.md（手順）&#xa;&#xa;1. ARG で現状スナップショットを取得 (resource type / sku / version / region)&#xa;2. 受け取った Update 一覧をスコープと照合 → 該当リソースを特定&#xa;3. severity 判定 (Retirement × 該当あり → Red、Feature × 推奨 → Yellow)&#xa;4. cost-baseline.md / guardrails.md を参照しコスト・効率コメント生成&#xa;5. update_id ごとに影響ありリソース・推奨アクションを JSON 化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F8FC;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1560" width="1320" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-impact-tools" value="🔧 アタッチされた Tools（Skill アクティブ時に有効）&#xa;&#xa;・RunAzCliReadCommands（az graph query / az resource list）&#xa;・azure_monitor（関連リソースの健全性確認）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1420" y="1560" width="1320" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-impact-files" value="📚 補助ファイル（Skill 付属）&#xa;&#xa;・architecture.md（設計意図、Hub-Spoke 構成など）&#xa;・severity-rules.md（Red/Yellow/Green 判定ルール）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1420" y="1680" width="1320" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-impact-users" value="👤 利用 Agent: E（UpdateScanner）　※ Agent F は Skill を使わず、Tool のみで使う" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1820" width="2660" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-impact-hint" value="☆ 補助ファイル vs Knowledge file の切り分け：「手順が使う」ものは Skill 補助、「単独参照」は Knowledge。 architecture.md は Skill 手順が「読んで ARG 結果と突合」するため Skill 付属、cost-baseline.md は E が独立に参照するため Knowledge 側に置く。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1880" width="2660" height="60" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

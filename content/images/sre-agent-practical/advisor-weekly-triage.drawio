@@ -1,0 +1,160 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+    <diagram id="advisor-weekly-triage" name="Azure Advisor Weekly Triage">
+                <mxGraphModel dx="649" dy="616" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="2100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="Azure Advisor 週次トリアージ — 緊急度判定 × 週次レポート" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=22;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="20" width="2720" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="G: Advisor 取得 + ルール一次絞込 + LLM 緊急度再評価 → 既存 C (整形) → 既存 D (配信)" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=13;fontStyle=2;fontColor=#555555;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="60" width="2720" height="22" as="geometry"/>
+                </mxCell>
+                <mxCell id="trg-box" value="① Trigger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#808080;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="100" width="2720" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="trg-sched" value="Scheduled Task&#xa;毎週 水 09:00 JST&#xa;→ Agent G をキック" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="140" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="trg-chat" value="Chat / /agent&#xa;特定 subscription / RG を指定して&#xa;アドホック トリアージも可" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="140" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="trg-note" value="既存の週次メトリクス チェーン (A→B→C→D) / Update 照合チェーン (E→F→C→D) と並走。&#xa;C/D は完全再利用、新規エージェントは G 1 つだけ。書込みは D のみ（G は読取専用）。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#555555;" parent="1" vertex="1">
+                    <mxGeometry x="880" y="140" width="1840" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentG" value="② Agent G — AdvisorTriager（Orchestrator + 緊急度判定）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F6E7;strokeColor=#107C10;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="280" width="900" height="820" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentG-yaml" value="name: advisor_triager&#xa;tools:&#xa;  - azure_cli         # az advisor recommendation list&#xa;  - azure_resource_graph  # advisorresources&#xa;  - azure_monitor     # 過去アラート照合&#xa;  - advisor_rule_filter   # Python: KB ルール一次絞込&#xa;handoff:&#xa;  - report_renderer   # C（再利用）&#xa;  - notifier          # D（再利用）&#xa;allowed_skills:&#xa;  - advisor-triage-playbook&#xa;  - incident-recurrence-check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="320" width="840" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentG-role" value="役割：Advisor 推奨事項の緊急度判定オーケストレータ&#xa;&#xa;1. Azure Resource Graph で全 Advisor 推奨事項を取得&#xa;   (advisorresources / impact / category / impactedField)&#xa;2. ルールベース一次絞込（KB: advisor-priority-rules）&#xa;   - High × Security / Reliability → 緊急候補&#xa;   - High × Cost (月額 &gt; 閾値) → 重要候補&#xa;   - Medium / Low → サマリのみ&#xa;3. LLM による緊急度再評価（緊急候補のみ）&#xa;   - 本番/検証区分（タグ参照）&#xa;   - 過去 30 日のアラート発生履歴 (azure_monitor)&#xa;   - 関連サービスの SLA 影響度&#xa;   → Critical / High / Medium / Low に再分類&#xa;4. リソース別グルーピング ＆ 推奨アクション付与&#xa;5. 統合 JSON を作成し Agent C にハンドオフ&#xa;&#xa;書込み権限：なし（読取のみ / Reader + Advisor Reader）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7F6E7;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="520" width="840" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentG-kb" value="KB (Agent G)：advisor-priority-rules.md / service-scope.md（既存 E と共有）&#xa;cost-baseline.md（月額閾値）/ tag-policy.md（本番/検証 判定ルール）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C6E7C6;strokeColor=#107C10;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="820" width="840" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentG-mode" value="Run Mode: Review（PoC 初期）→ Autonomous（緊急度判定の妥当性が確認できてから）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="910" width="840" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentG-out" value="出力 JSON&#xa;{ scope, summary:{critical, high, medium, low},&#xa;  items:[{rec_id, resource_id, category, impact,&#xa;          triage_level, reason, recommended_action,&#xa;          related_alerts:[...], cost_impact}] }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="980" width="840" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="rules" value="③ ルールベース一次絞込（KB: advisor-priority-rules.md）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7EA;strokeColor=#DD344C;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="960" y="280" width="900" height="820" as="geometry"/>
+                </mxCell>
+                <mxCell id="rules-table" value="| ルール | 入力条件                                          | 出力緊急度 |&#xa;|-------|---------------------------------------------------|----------|&#xa;| R1    | Impact=High + Security + 本番タグ                  | Critical |&#xa;| R2    | Impact=High + Reliability + 過去30日にアラート発生   | Critical |&#xa;| R3    | Impact=High + Reliability + アラート未発生           | High     |&#xa;| R4    | Impact=High + Cost + 月額 &gt; ¥X 万円                  | High     |&#xa;| R5    | Impact=High + Performance                          | Medium   |&#xa;| R6    | Impact=High + OperationalExcellence                | Medium   |&#xa;| R7    | Impact=Medium 以下                                 | Low      |" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;align=left;verticalAlign=top;fontSize=11;fontFamily=Consolas;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="990" y="320" width="840" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="rules-flow" value="ルール → LLM の役割分担&#xa;&#xa;【ルールベース（高速・決定論的）】&#xa;  - 数百〜数千件の Advisor 推奨事項を高速にフィルタ&#xa;  - LLM コール削減 → コスト・レイテンシ抑制&#xa;  - Impact / Category / リソース タグで判定可能な範囲を担当&#xa;&#xa;【LLM 再評価（文脈考慮）】&#xa;  - 緊急候補のみが対象（数十件レベル）&#xa;  - 本番/検証区分・過去アラート履歴・SLA 影響を加味&#xa;  - 最終 triage_level（Critical/High/Medium/Low）を確定&#xa;  - 推奨アクション文と理由（reason）を生成&#xa;&#xa;※ 全件 LLM に投げない設計が PoC 成功の鍵" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE7EA;strokeColor=#DD344C;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="990" y="540" width="840" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="rules-thresholds" value="閾値・パラメータ（PoC でお客様と合意）&#xa;・月額閾値 X 万円（R4 用）&#xa;・アラート照合期間（既定: 過去 30 日）&#xa;・本番タグ key/value（既定: env=prod）&#xa;・除外サービス / 除外推奨 ID（ノイズ抑制）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAD7DA;strokeColor=#DD344C;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="990" y="840" width="840" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="rules-kpi" value="評価軸の重み付け（このシナリオ）&#xa;予防性 ★★★ / 品質 ★★★ / 運用負荷 ★★ / 実用性 ★★ / 再現性 ★★ / 時間 ★ / 可観測性 ★" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="990" y="980" width="840" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext" value="④ 外部ソース（G が直接取得）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0FA;strokeColor=#5E5EC8;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1880" y="280" width="880" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-advisor" value="🛡 Azure Advisor（ARG 経由）&#xa;&#xa;az graph query -q &quot;advisorresources&#xa;  | where type =~ 'microsoft.advisor/recommendations'&#xa;  | project id, properties.impact, properties.category,&#xa;            properties.impactedField, properties.shortDescription&quot;&#xa;・認証：Managed Identity (Reader + Advisor Reader)&#xa;・Advisor は日次更新 → 週次取得で鮮度十分&#xa;・5 カテゴリ: Cost / Security / Reliability / Performance / OE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1910" y="320" width="820" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-monitor" value="📈 Azure Monitor（過去アラート照合）&#xa;&#xa;・対象リソースの過去 30 日アラート履歴を取得&#xa;・R2 ルール（Reliability + 過去アラート発生）の判定根拠&#xa;・LLM 再評価時に「実害があったか」の文脈として使用" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1910" y="510" width="820" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="ext-tags" value="🏷 リソース タグ（ARG 経由）&#xa;&#xa;・本番/検証区分の判定（env=prod など）&#xa;・所有チーム特定（owner=xxx）→ Agent D の配信先決定に連携&#xa;・KB の tag-policy.md でルール定義" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1910" y="640" width="820" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="downstream" value="⑤ Downstream（既存チェーンを再利用）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0FA;strokeColor=#5E5EC8;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1880" y="800" width="880" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentC-ref" value="[C] ReportRenderer（再利用）&#xa;&#xa;・KB 追加：advisor-triage-template.md&#xa;・PDF 構成&#xa;  1. エグゼクティブサマリ&#xa;     (Critical/High/Medium/Low 件数)&#xa;  2. Critical 一覧 × 推奨アクション&#xa;  3. High 一覧 × 推奨アクション&#xa;  4. Medium/Low サマリ表&#xa;  5. リソース別ヒートマップ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1910" y="840" width="400" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="agentD-ref" value="[D] Notifier（再利用）&#xa;&#xa;・Critical&#xa;  → Red: Teams @mention + 起票&#xa;・High&#xa;  → Yellow: Teams + メール&#xa;・Medium&#xa;  → サマリのみ（週次まとめ）&#xa;・Low&#xa;  → 配信なし（PDF 内のみ）&#xa;&#xa;Run Mode: Review 維持" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0FA;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="2330" y="840" width="400" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr-sched-G" value="fire" style="endArrow=classic;html=1;strokeColor=#D97706;strokeWidth=2;fontSize=11;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="260" y="220" as="sourcePoint"/>
+                        <mxPoint x="400" y="280" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arr-G-rules" value="apply rules" style="endArrow=classic;html=1;strokeColor=#107C10;strokeWidth=3;fontSize=11;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="940" y="600" as="sourcePoint"/>
+                        <mxPoint x="960" y="600" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arr-rules-G" value="filtered candidates → LLM" style="endArrow=classic;html=1;strokeColor=#DD344C;strokeWidth=2;dashed=1;fontSize=11;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="960" y="660" as="sourcePoint"/>
+                        <mxPoint x="940" y="660" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arr-G-ext" value="ARG / Monitor / Tags" style="endArrow=classic;html=1;strokeColor=#5E5EC8;strokeWidth=2;fontSize=11;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="490" y="280" as="sourcePoint"/>
+                        <mxPoint x="2320" y="280" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arr-G-C" value="handoff: triage JSON" style="endArrow=classic;html=1;strokeColor=#0078D4;strokeWidth=3;fontSize=11;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="490" y="1100" as="sourcePoint"/>
+                        <mxPoint x="2110" y="840" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="arr-C-D" value="render → notify" style="endArrow=classic;html=1;strokeColor=#5E5EC8;strokeWidth=2;fontSize=11;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="2310" y="960" as="sourcePoint"/>
+                        <mxPoint x="2330" y="960" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="skills-box" value="⑦ Skills（詳細）— allowed_skills で参照される再利用可能な手順 + ツール束" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F0FA;strokeColor=#5E5EC8;verticalAlign=top;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="1130" width="2720" height="930" as="geometry"/>
+                </mxCell>
+                <mxCell id="skills-note" value="Skill = SKILL.md（手順） + アタッチされた Tools + 補助ファイル の三点セット。エージェント直属の tools / knowledge とは別レイヤで関連性に応じて自動ロードされる（同時 5 つまで）。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#555555;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1170" width="2680" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-triage" value="🧩 advisor-triage-playbook" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E5EC8;verticalAlign=top;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1220" width="1340" height="800" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-triage-md" value="📄 SKILL.md（手順）&#xa;&#xa;1. ARG で Advisor 推奨事項を全件取得&#xa;2. advisor_rule_filter （Tool）で KB ルール適用 (R1〜R7)&#xa;3. Critical/High 候補のみ残し Medium/Low はサマリ化&#xa;4. 誤検知押さえのためタグ読み取り (env=prod 判定)&#xa;5. 過去 30 日の Monitor アラート履歴を Kusto で照合&#xa;6. LLM 二次評価で triage_level を確定&#xa;7. リソース別グルーピング + 推奨アクション付与&#xa;8. 統合 triage JSON を返却（呼び出し元への結果返却のみ）&#xa;&#xa;※ 後段エージェントへのハンドオフは呼び出し元 Agent の責務。&#xa;　Skill は再利用性のため特定エージェント名を含めない。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F8FC;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1260" width="640" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-triage-tools" value="🔧 アタッチされた Tools（Skill アクティブ時に有効）&#xa;&#xa;・RunAzCliReadCommands（az graph query / az advisor）&#xa;・execute_kusto_query（Monitor アラート照合）&#xa;・ExecutePythonCode → advisor_rule_filter.py&#xa;  （決定論的に R1〜R7 を適用 → 候補を返却）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="1260" width="640" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-triage-files" value="📚 補助ファイル（Skill 付属）&#xa;&#xa;・advisor-priority-rules.md（R1〜R7 ルール表）&#xa;・tag-policy.md（env / owner / criticality の解釈）&#xa;・cost-baseline.md（R4 用の月額閾値）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="740" y="1430" width="640" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-triage-users" value="👤 利用 Agent: G（AdvisorTriager）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1600" width="1300" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-triage-hint" value="☆ Skill 補助 vs Knowledge の切り分け：advisor-priority-rules.md は「手順が読んで適用」するため Skill 補助。他の Knowledge（service-scope.md）は Agent G が独立に参照するため Knowledge 側に置く。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1650" width="1300" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-recur" value="🧩 incident-recurrence-check" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5E5EC8;verticalAlign=top;fontSize=13;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1420" y="1220" width="1340" height="800" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-recur-md" value="📄 SKILL.md（手順）&#xa;&#xa;1. 対象リソース ID と推奨カテゴリをキーに&#xa;2. Memory を Kusto で検索し類似インシデント Top N&#xa;3. 類似度と過去アクションをスコア付きで返却&#xa;4. 一致度が高い場合 triage_level を 1 段階昇格 (例: High→Critical)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F8FC;strokeColor=#5E5EC8;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="1260" width="640" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-recur-tools" value="🔧 アタッチされた Tools&#xa;&#xa;・execute_kusto_query（Memory ストレージへの検索クエリ）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#107C10;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="2100" y="1260" width="640" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-recur-files" value="📚 補助ファイル（Skill 付属）&#xa;&#xa;・signature-extraction-rules.md（シグネチャ抽出のルール）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;align=left;verticalAlign=top;fontSize=11;spacingLeft=10;spacingTop=8;" parent="1" vertex="1">
+                    <mxGeometry x="2100" y="1430" width="640" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-recur-users" value="👤 利用 Agent: G（LLM 二次評価中に関連性で自動ロード）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#D97706;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="1600" width="1300" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="skill-summary" value="「Agent yaml の allowed_skills に名前だけ書く」→ ここのカードを参照するという関係。Skill は Agent とは独立に Builder &gt; Skills で作成・管理される。" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#444444;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="1960" width="2680" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

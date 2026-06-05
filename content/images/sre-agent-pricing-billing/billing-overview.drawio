@@ -1,0 +1,238 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="billing" name="SRE Agent Billing">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="Azure SRE Agent 課金モデル (AAU = Azure Agent Unit / 1 AAU = $0.10)" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="2320" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Agent (center) -->
+        <mxCell id="agent" value="SRE Agent (1 つ)" style="shape=mxgraph.azure.virtual_machine;html=1;labelPosition=right;align=left;verticalLabelPosition=middle;verticalAlign=middle;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="120" width="60" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ Always-on flow (LEFT) ============ -->
+        <mxCell id="alwaysOn" value="① Always-on フロー (固定コスト)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;dashed=0;verticalAlign=top;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="700" height="380" as="geometry"/>
+        </mxCell>
+        <mxCell id="aoRate" value="エージェント存在時間 × 4 AAU / hour ($0.40 / hour)&#xa;(エージェント作成 → 削除 まで継続)" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="100" y="290" width="660" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="aoHour" value="1 時間&#xa;= 4 AAU&#xa;= $0.40" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="120" y="370" width="160" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="aoDay" value="1 日 (24h)&#xa;= 96 AAU&#xa;= $9.60" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="320" y="370" width="160" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="aoMonth" value="30 日換算&#xa;= 2,880 AAU&#xa;= $288.00" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="520" y="370" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="aoNote" value="※ エージェントを「停止」しても Always-on 課金は継続&#xa;※ 完全に止めるには「削除」が必要" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="120" y="470" width="600" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="aoFormula" value="月額 (固定) = 4 × (エージェント稼働時間 [h]) AAU = $0.40 × 稼働時間 [h]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#D9B300;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="540" width="580" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ Active flow (RIGHT) ============ -->
+        <mxCell id="active" value="② Active フロー (変動コスト・トークンベース)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#DD344C;dashed=0;verticalAlign=top;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="820" y="240" width="1540" height="380" as="geometry"/>
+        </mxCell>
+        <mxCell id="actDesc" value="エージェントが「処理に費やした時間」のみ課金&#xa;(ユーザー応答待ち・承認待ちは課金対象外。月初にカウンタリセット / 1 AAU = $0.10)" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="840" y="280" width="1500" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- 4 token types -->
+        <mxCell id="tIn" value="Input&#xa;(プロンプト・&#xa;ツール結果・&#xa;コンテキスト)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="340" width="170" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="tOut" value="Output&#xa;(モデル応答・&#xa;推論)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="340" width="170" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="tCR" value="Cache read&#xa;(プロンプト&#xa;キャッシュから&#xa;再利用)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="340" width="170" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="tCW" value="Cache write&#xa;(再利用のため&#xa;キャッシュに書込)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DD344C;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="340" width="170" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- AAU rate table -->
+        <mxCell id="rateTitle" value="モデル別 AAU レート (1M トークンあたり) — 2026/04/15 時点" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="335" width="700" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="rh1" value="モデル" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#999999;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="360" width="180" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="rh2" value="Input" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#999999;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1800" y="360" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="rh3" value="Output" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#999999;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1920" y="360" width="120" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="rh4" value="Cache read" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#999999;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2040" y="360" width="130" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="rh5" value="Cache write" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#999999;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2170" y="360" width="130" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="r1c1" value="Claude Opus 4.6" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="390" width="180" height="30" as="geometry"/></mxCell>
+        <mxCell id="r1c2" value="100" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1800" y="390" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="r1c3" value="500" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1920" y="390" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="r1c4" value="10" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="2040" y="390" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="r1c5" value="125" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="2170" y="390" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="r2c1" value="GPT 5.3 Codex" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="420" width="180" height="30" as="geometry"/></mxCell>
+        <mxCell id="r2c2" value="35" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1800" y="420" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="r2c3" value="280" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1920" y="420" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="r2c4" value="3.5" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="2040" y="420" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="r2c5" value="—" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="2170" y="420" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="r3c1" value="GPT 5.2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1620" y="450" width="180" height="30" as="geometry"/></mxCell>
+        <mxCell id="r3c2" value="35" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1800" y="450" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="r3c3" value="280" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1920" y="450" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="r3c4" value="3.5" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="2040" y="450" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="r3c5" value="—" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#999999;fontSize=12;" vertex="1" parent="1"><mxGeometry x="2170" y="450" width="130" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="actFormula" value="トークン種別ごとに  AAU = (使用トークン数 / 1,000,000) × レート  を算出し、4 種別を合算 → ×$0.10 で USD に換算" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#D9B300;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="540" width="1500" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ Sum bottom ============ -->
+        <mxCell id="sum" value="月額請求 = ① Always-on (4 AAU/h) + ② Active フロー (トークン量 × モデル別 AAU レート)&#xa;USD 換算: 月額 = (Always-on AAU + Active AAU) × $0.10  /  Active フロー上限は最大 100 万 AAU ($100,000) まで設定可能" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=15;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="660" width="2280" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ Concrete example title ============ -->
+        <mxCell id="exTitle" value="具体例: 「Quick question (~20K / 2K / 15K / 5K トークン)」を 1 回実行 — モデル別比較" style="text;html=1;align=center;verticalAlign=middle;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="760" width="2280" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ Opus 4.6 example (LEFT) ============ -->
+        <mxCell id="exOpus" value="(A) Claude Opus 4.6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="80" y="800" width="1140" height="430" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oh1" value="種別" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="100" y="840" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="oh2" value="トークン" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="230" y="840" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="oh3" value="レート/1M" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="350" y="840" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="oh4" value="計算式" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="470" y="840" width="430" height="30" as="geometry"/></mxCell>
+        <mxCell id="oh5" value="AAU" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="900" y="840" width="100" height="30" as="geometry"/></mxCell>
+        <mxCell id="oh6" value="USD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1000" y="840" width="200" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="o1a" value="Input" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="100" y="870" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="o1b" value="20,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="230" y="870" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o1c" value="100" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="350" y="870" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o1d" value="20,000 / 1,000,000 × 100" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="470" y="870" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="o1e" value="2.000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="900" y="870" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="o1f" value="$0.2000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1000" y="870" width="200" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="o2a" value="Output" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="100" y="902" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="o2b" value="2,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="230" y="902" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o2c" value="500" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="350" y="902" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o2d" value="2,000 / 1,000,000 × 500" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="470" y="902" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="o2e" value="1.000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="900" y="902" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="o2f" value="$0.1000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1000" y="902" width="200" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="o3a" value="Cache read" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="100" y="934" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="o3b" value="15,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="230" y="934" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o3c" value="10" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="350" y="934" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o3d" value="15,000 / 1,000,000 × 10" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="470" y="934" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="o3e" value="0.150" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="900" y="934" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="o3f" value="$0.0150" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1000" y="934" width="200" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="o4a" value="Cache write" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="100" y="966" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="o4b" value="5,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="230" y="966" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o4c" value="125" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="350" y="966" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="o4d" value="5,000 / 1,000,000 × 125" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;" vertex="1" parent="1"><mxGeometry x="470" y="966" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="o4e" value="0.625" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="900" y="966" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="o4f" value="$0.0625" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6A1B9A;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1000" y="966" width="200" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="oTotal" value="Active フロー合計&#xa;= 2.000 + 1.000 + 0.150 + 0.625&#xa;= 3.775 AAU = $0.3775&#xa;(MS Learn 表記: 約 3.8 AAU)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#D9B300;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1010" width="1100" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oDay" value="Always-on 1h ($0.40) + Quick question 1 回 ($0.3775) = $0.7775 / 時間&#xa;Always-on 24h ($9.60) + Quick question 1 回 ($0.3775) = $9.9775 / 日" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1100" width="1100" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="oNote" value="※ Opus は GPT 系より AAU レートが高いが、調査ステップが少なく済むケースが多い (MS Learn)" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1170" width="1100" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ GPT 5.3 Codex example (RIGHT) ============ -->
+        <mxCell id="exGpt" value="(B) GPT 5.3 Codex" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#0D47A1;verticalAlign=top;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="800" width="1120" height="430" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gh1" value="種別" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1260" y="840" width="130" height="30" as="geometry"/></mxCell>
+        <mxCell id="gh2" value="トークン" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1390" y="840" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="gh3" value="レート/1M" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1510" y="840" width="120" height="30" as="geometry"/></mxCell>
+        <mxCell id="gh4" value="計算式" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1630" y="840" width="430" height="30" as="geometry"/></mxCell>
+        <mxCell id="gh5" value="AAU" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2060" y="840" width="100" height="30" as="geometry"/></mxCell>
+        <mxCell id="gh6" value="USD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2160" y="840" width="180" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="g1a" value="Input" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1260" y="870" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="g1b" value="20,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1390" y="870" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g1c" value="35" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1510" y="870" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g1d" value="20,000 / 1,000,000 × 35" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1630" y="870" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="g1e" value="0.700" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2060" y="870" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="g1f" value="$0.0700" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2160" y="870" width="180" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="g2a" value="Output" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1260" y="902" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="g2b" value="2,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1390" y="902" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g2c" value="280" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1510" y="902" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g2d" value="2,000 / 1,000,000 × 280" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1630" y="902" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="g2e" value="0.560" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2060" y="902" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="g2f" value="$0.0560" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2160" y="902" width="180" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="g3a" value="Cache read" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1260" y="934" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="g3b" value="15,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1390" y="934" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g3c" value="3.5" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1510" y="934" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g3d" value="15,000 / 1,000,000 × 3.5" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1630" y="934" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="g3e" value="0.0525" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2060" y="934" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="g3f" value="$0.0053" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2160" y="934" width="180" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="g4a" value="Cache write" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1260" y="966" width="130" height="32" as="geometry"/></mxCell>
+        <mxCell id="g4b" value="5,000" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#0D47A1;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1390" y="966" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g4c" value="—" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1510" y="966" width="120" height="32" as="geometry"/></mxCell>
+        <mxCell id="g4d" value="MS Learn の AAU レート表で「—」のため算入せず" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#0D47A1;fontSize=12;fontStyle=2;" vertex="1" parent="1"><mxGeometry x="1630" y="966" width="430" height="32" as="geometry"/></mxCell>
+        <mxCell id="g4e" value="—" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2060" y="966" width="100" height="32" as="geometry"/></mxCell>
+        <mxCell id="g4f" value="—" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#0D47A1;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2160" y="966" width="180" height="32" as="geometry"/></mxCell>
+
+        <mxCell id="gTotal" value="Active フロー合計 (Cache write 除く)&#xa;= 0.700 + 0.560 + 0.0525&#xa;= 1.3125 AAU = $0.13125&#xa;(MS Learn 表記: 約 1.6 AAU — 概数のため差異あり)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#D9B300;fontSize=13;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="1010" width="1080" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gDay" value="Always-on 1h ($0.40) + Quick question 1 回 ($0.13125) = $0.53125 / 時間&#xa;Always-on 24h ($9.60) + Quick question 1 回 ($0.13125) = $9.73125 / 日" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="1100" width="1080" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gNote" value="※ Opus 4.6 比 約 35% (1.3125 / 3.775) ・ MS Learn 概数比は 約 42% (1.6 / 3.8)" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="1170" width="1080" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ============ Disclaimer ============ -->
+        <mxCell id="disc" value="価格表記: 1 AAU = $0.10 (Azure 料金ページ記載)。リージョン・契約・為替により変動するため、実際の見積もりは Azure 料金計算ツールで確認のこと。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=12;fontStyle=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1260" width="2280" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Connections -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0078D4;endArrow=classic;" edge="1" parent="1" source="agent" target="alwaysOn">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#DD344C;endArrow=classic;" edge="1" parent="1" source="agent" target="active">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2E7D32;endArrow=classic;dashed=1;" edge="1" parent="1" source="alwaysOn" target="sum">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2E7D32;endArrow=classic;dashed=1;" edge="1" parent="1" source="active" target="sum">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

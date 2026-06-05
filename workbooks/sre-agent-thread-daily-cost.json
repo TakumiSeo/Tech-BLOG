@@ -1,0 +1,333 @@
+{
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json",
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# SRE Agent スレッド別 日次コスト (USD)\n\nこの Workbook は SRE Agent の **スレッド単位の Azure Agent Unit (AAU) 使用量** を取得し、**AAU 単価 (USD / AAU)** を掛けて **日ごとのコスト** を可視化します。\n\n- 既定単価: **1 AAU = $0.10** (Azure 料金ページ記載)\n- 対象期間: **当月の 1 日 〜 本日** (基となる API が当月分のみを返すため、開始日・終了日は自動で固定されます)\n- `threadId = 00000000-0000-0000-0000-000000000000` の行は、ユーザー スレッドに紐付かない集約コスト (日次レポート / 評価など) を示します。\n\n下の **サブスクリプション / リソース グループ / エージェント / API バージョン / AAU 単価** を選択してください。"
+      },
+      "name": "text - intro"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "style": "above",
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources",
+        "crossComponentResources": [
+          "value::all"
+        ],
+        "parameters": [
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a01",
+            "version": "KqlParameterItem/1.0",
+            "name": "SubscriptionId",
+            "label": "サブスクリプション",
+            "type": 2,
+            "isRequired": true,
+            "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions'\n| project value=subscriptionId, label=name\n| order by label asc\n| extend selected=row_number()==1",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a02",
+            "version": "KqlParameterItem/1.0",
+            "name": "ResourceGroup",
+            "label": "リソース グループ",
+            "type": 2,
+            "isRequired": true,
+            "query": "resources\n| where subscriptionId == '{SubscriptionId}'\n| summarize by resourceGroup\n| order by tolower(resourceGroup) asc\n| extend selected=row_number()==1\n| project value=resourceGroup, label=resourceGroup, selected",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a03",
+            "version": "KqlParameterItem/1.0",
+            "name": "AgentName",
+            "label": "エージェント名",
+            "type": 2,
+            "isRequired": true,
+            "query": "resources\n| where type =~ 'microsoft.app/agents'\n| where subscriptionId == '{SubscriptionId}'\n| where resourceGroup == '{ResourceGroup}'\n| project value=name, label=name\n| order by label asc\n| extend selected=row_number()==1",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a04",
+            "version": "KqlParameterItem/1.0",
+            "name": "ApiVersion",
+            "label": "API バージョン",
+            "type": 1,
+            "isRequired": true,
+            "value": "2025-05-01-preview"
+          },
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a05",
+            "version": "KqlParameterItem/1.0",
+            "name": "UnitPriceUsdPerAAU",
+            "label": "AAU 単価 (USD / AAU)",
+            "type": 1,
+            "isRequired": true,
+            "value": "0.10"
+          },
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a06",
+            "version": "KqlParameterItem/1.0",
+            "name": "StartDate",
+            "label": "開始日 (当月 1 日, 自動)",
+            "type": 1,
+            "isRequired": true,
+            "isHiddenWhenLocked": true,
+            "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions'\n| take 1\n| project value = format_datetime(startofmonth(now()), 'yyyy-MM-dd')",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "crossComponentResources": [
+              "value::all"
+            ]
+          },
+          {
+            "id": "8f6a2c40-2c1f-49e0-9d1a-5b1c5c0a0a07",
+            "version": "KqlParameterItem/1.0",
+            "name": "EndDate",
+            "label": "終了日 (本日, 自動)",
+            "type": 1,
+            "isRequired": true,
+            "isHiddenWhenLocked": true,
+            "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions'\n| take 1\n| project value = format_datetime(now(), 'yyyy-MM-dd')",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "crossComponentResources": [
+              "value::all"
+            ]
+          }
+        ]
+      },
+      "name": "parameters - 0"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "**選択中**: `{SubscriptionId}` / `{ResourceGroup}` / `{AgentName}`\n\n- API バージョン: **{ApiVersion}**\n- AAU 単価: **${UnitPriceUsdPerAAU} / AAU**\n- 対象期間 (自動): **{StartDate}** 〜 **{EndDate}**\n\n> `costUsd = aau × {UnitPriceUsdPerAAU}` で各行のコストを算出します。"
+      },
+      "name": "text - selected"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "dailyUsageDetails (per-thread テーブル)",
+        "queryType": 12,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "table",
+        "query": "{\"version\":\"ARMEndpoint/1.0\",\"data\":null,\"headers\":[],\"method\":\"GET\",\"path\":\"/subscriptions/{SubscriptionId}/resourceGroups/{ResourceGroup}/providers/Microsoft.App/agents/{AgentName}/dailyUsageDetails\",\"urlParams\":[{\"key\":\"startTime\",\"value\":\"{StartDate}\"},{\"key\":\"endTime\",\"value\":\"{EndDate}\"},{\"key\":\"api-version\",\"value\":\"{ApiVersion}\"}],\"batchDisabled\":true,\"transformers\":[{\"type\":\"jsonpath\",\"settings\":{\"tablePath\":\"$.value[*]\",\"columns\":[{\"path\":\"$.date\",\"columnid\":\"date\",\"columnType\":\"datetime\"},{\"path\":\"$.threadId\",\"columnid\":\"threadId\",\"columnType\":\"string\"},{\"path\":\"$.source\",\"columnid\":\"source\",\"columnType\":\"string\"},{\"path\":\"$.value\",\"columnid\":\"aau\",\"columnType\":\"double\"},{\"path\":\"$.name.value\",\"columnid\":\"metricName\",\"columnType\":\"string\"}]}}]}",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "aau",
+              "formatter": 0,
+              "numberFormat": {
+                "unit": 0,
+                "options": {
+                  "style": "decimal",
+                  "useGrouping": true,
+                  "maximumFractionDigits": 4
+                }
+              }
+            }
+          ]
+        }
+      },
+      "name": "query - raw"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "日次 × スレッド別 コスト テーブル",
+        "queryType": 7,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "table",
+        "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"b1c1a001-0000-0000-0000-000000000001\",\"mergeType\":\"table\",\"leftTable\":\"query - raw\"}],\"projectRename\":[{\"originalName\":\"[query - raw].date\",\"mergedName\":\"date\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000001\"},{\"originalName\":\"[query - raw].threadId\",\"mergedName\":\"threadId\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000001\"},{\"originalName\":\"[query - raw].source\",\"mergedName\":\"source\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000001\"},{\"originalName\":\"[query - raw].aau\",\"mergedName\":\"aau\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000001\"},{\"originalName\":\"[Added column]\",\"mergedName\":\"costUsd\",\"fromId\":null,\"isNewItem\":true,\"newItemData\":[{\"criteriaContext\":{\"operator\":\"Default\",\"rightValType\":\"column\",\"resultValType\":\"expression\",\"resultVal\":\"[\\\"aau\\\"]*{UnitPriceUsdPerAAU}\"}}]}]}",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "aau",
+              "formatter": 0,
+              "numberFormat": {
+                "unit": 0,
+                "options": {
+                  "style": "decimal",
+                  "useGrouping": true,
+                  "maximumFractionDigits": 4
+                }
+              }
+            },
+            {
+              "columnMatch": "costUsd",
+              "formatter": 0,
+              "numberFormat": {
+                "unit": 0,
+                "options": {
+                  "style": "currency",
+                  "currency": "USD",
+                  "maximumFractionDigits": 4
+                }
+              }
+            }
+          ],
+          "sortBy": [
+            {
+              "itemKey": "date",
+              "sortOrder": 2
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "date",
+            "sortOrder": 2
+          }
+        ]
+      },
+      "name": "query - cost-table"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "日次 スレッド別 コスト (USD, 積み上げバー)",
+        "queryType": 7,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "date",
+          "yAxis": [
+            "costUsd"
+          ],
+          "group": "threadId",
+          "createOtherGroup": 0,
+          "showLegend": true,
+          "ySettings": {
+            "numberFormatSettings": {
+              "unit": 0,
+              "options": {
+                "style": "currency",
+                "currency": "USD",
+                "maximumFractionDigits": 4
+              }
+            }
+          }
+        },
+        "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"b1c1a001-0000-0000-0000-000000000002\",\"mergeType\":\"table\",\"leftTable\":\"query - cost-table\"}],\"projectRename\":[{\"originalName\":\"[query - cost-table].date\",\"mergedName\":\"date\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000002\"},{\"originalName\":\"[query - cost-table].threadId\",\"mergedName\":\"threadId\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000002\"},{\"originalName\":\"[query - cost-table].costUsd\",\"mergedName\":\"costUsd\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000002\"}]}"
+      },
+      "name": "chart - stacked-bar"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "日次 source 別 コスト (USD, 積み上げバー)",
+        "queryType": 7,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "date",
+          "yAxis": [
+            "costUsd"
+          ],
+          "group": "source",
+          "createOtherGroup": 0,
+          "showLegend": true,
+          "ySettings": {
+            "numberFormatSettings": {
+              "unit": 0,
+              "options": {
+                "style": "currency",
+                "currency": "USD",
+                "maximumFractionDigits": 4
+              }
+            }
+          }
+        },
+        "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"b1c1a001-0000-0000-0000-000000000004\",\"mergeType\":\"table\",\"leftTable\":\"query - cost-table\"}],\"projectRename\":[{\"originalName\":\"[query - cost-table].date\",\"mergedName\":\"date\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000004\"},{\"originalName\":\"[query - cost-table].source\",\"mergedName\":\"source\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000004\"},{\"originalName\":\"[query - cost-table].costUsd\",\"mergedName\":\"costUsd\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000004\"}]}"
+      },
+      "name": "chart - stacked-bar-source"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "title": "日次 合計コスト (USD)",
+        "queryType": 7,
+        "size": 0,
+        "showExportToExcel": true,
+        "visualization": "barchart",
+        "chartSettings": {
+          "xAxis": "date",
+          "yAxis": [
+            "costUsd"
+          ],
+          "showLegend": true,
+          "ySettings": {
+            "numberFormatSettings": {
+              "unit": 0,
+              "options": {
+                "style": "currency",
+                "currency": "USD",
+                "maximumFractionDigits": 4
+              }
+            }
+          }
+        },
+        "query": "{\"version\":\"Merge/1.0\",\"merges\":[{\"id\":\"b1c1a001-0000-0000-0000-000000000003\",\"mergeType\":\"table\",\"leftTable\":\"query - cost-table\"}],\"projectRename\":[{\"originalName\":\"[query - cost-table].date\",\"mergedName\":\"date\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000003\"},{\"originalName\":\"[query - cost-table].costUsd\",\"mergedName\":\"costUsd\",\"fromId\":\"b1c1a001-0000-0000-0000-000000000003\"}]}"
+      },
+      "name": "chart - daily-total"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## 補足\n\n- このコストは **課金対象 AAU (`AgentUnits`) × 単価** に基づきます。Always-on (固定 4 AAU/h) も含まれるため、別途加算は不要です ([Azure SRE Agent / pricing-billing](https://learn.microsoft.com/ja-jp/azure/sre-agent/pricing-billing))。\n- リージョン・契約・為替により実単価は変わるため、`AAU 単価 (USD / AAU)` パラメータを実際の単価に置き換えてください。\n- `threadId = 00000000-0000-0000-0000-000000000000` の行は、エージェントの日次レポート (`source = DailyReport`) や評価 (`source = Eval`) など、ユーザー スレッドに紐付かない集約コストです。"
+      },
+      "name": "text - footer"
+    }
+  ],
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ],
+  "fromTemplateId": "sre-agent-thread-daily-cost"
+}
