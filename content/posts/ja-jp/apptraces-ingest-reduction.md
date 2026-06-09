@@ -806,7 +806,142 @@ services.Configure<TelemetryConfiguration>(config =>
 4. 修復確認後、HttpClient 全体を Warning へ移行
 ```
 
-## 9. デバッグ用途のログをどう残すか（実務的な落としどころ）
+## 9. 実例: 構造化ログを JSON 文字列化して `Message` に詰め込んでいるケース
+
+セクション 8 の HttpClient ロガーは「**小さい Information レコードが大量に出る**」パターンでしたが、もう一つの典型は「**1 レコードが大きい Information が実行のたびに出る**」ケースです。`AppTraces` の `Message` をパターン集計したとき、次のように **`Message` が JSON 丸ごと**になっていることがあります（以下はマスク値）。
+
+```
+{"Date":"2026-06-08 11:34:32.300","LogLevel":"INFO","ExecutionId":"I9990007","ProcessingSystem":"SYS-A", ...}
+{"Date":"2026-06-08 11:34:32.298","LogLevel":"INFO","ExecutionId":"D9990001","ProcessingSystem":"SYS-A", ...}
+```
+
+### 9.1 読み取れること
+
+| 観点 | 内容 |
+|---|---|
+| `Message` が JSON 丸ごと | アプリ（または共通ロギング基盤）が、構造化ログを **JSON 文字列化して 1 メッセージとして出力**している |
+| `LogLevel":"INFO"` | メッセージ本体が INFO。実行のたびに必ず出るため、**トラフィックに比例して青天井**に伸びる |
+| `ExecutionId` の接頭辞 `I` / `D` / `E` | 発信元が **3 系統**に分かれている（システム別プレフィックス） |
+| 1 件のサイズ | 約 1,743 B。`AppTraces` の課金サイズは **各列の文字列表現から算出**されるため、巨大な JSON 文字列がそのまま課金量になる[^23] |
+| 合計 | 1,743 B × 約 6,802 万件 ≈ **110 GB**（I / D / E の 3 系統合計） |
+
+> HttpClient ログとの違い: HttpClient ログは「件数が多い」ことが主因でしたが、このケースは「**1 件あたりが大きい**」ことも重なっています。そのため対処は「件数を減らす（レベル / 頻度）」だけでなく「**1 件のサイズを縮める**」という軸も効きます。
+
+### 9.2 犯人を確定させる KQL
+
+#### (a) メッセージを正規化してパターン別に集計（どのテンプレートが支配的か）
+
+数値や ID を伏字化（`{n}` / `{id}`）して「メッセージ テンプレート単位」で課金量を集計すると、文言が微妙に違うだけの同型ログをまとめて炙り出せます[^4]。特定のリソースに絞り込まず、`_ResourceId` を `by` 句に含めることで、**どのリソースがどれだけ課金量を生んでいるか**をリソース横断で比較できます。
+
+```kusto
+AppTraces
+| where TimeGenerated > ago(7d)
+| where SeverityLevel == 1
+| extend Norm = replace_regex(Message, @'\d+', '{n}')
+| extend Norm = replace_regex(Norm, @'[0-9a-fA-F-]{8,}', '{id}')
+| summarize
+    SizeGB = round(sum(_BilledSize)/1024.0/1024/1024, 2),
+    Count = count(),
+    SampleMessage = take_any(Message)   // 代表原文を 1 件
+  by _ResourceId, Pattern = substring(Norm, 0, 80)
+| sort by SizeGB desc
+| take 20
+```
+
+`_ResourceId` × `Pattern` の組み合わせで `SizeGB` 上位を見ることで、「どのリソースのどのテンプレートが犯人か」を一度に把握できます。リソース単位の合計だけが欲しい場合は `by _ResourceId` のみにします。`SampleMessage` で代表原文を 1 件確認できます。
+
+#### (b) JSON 文字列化された Message を構造化して中身を確認
+
+`Message` が JSON で始まるレコードを `parse_json` で展開し、`LogLevel` / `Category` / `EventName` / `Message` などのキーを取り出して発信元を特定します。
+
+```kusto
+AppTraces
+| where TimeGenerated > ago(1d)
+| where _ResourceId =~ "<対象リソースID>"
+| where SeverityLevel == 1
+| where Message startswith "{"
+| extend J = parse_json(Message)
+| project
+    LogLevel  = tostring(J.LogLevel),
+    Category  = tostring(J.Category),
+    EventName = tostring(J.EventName),
+    Msg       = tostring(J.Message)
+| take 20
+```
+
+#### (c) `ExecutionId` 接頭辞（I / D / E）別の内訳と 1 件サイズ
+
+「大きいログか／多いログか」を判別するため、系統別に件数・課金量・平均サイズを見ます[^4][^23]。
+
+```kusto
+AppTraces
+| where TimeGenerated > ago(1d)
+| where _ResourceId =~ "<対象リソースID>"
+| where SeverityLevel == 1
+| where Message startswith "{"
+| extend ExecPrefix = extract("\"ExecutionId\":\"([A-Za-z])", 1, Message)
+| summarize Records    = count(),
+            BillableGB = round(sum(_BilledSize)/1024.0/1024/1024, 2),
+            AvgBytes   = avg(_BilledSize)
+        by ExecPrefix
+| order by BillableGB desc
+```
+
+### 9.3 対処 A — アプリ側（根本対応）
+
+このアンチパターンの本質は「**構造化ログを自前で JSON 文字列化して `Message` に詰めている**」ことです。本来の `ILogger` はメッセージ テンプレートとパラメータを分けて渡すと、パラメータ部分を `customDimensions`（`AppTraces.Properties`）として構造化保持します[^24]。
+
+推奨は次のいずれかです。
+
+1. **出力レベルの見直し**: この INFO がデバッグ目的なら `Debug` に格下げし、本番は `Warning` 以上のみ送信（§8.2 の `appsettings.json` と同じ考え方）[^3]
+2. **出力頻度の見直し**: 「実行のたびに必ず 1 件」をやめ、サマリ / 集計ログに変更する
+3. **JSON 文字列化をやめる**: `_logger.LogInformation("{@Context}", ctx)` のように構造化ログとして渡し、`Message` 本体を短くする[^24]
+4. **サンプリング**: そのまま残す必要があるなら OpenTelemetry / Classic SDK のサンプリングで保持率を下げる[^1][^8]
+
+### 9.4 対処 B — DCR transformation（コード変更が難しい場合）
+
+アプリ改修が難しい場合は、Workspace transformation DCR で取り込み時に処理します。`AppTraces` は transformation 対応テーブルです[^11][^12]。このケースでは **2 つのアプローチ**があります。
+
+#### (1) 不要な系統・レベルの行ごと除外（件数を減らす）
+
+INFO の JSON ログのうち、特定系統（例: `D` 系統）だけを取り込み前に落とす例[^11][^14]:
+
+```kusto
+source
+| where not(Message has "\"LogLevel\":\"INFO\"" and Message matches regex "\"ExecutionId\":\"D")
+```
+
+#### (2) `Message` を切り詰めて 1 件のサイズを縮める（件数は保ちつつ課金量を下げる）
+
+課金サイズは列の文字列表現から算出されるため[^23]、巨大な `Message` を transformation で短縮すればその分だけ課金が下がります。ログの存在（件数）は残しつつ、本文を先頭数百バイトに切り詰める例:
+
+```kusto
+source
+| extend Message = substring(Message, 0, 300)
+```
+
+より良いのは、JSON から必要なキーだけを抽出して別列に移し、`Message` 本体を落とすアプローチです（transformation は列の抽出・再構成にも使えます[^11]）。
+
+```kusto
+source
+| extend ExecutionId = extract("\"ExecutionId\":\"([^\"]+)", 1, Message)
+| extend ProcessingSystem = extract("\"ProcessingSystem\":\"([^\"]+)", 1, Message)
+| extend Message = ""
+```
+
+> コスト上の注意（§4.1 再掲）: transformation で取り込み量を 50% 超削減した場合、超過分にデータ処理料金がかかります（計算式 `[削減 GB] − [受信 GB] / 2`）。Message 切り詰めは 1 件あたり 1,743 B → 数百 B と大幅に削るため 50% を超えやすく、データ処理料金の対象になります。Microsoft Sentinel 有効ワークスペースの Analytics テーブルならこの処理料金は発生しません[^14]。
+
+### 9.5 推奨対応順序
+
+```
+1. §9.2 (a) のパターン正規化で支配的テンプレートを特定
+2. §9.2 (b)(c) で JSON 中身と I/D/E 内訳・1 件サイズを確定
+3. アプリ改修が可能なら §9.3（出力レベル / 頻度 / JSON 文字列化の見直し）を最優先
+4. 改修が難しい間は §9.4 (2) で Message を切り詰めて即時にサイズを削る
+5. 不要系統があれば §9.4 (1) で行ごと除外
+```
+
+## 10. デバッグ用途のログをどう残すか（実務的な落としどころ）
 
 開発者のデバッグ目的ですべてのトレースを取得していたケースでは、以下の組み合わせが現実的です。
 
@@ -862,3 +997,7 @@ services.Configure<TelemetryConfiguration>(config =>
 [^21]: Logging in .NET — How filtering rules are applied（最長プレフィックス マッチの仕様）, Microsoft Learn, https://learn.microsoft.com/en-us/dotnet/core/extensions/logging#how-filtering-rules-are-applied
 
 [^22]: Dependency tracking in Azure Application Insights — `DependencyTrackingTelemetryModule` による HTTP 依存関係の自動収集（ILogger 構成と独立して動作）, Microsoft Learn, https://learn.microsoft.com/en-us/azure/azure-monitor/app/asp-net-dependencies
+
+[^23]: Azure Monitor Logs cost calculations and options — Data size calculation（課金サイズは列の文字列表現から算出される）, Microsoft Learn, https://learn.microsoft.com/en-us/azure/azure-monitor/logs/cost-logs#data-size-calculation
+
+[^24]: Logging in .NET — Log message template（メッセージ テンプレートとパラメータを分けて構造化保持する）, Microsoft Learn, https://learn.microsoft.com/en-us/dotnet/core/extensions/logging#log-message-template
