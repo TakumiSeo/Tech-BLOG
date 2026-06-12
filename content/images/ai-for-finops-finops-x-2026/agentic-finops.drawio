@@ -1,0 +1,94 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="agentic-finops" name="Agentic FinOps">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1440" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Agentic FinOps　通知から行動へ（Crawl / Walk / Run）" style="text;html=1;fontSize=26;fontStyle=1;align=center;verticalAlign=middle;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="220" y="16" width="1000" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="成熟度が上がるほど、通知 → 文脈理解 → 安全なアクションへ進む。" style="text;html=1;fontSize=15;align=center;fontColor=#555555;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="220" y="60" width="1000" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="Crawl ｜ 自動アラート・レポート" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F9A825;verticalAlign=top;fontStyle=1;fontSize=15;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="80" y="106" width="400" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c1a" value="予算アラート / 異常検知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F9A825;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="100" y="156" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c1b" value="定期レポート" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F9A825;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="100" y="216" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c1c" value="原因調査は人手" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F9A825;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="100" y="276" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="Walk ｜ AI 支援の分析・推奨" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#0288D1;verticalAlign=top;fontStyle=1;fontSize=15;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="520" y="106" width="400" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c2a" value="自然言語 Q&amp;A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0288D1;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="540" y="156" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c2b" value="原因仮説の提示 / PR・IaC レビュー" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0288D1;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="540" y="216" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c2c" value="所有者候補の推定" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0288D1;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="540" y="276" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="Run ｜ エージェントの調査・一部実行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;verticalAlign=top;fontStyle=1;fontSize=15;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="960" y="106" width="400" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c3a" value="チケット自動作成 / Teams 通知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="980" y="156" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c3b" value="タグ修正 PR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="980" y="216" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c3c" value="低リスク最適化（承認付き）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="980" y="276" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="em1" value="成熟 →" style="endArrow=block;html=1;strokeColor=#666666;strokeWidth=2;fontSize=13;fontFamily=Yu Gothic UI;" edge="1" parent="1" source="c1" target="c2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="em2" value="成熟 →" style="endArrow=block;html=1;strokeColor=#666666;strokeWidth=2;fontSize=13;fontFamily=Yu Gothic UI;" edge="1" parent="1" source="c2" target="c3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="staheader" value="Autonomous Cost Optimization：Sense → Think → Act（人間の承認を挟む）" style="text;html=1;fontSize=17;fontStyle=1;align=center;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="80" y="372" width="1280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="s" value="Sense（検知）&#10;請求・利用量・タグ・変更履歴・メトリクス" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#0288D1;align=center;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="80" y="410" width="230" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="t" value="Think（文脈化）&#10;原因・影響額・所有者・優先度・推奨" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#ED7100;align=center;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="342" y="410" width="230" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="a" value="Act（実行準備）&#10;チケット・通知・PR・低リスク最適化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;align=center;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="604" y="410" width="230" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="gate" value="人間の承認&#10;Observe → Recommend → Approve → Act" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#C62828;align=center;fontStyle=1;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="866" y="410" width="230" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="exec" value="実行&#10;監査ログに記録" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE7F6;strokeColor=#5E35B1;align=center;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1128" y="410" width="232" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="es1" style="endArrow=block;html=1;strokeColor=#666666;strokeWidth=2;" edge="1" parent="1" source="s" target="t">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="es2" style="endArrow=block;html=1;strokeColor=#666666;strokeWidth=2;" edge="1" parent="1" source="t" target="a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="es3" style="endArrow=block;html=1;strokeColor=#C62828;strokeWidth=2;" edge="1" parent="1" source="a" target="gate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="es4" style="endArrow=block;html=1;strokeColor=#5E35B1;strokeWidth=2;" edge="1" parent="1" source="gate" target="exec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="auto" value="最初に自動化してよい：タグ修正候補・アイドル検出・非本番停止の提案・所有者特定・チケット作成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;align=center;verticalAlign=middle;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="80" y="520" width="1280" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="manual" value="人間承認が必須：本番削除・SKU 変更・契約 / コミット購入・セキュリティ設定変更・保持期間変更" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#C62828;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="80" y="574" width="1280" height="46" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="token-atomic" name="Token atomic unit">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1520" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Token Economics ①　トークンは AI の最小単位（atomic unit）" style="text;html=1;fontSize=26;fontStyle=1;align=center;verticalAlign=middle;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="260" y="18" width="1000" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="入力・推論・出力のすべてがトークンとして消費される。AI 支出を測る&quot;原価単位&quot;。" style="text;html=1;fontSize=15;align=center;fontColor=#555555;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="260" y="62" width="1000" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="inbox" value="入力トークン" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#0078D4;fontStyle=1;fontSize=16;align=center;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="110" width="380" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="modelbox" value="モデル / エージェント" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#ED7100;fontStyle=1;fontSize=16;align=center;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="570" y="110" width="380" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="outbox" value="出力 / 成果" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontStyle=1;fontSize=16;align=center;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="110" width="380" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="indet" value="・プロンプト / システム指示&#10;・会話履歴&#10;・RAG 文書&#10;・ツール定義" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="172" width="380" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="modeldet" value="・推論 / reasoning&#10;・ツール呼び出し&#10;・検証&#10;・再試行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="570" y="172" width="380" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="outdet" value="・回答 / コード / 要約&#10;・意思決定&#10;・業務アクション" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="172" width="380" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="推論" style="endArrow=block;html=1;strokeColor=#666666;strokeWidth=2;fontSize=13;fontFamily=Yu Gothic UI;" edge="1" parent="1" source="inbox" target="modelbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="生成" style="endArrow=block;html=1;strokeColor=#666666;strokeWidth=2;fontSize=13;fontFamily=Yu Gothic UI;" edge="1" parent="1" source="modelbox" target="outbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="drvhdr" value="トークン消費を増やす 5 つの要因" style="text;html=1;fontSize=18;fontStyle=1;align=center;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="324" width="1340" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="d1" value="① システムプロンプト&#10;毎回付く固定的な指示。長いほど固定費化。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="362" width="255" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" value="② 文脈・記憶&#10;RAG 文書・会話履歴・ツール定義が入力を膨張。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="367" y="362" width="255" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" value="③ モデル選択&#10;reasoning / 大規模モデルは同じ作業でも多消費・高単価。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="644" y="362" width="255" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" value="④ 出力長&#10;長文回答・コード生成・レポート生成が出力を押し上げる。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="921" y="362" width="255" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="d5" value="⑤ 再試行・オーケストレーション&#10;失敗・検証・エージェント間通信が&quot;見えない&quot;コストに。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1198" y="362" width="255" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="compound" value="1 つのユーザー要求の裏で複数回の推論が走る → 消費は非線形に増える（compounding）。単価が下がっても、消費総量は増え続ける。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#ED7100;align=center;verticalAlign=middle;fontStyle=1;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="498" width="1363" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="goal" value="目的はトークン削減ではなく、『成果あたりコスト（cost per outcome）』と価値の最大化。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;align=center;verticalAlign=middle;fontStyle=1;fontSize=15;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="564" width="1363" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="token-cost-stack" name="Token cost stack">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1320" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Token Economics ②　AI コストはトークンだけではない（氷山）" style="text;html=1;fontSize=26;fontStyle=1;align=center;verticalAlign=middle;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="160" y="18" width="1000" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="トークン課金は氷山の一角。見えにくい層まで含めて初めて投資判断ができる。" style="text;html=1;fontSize=15;align=center;fontColor=#555555;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="160" y="62" width="1000" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="tip" value="基盤モデル推論（トークン課金）　＝　最も見えやすい 1 層" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#0078D4;fontStyle=1;fontSize=15;align=center;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="410" y="104" width="500" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="water" value="水面 ＝ 請求書で見えるトークンコスト" style="text;html=1;align=center;fontSize=13;fontColor=#0288D1;fontStyle=2;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="160" y="176" width="1000" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="waterline" style="endArrow=none;html=1;strokeColor=#0288D1;strokeWidth=2;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="202" as="sourcePoint" />
+            <mxPoint x="1200" y="202" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="h1" value="クラウド計算・ストレージ（GPU / TPU・Vector DB・オブジェクトストレージ）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;align=center;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="216" width="900" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h2" value="データセンター（電力・冷却・ネットワーク）　※自己ホスト時" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90CAF9;strokeColor=#1976D2;align=center;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="292" width="900" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h3" value="ネットワーク・egress（リージョン間データ転送）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64B5F6;strokeColor=#1565C0;align=center;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="368" width="900" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h4" value="SaaS 埋め込み AI（席課金にトークンが内包され見えにくい）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#42A5F5;strokeColor=#1565C0;fontColor=#FFFFFF;align=center;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="444" width="900" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h5" value="エンジニアリング・MLOps・ガバナンス（評価・監視・安全性・権限管理）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2196F3;strokeColor=#0D47A1;fontColor=#FFFFFF;align=center;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="520" width="900" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="h6" value="シャドー AI・データライセンス（未管理利用・データ権利）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;fontColor=#FFFFFF;align=center;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="596" width="900" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="msg" value="トークンだけ見ると変動費（限界費用）しか捉えられない。固定費・準固定費まで含め『成果あたりコスト』で測る。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;align=center;verticalAlign=middle;fontStyle=1;fontSize=15;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="160" y="690" width="1000" height="56" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

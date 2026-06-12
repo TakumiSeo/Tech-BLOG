@@ -1,0 +1,121 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="azure-arch" name="Azure AI for FinOps">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1520" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Azure で AI for FinOps を実装する — 参照アーキテクチャ" style="text;html=1;fontSize=26;fontStyle=1;align=center;verticalAlign=middle;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="260" y="16" width="1000" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="コスト・リソース・監視・組織文脈を統合し、AI エージェントが分析とアクションを支援する。" style="text;html=1;fontSize=15;align=center;fontColor=#555555;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="260" y="60" width="1000" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="flowup" value="データ ↑" style="text;html=1;fontSize=13;fontStyle=1;align=center;fontColor=#0078D4;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1448" y="300" width="60" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="flowdown" value="アクション ↓" style="text;html=1;fontSize=13;fontStyle=1;align=center;fontColor=#2E7D32;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="520" width="76" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="L1" value="① データソース" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F2FA;strokeColor=#0078D4;verticalAlign=top;fontStyle=1;fontSize=15;align=left;spacingLeft=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="1370" height="116" as="geometry" />
+        </mxCell>
+        <mxCell id="s11" value="Cost Management&#10;エクスポート（FOCUS）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="80" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s12" value="Azure Resource Graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="300" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s13" value="Azure Monitor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="520" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s14" value="Log Analytics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="740" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s15" value="Azure Advisor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="960" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s16" value="Budgets / 異常検知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L2" value="② データ基盤" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF7EE;strokeColor=#2E7D32;verticalAlign=top;fontStyle=1;fontSize=15;align=left;spacingLeft=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="60" y="236" width="1370" height="116" as="geometry" />
+        </mxCell>
+        <mxCell id="s21" value="Microsoft Fabric / OneLake" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="120" y="276" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s22" value="FinOps hub&#10;（Azure Data Explorer / Kusto）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="380" y="276" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s23" value="Data Lake Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="680" y="276" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s24" value="Power BI セマンティックモデル" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="940" y="276" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L3" value="③ AI レイヤー" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;verticalAlign=top;fontStyle=1;fontSize=15;align=left;spacingLeft=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="60" y="372" width="1370" height="116" as="geometry" />
+        </mxCell>
+        <mxCell id="s31" value="Azure AI Foundry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7A1FA2;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="412" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s32" value="Azure OpenAI&#10;＋ Model Router" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7A1FA2;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="330" y="412" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s33" value="Copilot Studio&#10;（Teams / M365 Copilot）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7A1FA2;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="570" y="412" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s34" value="Azure MCP server&#10;（請求 API / Kusto へ接続）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7A1FA2;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="830" y="412" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s35" value="GitHub Copilot Agent&#10;/ Semantic Kernel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7A1FA2;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="412" width="270" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L4" value="④ アクションレイヤー" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#ED7100;verticalAlign=top;fontStyle=1;fontSize=15;align=left;spacingLeft=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="60" y="508" width="1370" height="116" as="geometry" />
+        </mxCell>
+        <mxCell id="s41" value="Logic Apps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="100" y="548" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s42" value="Azure Functions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="320" y="548" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s43" value="GitHub Actions / Azure DevOps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="540" y="548" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s44" value="Teams 通知" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="840" y="548" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s45" value="ServiceNow / Jira" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#ED7100;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="548" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L5" value="⑤ ガバナンス（全レイヤーを横断）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#C62828;verticalAlign=top;fontStyle=1;fontSize=15;align=left;spacingLeft=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="60" y="644" width="1370" height="116" as="geometry" />
+        </mxCell>
+        <mxCell id="s51" value="Management Groups" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="90" y="684" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s52" value="RBAC / PIM（権限分離・JIT）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="340" y="684" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s53" value="Azure Policy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="610" y="684" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s54" value="Defender for Cloud" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="830" y="684" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="s55" value="監査ログ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=12;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="684" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ea1" style="endArrow=block;html=1;strokeColor=#0078D4;strokeWidth=2;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" parent="1" source="L2" target="L1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea2" style="endArrow=block;html=1;strokeColor=#0078D4;strokeWidth=2;exitX=0.3;exitY=0;entryX=0.3;entryY=1;" edge="1" parent="1" source="L3" target="L2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea3" style="endArrow=block;html=1;strokeColor=#2E7D32;strokeWidth=2;exitX=0.7;exitY=1;entryX=0.7;entryY=0;" edge="1" parent="1" source="L3" target="L4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
