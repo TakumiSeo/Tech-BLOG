@@ -8,7 +8,7 @@ Tags: azure, sre-agent, application-gateway, azure-firewall, observability, netw
 Summary: sre-agent-poc-runbook の検証環境に合わせて、疑似障害の調査は Anthropic 系、定期ヘルスチェックやセキュリティチェックは GPT 系に寄せる運用方針を整理。変更操作は人手で runbook に沿って実施し、SRE Agent は委任された権限の範囲で切り分けと要約に専念させる。
 Status: draft
 
-本稿は [sre-agent-poc-runbook]({filename}sre-agent-poc-runbook.md) に対応する **SRE Agent 観点のシナリオ定義** です。ここでは、Azure SRE Agent に変更権限を持たせず、**Reader / Monitoring Reader / Log Analytics Reader** の 3 ロールを前提に、どこまで調査を自動化できるかを整理します。加えて、**疑似障害の調査は Anthropic 系、Scheduled Task やセキュリティチェックのような定型・高頻度タスクは GPT 系** に寄せる運用方針を明示します。[^1][^2][^3][^7][^8]
+本稿は [sre-agent-poc-runbook]({filename}2026-04-13-sre-agent-poc-runbook.md) に対応する **SRE Agent 観点のシナリオ定義** です。ここでは、Azure SRE Agent に変更権限を持たせず、**Reader / Monitoring Reader / Log Analytics Reader** の 3 ロールを前提に、どこまで調査を自動化できるかを整理します。加えて、**疑似障害の調査は Anthropic 系、Scheduled Task やセキュリティチェックのような定型・高頻度タスクは GPT 系** に寄せる運用方針を明示します。[^1][^2][^3][^7][^8]
 
 ## Optional: SRE Agent に入れておくナレッジ例
 

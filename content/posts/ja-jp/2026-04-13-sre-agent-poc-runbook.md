@@ -7,7 +7,7 @@ Tags: azure, sre-agent, application-gateway, azure-firewall, iis, network, poc
 Status: draft
 Summary: Hub-VNet に IIS AppVM、Application Gateway、Azure Firewall を構築し、Client -> Firewall -> AppGW -> Firewall -> IIS の通信、AppGW 系の health probe/DNS 障害、AppVM の外向き通信障害を切り分けるための手順をまとめたランブック。
 
-本稿は [sre-agent-scenarios]({filename}sre-agent-scenarios.md) で定義したシナリオを実際に動かすためのランブックです。
+本稿は [sre-agent-scenarios]({filename}2026-04-13-sre-agent-scenarios.md) で定義したシナリオを実際に動かすためのランブックです。
 
 この runbook では、切り分けの軸を次の 3 つに分けます。
 

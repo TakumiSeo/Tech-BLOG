@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "title": "AI for FinOps 入門",
+    "subtitle": "Token Economics と Azure での実装",
+    "author": "Taku Sewo",
+    "date": "2026-06-12",
+    "lang": "ja-jp",
+    "theme": "midnight"
+  },
+  "slides": [
+    {
+      "type": "title",
+      "title": "AI for FinOps 入門",
+      "subtitle": "Token Economics と Azure での実装",
+      "author": "Taku Sewo",
+      "date": "FinOps X 2026 を題材に",
+      "notes": "自己紹介と、本日のゴール（概念→Token Economics→Azure 実装）を1分で。"
+    },
+    {
+      "type": "bullets",
+      "title": "今日の結論（先に言う）",
+      "bullets": [
+        "FinOps は AI 時代の Technology Value Management へ拡張",
+        "AI for FinOps（AIで業務を加速）と FinOps for AI（AIのコストを管理）を分ける",
+        "Token Economics が AI 支出の共通言語",
+        "進め方は Crawl/Walk/Run と Human-in-the-loop"
+      ],
+      "source": "出典: FinOps X 2026 Day1/Day2 Keynote, FinOps Foundation",
+      "notes": "ここで全体像を提示。各論は後ろのスライドで。"
+    },
+    {
+      "type": "section",
+      "eyebrow": "CONCEPT",
+      "title": "まず2語を分ける",
+      "notes": "混同されやすい点を強調。"
+    },
+    {
+      "type": "image",
+      "title": "AI for FinOps と FinOps for AI",
+      "image": "content/images/ai-for-finops-finops-x-2026/concept-map.png",
+      "caption": "左: AIで FinOps 業務を加速 / 右: AI 利用のコストと価値を管理",
+      "source": "出典: FinOps Foundation",
+      "notes": "図の左右を指しながら、ひとことフレーズで対比。"
+    },
+    {
+      "type": "image",
+      "title": "Token Economics: コストは氷山",
+      "image": "content/images/ai-for-finops-finops-x-2026/token-cost-stack.png",
+      "caption": "トークン課金は一角。データセンター・SaaS埋め込み・シャドーAIまで含めて測る",
+      "source": "出典: Token Economics (FinOps Foundation)",
+      "notes": "「AIコスト=トークンコスト」ではない、を強調。"
+    },
+    {
+      "type": "quote",
+      "text": "A token may get cheaper; tokens, in aggregate, are not.",
+      "attribution": "Token Economics: The Atomic Unit of AI Value (FinOps Foundation)",
+      "notes": "単価は下がるが総量は増える、というキーメッセージ。"
+    },
+    {
+      "type": "image",
+      "title": "Agentic FinOps: 通知から行動へ",
+      "image": "content/images/ai-for-finops-finops-x-2026/agentic-finops.png",
+      "caption": "Crawl/Walk/Run と Sense-Think-Act。重要な判断は人間が承認",
+      "source": "出典: FinOps X 2026 Day2 / Agentic Use Cases",
+      "notes": "トラストギャップと Human-in-the-loop を説明。"
+    },
+    {
+      "type": "image",
+      "title": "Azure 参照アーキテクチャ",
+      "image": "content/images/ai-for-finops-finops-x-2026/azure-reference-architecture.png",
+      "caption": "データソース→基盤→AI→アクション、横断するガバナンス",
+      "source": "出典: Microsoft Learn",
+      "notes": "FinOps hub / APIM AIゲートウェイ / Model Router の3点を指す。"
+    },
+    {
+      "type": "closing",
+      "title": "明日からやること",
+      "bullets": [
+        "用語を分ける（AI for FinOps / FinOps for AI）",
+        "データ基盤を整える（FOCUS・Cost・Resource・Owner）",
+        "低リスク PoC から（自然言語コスト分析→異常調査）",
+        "本番変更・購入は人間承認を必須に"
+      ],
+      "source": "詳細: ブログ記事 ai-for-finops-finops-x-2026 を参照",
+      "notes": "CTA。詳細版ブログへ誘導してクローズ。"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ Category: notebook
 Tags: azure, cis-benchmark, defender-for-cloud, compliance, hardening, golden-image, machine-configuration
 Summary: Azure VM を CIS Benchmark に準拠させる 2 つのアプローチ — CIS 標準（ハードン済み）イメージで作る方法と、標準イメージ + Defender for Cloud で測りながら作る方法 — を、役割（予防 / 検出）、手順、メリット・デメリットの観点で整理する。
 
-前回の記事（[Azure VM イメージ標準化で考えるべきこと]({filename}azure-image-standardization-principles.md)）では、イメージ標準化を **L1（中身）/ L2（配布）/ L3（統制）** の 3 レイヤで捉えました。本記事はその L1（中身のハードニング）と L3（統制・可視化）に踏み込み、**「VM を CIS Benchmark に準拠させる」具体策**を整理します。
+前回の記事（[Azure VM イメージ標準化で考えるべきこと]({filename}2026-06-02-azure-image-standardization-principles.md)）では、イメージ標準化を **L1（中身）/ L2（配布）/ L3（統制）** の 3 レイヤで捉えました。本記事はその L1（中身のハードニング）と L3（統制・可視化）に踏み込み、**「VM を CIS Benchmark に準拠させる」具体策**を整理します。
 
 論点は「**CIS のハードン済みイメージを買って使うか**」か「**標準イメージに自分でハードニングを当て、Defender for Cloud で測りながら準拠させるか**」です。
 

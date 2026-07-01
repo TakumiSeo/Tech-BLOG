@@ -299,7 +299,7 @@ Windows では `PowerShell` でスクリプトを当て、`WindowsUpdate` で最
 - **適用範囲を決めているか**: CIS Benchmark のプロファイルや Level、MCSB / STIG など他基準との関係を確認し、互換性検証と例外管理を設計します。
 - **費用・サポート・更新主体を確認しているか**: Marketplace のイメージ利用条件、サポート条件、更新主体は契約・提供元に依存するため、設計前に確認します。
 
-> CIS 標準イメージで準拠する方法と、標準イメージ + Defender for Cloud で準拠させる方法のメリット・デメリット比較は、別記事「[CIS 準拠をどう作るか — CIS 標準イメージと Defender for Cloud の使い分け]({filename}azure-cis-compliance-defender-for-cloud.md)」で詳しく整理しています。
+> CIS 標準イメージで準拠する方法と、標準イメージ + Defender for Cloud で準拠させる方法のメリット・デメリット比較は、別記事「[CIS 準拠をどう作るか — CIS 標準イメージと Defender for Cloud の使い分け]({filename}2026-06-02-azure-cis-compliance-defender-for-cloud.md)」で詳しく整理しています。
 
 ## 6. 進める順序（段階導入の一般論）
 

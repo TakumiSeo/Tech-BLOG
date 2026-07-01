@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="goodput-tiers" name="Goodput tiers">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Goodput（有効スループット）の 4 ティア" style="text;html=1;fontSize=26;fontStyle=1;align=center;verticalAlign=middle;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="240" y="16" width="800" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="すべてのトークンは同じではない。スループットと対話速度はトレードオフ（Pareto フロンティア）。" style="text;html=1;fontSize=15;align=center;fontColor=#555555;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="200" y="60" width="880" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="yaxis" style="endArrow=block;html=1;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="680" as="sourcePoint" />
+            <mxPoint x="170" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xaxis" style="endArrow=block;html=1;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170" y="680" as="sourcePoint" />
+            <mxPoint x="1200" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ylabel" value="↑ ユーザーあたり対話速度（速い）" style="text;html=1;fontSize=14;fontStyle=1;align=left;fontColor=#333333;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="186" y="116" width="320" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="xlabel" value="総スループット / 電力（高い）→" style="text;html=1;fontSize=14;fontStyle=1;align=right;fontColor=#333333;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="840" y="688" width="360" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="curve" value="" style="endArrow=none;dashed=1;curved=1;strokeColor=#9E9E9E;strokeWidth=3;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="260" y="210" as="sourcePoint" />
+            <mxPoint x="1060" y="610" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="640" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="curvelabel" value="Pareto フロンティア（トレードオフ曲線）" style="text;html=1;fontSize=13;fontStyle=2;align=center;fontColor=#9E9E9E;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="300" y="600" width="300" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="dot1" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#C2185B;strokeColor=#880E4F;" vertex="1" parent="1">
+          <mxGeometry x="372" y="284" width="16" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="dot2" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;" vertex="1" parent="1">
+          <mxGeometry x="632" y="372" width="16" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="dot3" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=#0D47A1;" vertex="1" parent="1">
+          <mxGeometry x="892" y="460" width="16" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="premium" value="Premium 低レイテンシ&#10;高速・低スループット&#10;音声エージェント / 応答速度が生産性を左右する用途" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;align=center;verticalAlign=middle;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="210" y="170" width="320" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="goldilocks" value="Goldilocks ゾーン（経済的な中心）&#10;中程度の対話性 × ほぼ最適なスループット&#10;チャット・一般的な業務アプリ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;align=center;verticalAlign=middle;fontStyle=1;fontSize=15;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="470" y="430" width="360" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="bulk" value="Bulk トークン&#10;高スループット・低速&#10;バッチ要約 / 埋め込み生成 / オフライン分析" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;align=center;verticalAlign=middle;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="800" y="560" width="320" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="reasoning" value="Reasoning トークン（要注意）&#10;外部出力 1 に対し内部で多数生成。&#10;見かけは Goldilocks 級でも消費プロファイルは大きく、近年の支出増の主因。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4E5;strokeColor=#ED7100;dashed=1;align=center;verticalAlign=middle;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="840" y="180" width="330" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="rarrow" value="" style="endArrow=block;html=1;strokeColor=#ED7100;strokeWidth=2;dashed=1;" edge="1" parent="1" source="reasoning" target="dot2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="企業が実際に買うのは raw スループットではなく goodput ＝ SLO（応答開始時間・継続生成速度）を満たした有効な出力。量だけでなく『質』を測らないとコストを誤って配賦する。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#9E9E9E;align=center;verticalAlign=middle;fontSize=14;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="170" y="724" width="1030" height="56" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,82 @@
+<mxfile host="app.diagrams.net" agent="copilot">
+  <diagram id="deployment-archetypes" name="Deployment archetypes">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="860" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="3 つの提供形態と損益分岐点" style="text;html=1;fontSize=26;fontStyle=1;align=center;verticalAlign=middle;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="240" y="16" width="800" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="トークン需要量に応じて&quot;最も安い&quot;提供形態は変わる。需要を早めにモデル化して分岐点を見極める。" style="text;html=1;fontSize=15;align=center;fontColor=#555555;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="200" y="60" width="880" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="band" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=none;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="500" y="150" width="220" height="520" as="geometry" />
+        </mxCell>
+        <mxCell id="bandlabel" value="分岐ゾーン" style="text;html=1;fontSize=14;fontStyle=1;align=center;fontColor=#F9A825;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="500" y="156" width="220" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="yaxis" style="endArrow=block;html=1;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="180" y="680" as="sourcePoint" />
+            <mxPoint x="180" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xaxis" style="endArrow=block;html=1;strokeColor=#333333;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="180" y="680" as="sourcePoint" />
+            <mxPoint x="1180" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ylabel" value="↑ 総コスト（高い）" style="text;html=1;fontSize=14;fontStyle=1;align=left;fontColor=#333333;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="196" y="120" width="260" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="xlabel" value="トークン需要量（多い）→" style="text;html=1;fontSize=14;fontStyle=1;align=right;fontColor=#333333;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="860" y="688" width="320" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="saas" value="" style="endArrow=none;html=1;strokeColor=#C62828;strokeWidth=4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="590" as="sourcePoint" />
+            <mxPoint x="1080" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="api" value="" style="endArrow=none;html=1;strokeColor=#0078D4;strokeWidth=4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="470" as="sourcePoint" />
+            <mxPoint x="1080" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="self" value="" style="endArrow=none;html=1;strokeColor=#7A1FA2;strokeWidth=4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="300" as="sourcePoint" />
+            <mxPoint x="1080" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="saaslbl" value="SaaS 埋め込み" style="text;html=1;fontSize=14;fontStyle=1;align=left;fontColor=#C62828;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="186" width="180" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="apilbl" value="API 利用" style="text;html=1;fontSize=14;fontStyle=1;align=left;fontColor=#0078D4;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="288" width="180" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="selflbl" value="自己ホスト（AI ファクトリー）" style="text;html=1;fontSize=14;fontStyle=1;align=left;fontColor=#7A1FA2;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="348" width="200" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="leftnote" value="低ボリューム&#10;→ SaaS が有利&#10;（導入コスト最小）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#C62828;align=center;verticalAlign=middle;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="250" y="150" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rightnote" value="高ボリューム&#10;→ 自己ホストが有利&#10;（限界費用最小）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#7A1FA2;align=center;verticalAlign=middle;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="770" y="560" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="csaas" value="SaaS 埋め込み&#10;導入コスト最小 / トークン単価は最高&#10;立ち上げ・小規模・実験" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="180" y="720" width="320" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="capi" value="API 利用&#10;可視性が高い / 提供者の価格改定に敏感&#10;多くの本番ワークロード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="520" y="720" width="320" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cself" value="自己ホスト（AI ファクトリー）&#10;資本コスト最大 / 限界費用は最小&#10;後戻り困難 → 決定タイミングが重要" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7A1FA2;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=13;fontFamily=Yu Gothic UI;" vertex="1" parent="1">
+          <mxGeometry x="860" y="720" width="340" height="110" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
